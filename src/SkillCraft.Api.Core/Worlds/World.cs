@@ -17,7 +17,7 @@ public class World : AggregateRoot, IEntityProvider
   public Name Name
   {
     get => _name ?? throw new InvalidOperationException("The world has not been initialized.");
-    private set
+    set
     {
       _name = value;
       _updated.Name = value;

@@ -3,6 +3,7 @@
 public static class Actions
 {
   public const string CreateCustomization = "CreateCustomization";
+  public const string CreateWorld = "CreateWorld";
   public const string Delete = "Delete";
   public const string Update = "Update";
 }
