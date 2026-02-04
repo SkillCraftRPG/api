@@ -18,4 +18,14 @@
     <ProjectReference Include="..\SkillCraft.Api.Contracts\SkillCraft.Api.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="Logitar.CQRS" Version="10.1.0" />
+    <PackageReference Include="Logitar.EventSourcing" Version="10.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+  </ItemGroup>
+
 </Project>
