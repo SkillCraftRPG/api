@@ -1,9 +1,11 @@
 ﻿using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Logitar.EventSourcing.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Caching;
 using SkillCraft.Api.Infrastructure.Handlers;
 using SkillCraft.Api.Infrastructure.Queriers;
 using SkillCraft.Api.Infrastructure.Repositories;
@@ -17,8 +19,11 @@ public static class DependencyInjectionExtensions
     return services
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
       .AddEventHandlers()
+      .AddMemoryCache()
       .AddQueriers()
       .AddRepositories()
+      .AddSingleton(serviceProvider => CacheSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton<ICacheService, CacheService>()
       .AddSingleton<IEventSerializer, EventSerializer>()
       .AddScoped<IEventBus, EventBus>()
       .AddTransient<IActorService, ActorService>();
