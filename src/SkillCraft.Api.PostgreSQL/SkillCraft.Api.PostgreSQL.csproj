@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Logitar.EventSourcing.EntityFrameworkCore.PostgreSQL" Version="10.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SkillCraft.Api.Infrastructure\SkillCraft.Api.Infrastructure.csproj" />
   </ItemGroup>
 
