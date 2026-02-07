@@ -14,4 +14,5 @@
   <Project Path="src/SkillCraft.Api.Infrastructure/SkillCraft.Api.Infrastructure.csproj" Id="ed05cbab-d3e9-4a2b-9243-47b6708fd34e" />
   <Project Path="src/SkillCraft.Api.MongoDB/SkillCraft.Api.MongoDB.csproj" Id="54af8748-a4ec-4e1a-9a25-507484bb4071" />
   <Project Path="src/SkillCraft.Api.PostgreSQL/SkillCraft.Api.PostgreSQL.csproj" Id="ef65a3f2-2948-414f-8384-f8716eb87bde" />
+  <Project Path="src/SkillCraft.Api/SkillCraft.Api.csproj" Id="a50d4058-d4a4-492e-9d6a-1d9136e01aca" />
 </Solution>

@@ -1,4 +1,30 @@
 name: skillcraft_api
 services:
+  skillcraft_api_postgres:
+    image: postgres
+    container_name: SkillCraft.Api_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: XjMyhxpV9nBc3fqD
+    ports:
+      - 5448:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  skillcraft_api:
+    build:
+      context: .
+      dockerfile: /src/SkillCraft.Api/Dockerfile
+    image: skillcraft_api
+    container_name: SkillCraft_api
+    depends_on:
+      - skillcraft_api_postgres
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_Environment: Development
+      POSTGRESQLCONNSTR_SkillCraft: User ID=postgres;Password=XjMyhxpV9nBc3fqD;Host=skillcraft_api_postgres;Port=5432;Database=skillcraft;
+    ports:
+      - 8888:8080
 
 volumes:
+  postgres_data:
