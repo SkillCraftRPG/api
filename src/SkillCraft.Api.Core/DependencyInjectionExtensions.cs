@@ -2,6 +2,8 @@
 using Logitar.EventSourcing;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core;
@@ -15,6 +17,8 @@ public static class DependencyInjectionExtensions
 
     return services
       .AddLogitarCQRS()
-      .AddLogitarEventSourcing();
+      .AddLogitarEventSourcing()
+      .AddSingleton<IPermissionService, PermissionService>()
+      .AddSingleton<IStorageService, StorageService>();
   }
 }

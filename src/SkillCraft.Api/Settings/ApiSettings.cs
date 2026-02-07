@@ -2,7 +2,7 @@
 
 namespace SkillCraft.Api.Settings;
 
-internal record ApiSettings
+public record ApiSettings
 {
   public const string SectionKey = "Api";
 

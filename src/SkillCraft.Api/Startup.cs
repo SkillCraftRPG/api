@@ -1,4 +1,5 @@
-﻿using Krakenar.Contracts.Constants;
+﻿using Krakenar.Client;
+using Krakenar.Contracts.Constants;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using SkillCraft.Api.Authentication;
@@ -27,6 +28,8 @@ internal class Startup : StartupBase
     services.AddSkillCraftApiCore();
     services.AddSkillCraftApiInfrastructure();
     services.AddSkillCraftApiPostgreSQL(_configuration);
+
+    services.AddKrakenarClient(_configuration);
 
     services.AddHttpContextAccessor();
     services.AddSingleton<IContext, HttpApplicationContext>();
@@ -78,7 +81,7 @@ internal class Startup : StartupBase
       services.AddSkillCraftSwagger(apiSettings);
     }
 
-    services.AddApplicationInsightsTelemetry();
+    //services.AddApplicationInsightsTelemetry(); // TODO(fpion): implement
     services.AddHealthChecks().AddDbContextCheck<GameContext>();
   }
 
