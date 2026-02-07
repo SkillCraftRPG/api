@@ -24,7 +24,7 @@ services:
       ASPNETCORE_Environment: Development
       POSTGRESQLCONNSTR_SkillCraft: User ID=postgres;Password=XjMyhxpV9nBc3fqD;Host=skillcraft_api_postgres;Port=5432;Database=skillcraft;
     ports:
-      - 8888:8080
+      - 8088:8080
 
 volumes:
   postgres_data:
