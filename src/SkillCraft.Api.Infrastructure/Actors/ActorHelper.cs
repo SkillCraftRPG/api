@@ -4,7 +4,7 @@ using SkillCraft.Api.Core;
 
 namespace SkillCraft.Api.Infrastructure.Actors;
 
-internal static class ActorHelper
+public static class ActorHelper
 {
   private const string Realm = "Realm";
   private const char Separator = '|';
