@@ -81,7 +81,6 @@ internal class Startup : StartupBase
       services.AddSkillCraftSwagger(apiSettings);
     }
 
-    //services.AddApplicationInsightsTelemetry(); // TODO(fpion): implement
     services.AddHealthChecks().AddDbContextCheck<GameContext>();
   }
 
