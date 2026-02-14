@@ -12,3 +12,22 @@ public interface ILoggingService
   void SetUser(User? user);
   void SetWorld(WorldModel? world);
 }
+
+internal class LoggingService : ILoggingService
+{
+  public void SetApiKey(ApiKey? apiKey)
+  {
+  }
+
+  public void SetSession(Session? session)
+  {
+  }
+
+  public void SetUser(User? user)
+  {
+  }
+
+  public void SetWorld(WorldModel? world)
+  {
+  }
+}
