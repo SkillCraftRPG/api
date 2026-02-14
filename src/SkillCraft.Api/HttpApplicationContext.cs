@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Constants;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Worlds;
@@ -22,7 +23,14 @@ internal class HttpApplicationContext : IContext
   public UserId UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
 
-  public bool IsAdministrator => false; // TODO(fpion): implement
+  public bool IsAdministrator
+  {
+    get
+    {
+      User? user = Context.GetUser();
+      return user is not null && user.Roles.Any(role => role.UniqueName.Equals(Roles.Administrator, StringComparison.InvariantCultureIgnoreCase));
+    }
+  }
   public bool IsWorldOwner => false; // TODO(fpion): implement
 
   public UserId? TryGetUserId()
