@@ -3,10 +3,28 @@ using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core;
 
-public record Entity(string Kind, Guid Id, WorldId? WorldId = null)
+public record Entity
 {
   private const char Separator = '|';
   private const char EntitySeparator = ':';
+
+  public string Kind { get; }
+  public Guid Id { get; }
+  public WorldId? WorldId { get; }
+  public long? Size { get; }
+
+  public Entity(string kind, Guid id, WorldId? worldId = null, long? size = null)
+  {
+    if (size.HasValue)
+    {
+      ArgumentOutOfRangeException.ThrowIfNegative(size.Value, nameof(size));
+    }
+
+    Kind = kind;
+    Id = id;
+    WorldId = worldId;
+    Size = size;
+  }
 
   public static Entity Parse(string value, string? expectedKind = null)
   {

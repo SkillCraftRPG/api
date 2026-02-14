@@ -31,7 +31,19 @@ internal class HttpApplicationContext : IContext
       return user is not null && user.Roles.Any(role => role.UniqueName.Equals(Roles.Administrator, StringComparison.InvariantCultureIgnoreCase));
     }
   }
-  public bool IsWorldOwner => false; // TODO(fpion): implement
+  public bool IsWorldOwner
+  {
+    get
+    {
+      User? user = Context.GetUser();
+      WorldModel? world = Context.GetWorld();
+      if (user is null || world is null)
+      {
+        return false;
+      }
+      return world.Owner.RealmId == user.Realm?.Id && world.Owner.Id == user.Id;
+    }
+  }
 
   public UserId? TryGetUserId()
   {

@@ -47,7 +47,8 @@ internal class GameMapper
     {
       Id = source.Id,
       Name = source.Name,
-      Description = source.Description
+      Description = source.Description,
+      Owner = FindActor(source.OwnerId)
     };
 
     MapAggregate(source, destination);

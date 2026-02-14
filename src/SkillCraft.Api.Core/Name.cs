@@ -7,6 +7,7 @@ public record Name
   public const int MaximumLength = 100;
 
   public string Value { get; }
+  public long Size => Value.Length;
 
   public Name(string value)
   {

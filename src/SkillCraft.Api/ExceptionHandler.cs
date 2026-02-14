@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Extensions;
 using SkillCraft.Api.Settings;
 
@@ -30,6 +31,10 @@ internal class ExceptionHandler : IExceptionHandler
     if (IsBadRequest(exception))
     {
       statusCode = StatusCodes.Status400BadRequest;
+    }
+    else if (exception is NotEnoughStorageException)
+    {
+      statusCode = StatusCodes.Status402PaymentRequired;
     }
     else if (exception is PermissionDeniedException)
     {

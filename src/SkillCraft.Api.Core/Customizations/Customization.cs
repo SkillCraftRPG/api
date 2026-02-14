@@ -74,6 +74,8 @@ public class Customization : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
+  public long CalculateSize() => Name.Size + (Description?.Size ?? 0);
+
   public void Delete(UserId userId)
   {
     if (!IsDeleted)
@@ -82,7 +84,7 @@ public class Customization : AggregateRoot, IEntityProvider
     }
   }
 
-  public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
+  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
 
   public void Update(UserId userId)
   {

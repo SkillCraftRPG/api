@@ -3,6 +3,7 @@ using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
 using SkillCraft.Api.Infrastructure.Caching;
@@ -47,6 +48,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddTransient<ICustomizationRepository, CustomizationRepository>()
+      .AddTransient<IStorageRepository, StorageRepository>()
       .AddTransient<IWorldRepository, WorldRepository>();
   }
 }

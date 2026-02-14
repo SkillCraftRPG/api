@@ -50,6 +50,8 @@ public class World : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
+  public long CalculateSize() => Name.Size + (Description?.Size ?? 0);
+
   public void Delete(UserId userId)
   {
     if (!IsDeleted)
@@ -58,7 +60,7 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
-  public Entity GetEntity() => new(EntityKind, Id.ToGuid());
+  public Entity GetEntity() => new(EntityKind, Id.ToGuid(), size: CalculateSize());
 
   public void Update(UserId userId)
   {
