@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Logitar.EventSourcing.EntityFrameworkCore.Relational;
+using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Infrastructure;
 
 namespace SkillCraft.Api;
@@ -18,7 +19,9 @@ internal class Program
     startup.Configure(application);
 
     using IServiceScope scope = application.Services.CreateScope();
+    using EventContext events = scope.ServiceProvider.GetRequiredService<EventContext>();
     using GameContext game = scope.ServiceProvider.GetRequiredService<GameContext>();
+    await events.Database.MigrateAsync();
     await game.Database.MigrateAsync();
 
     application.Run();
