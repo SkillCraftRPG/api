@@ -11,6 +11,8 @@ internal class CustomizationConfiguration : AggregateConfiguration<Customization
 {
   public override void Configure(EntityTypeBuilder<CustomizationEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.Customizations), GameContext.Schema);
     builder.HasKey(x => x.CustomizationId);
 

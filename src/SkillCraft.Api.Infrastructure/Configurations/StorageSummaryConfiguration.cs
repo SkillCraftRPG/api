@@ -4,10 +4,12 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class StorageSummaryConfiguration : IEntityTypeConfiguration<StorageSummaryEntity>
+internal class StorageSummaryConfiguration : AggregateConfiguration<StorageSummaryEntity>, IEntityTypeConfiguration<StorageSummaryEntity>
 {
-  public void Configure(EntityTypeBuilder<StorageSummaryEntity> builder)
+  public override void Configure(EntityTypeBuilder<StorageSummaryEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.StorageSummary), GameContext.Schema);
     builder.HasKey(x => x.WorldId);
 

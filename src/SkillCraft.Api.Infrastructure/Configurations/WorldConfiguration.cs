@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Logitar.EventSourcing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -9,6 +10,8 @@ internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntity
 {
   public override void Configure(EntityTypeBuilder<WorldEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.Worlds), GameContext.Schema);
     builder.HasKey(x => x.WorldId);
 
@@ -16,6 +19,7 @@ internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntity
     builder.HasIndex(x => x.OwnerId);
     builder.HasIndex(x => x.Name);
 
+    builder.Property(x => x.OwnerId).HasMaxLength(ActorId.MaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
   }
 }

@@ -9,7 +9,6 @@ internal class StorageDetailEntity
   public string Key { get; private set; } = string.Empty;
 
   public StorageSummaryEntity? Summary { get; private set; }
-  public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
   public Guid WorldUid { get; private set; }
 
@@ -23,7 +22,6 @@ internal class StorageDetailEntity
     Entity entity = Entity.Parse(@event.Key);
 
     Summary = summary;
-    World = summary.World;
     WorldId = summary.WorldId;
     WorldUid = summary.WorldUid;
 
