@@ -5,7 +5,7 @@ namespace SkillCraft.Api.Infrastructure.Caching;
 
 internal record CacheSettings
 {
-  private const string SectionKey = "Cache";
+  private const string SectionKey = "Caching";
 
   public TimeSpan ActorLifetime { get; set; }
 
@@ -13,7 +13,7 @@ internal record CacheSettings
   {
     CacheSettings settings = configuration.GetSection(SectionKey).Get<CacheSettings>() ?? new();
 
-    settings.ActorLifetime = EnvironmentHelper.GetTimeSpan("CACHE_ACTOR_LIFETIME", settings.ActorLifetime);
+    settings.ActorLifetime = EnvironmentHelper.GetTimeSpan("CACHING_ACTOR_LIFETIME", settings.ActorLifetime);
 
     return settings;
   }

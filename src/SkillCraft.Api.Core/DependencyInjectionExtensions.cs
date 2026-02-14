@@ -1,5 +1,6 @@
 ﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Permissions;
@@ -18,7 +19,8 @@ public static class DependencyInjectionExtensions
     return services
       .AddLogitarCQRS()
       .AddLogitarEventSourcing()
-      .AddSingleton<IPermissionService, PermissionService>()
-      .AddSingleton<IStorageService, StorageService>();
+      .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddTransient<IPermissionService, PermissionService>()
+      .AddTransient<IStorageService, StorageService>();
   }
 }

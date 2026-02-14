@@ -19,23 +19,26 @@ internal class HttpApplicationContext : IContext
     _httpContextAccessor = httpContextAccessor;
   }
 
-  public UserId UserId
-  {
-    get
-    {
-      User user = Context.GetUser() ?? throw new InvalidOperationException("An authenticated user is required.");
-      Actor actor = new(user);
-      ActorId actorId = ActorHelper.GetActorId(actor);
-      return new UserId(actorId);
-    }
-  }
+  public UserId UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
+  public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
 
-  public WorldId WorldId
+  public bool IsAdministrator => false; // TODO(fpion): implement
+  public bool IsWorldOwner => false; // TODO(fpion): implement
+
+  public UserId? TryGetUserId()
   {
-    get
+    User? user = Context.GetUser();
+    if (user is null)
     {
-      WorldModel world = Context.GetWorld() ?? throw new InvalidOperationException("A world is required.");
-      return new WorldId(world.Id);
+      return null;
     }
+    Actor actor = new(user);
+    ActorId actorId = ActorHelper.GetActorId(actor);
+    return new UserId(actorId);
+  }
+  public WorldId? TryGetWorldId()
+  {
+    WorldModel? world = Context.GetWorld();
+    return world is null ? null : new WorldId(world.Id);
   }
 }

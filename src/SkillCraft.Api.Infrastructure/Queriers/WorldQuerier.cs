@@ -26,6 +26,13 @@ internal class WorldQuerier : IWorldQuerier
     _worlds = game.Worlds;
   }
 
+  public async Task<int> CountAsync(CancellationToken cancellationToken)
+  {
+    return await _worlds.AsNoTracking()
+      .Where(x => x.OwnerId == _context.UserId.Value)
+      .CountAsync(cancellationToken);
+  }
+
   public async Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken)
   {
     return await ReadAsync(world.Id, cancellationToken) ?? throw new InvalidOperationException($"The world entity 'StreamId={world.Id}' was not found.");
