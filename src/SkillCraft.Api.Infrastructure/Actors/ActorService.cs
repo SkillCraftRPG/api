@@ -22,14 +22,18 @@ internal class ActorService : IActorService
   {
     int capacity = actorIds.Count();
     Dictionary<ActorId, Actor> actors = new(capacity);
-    HashSet<ActorId> missingIds = new(capacity);
+    HashSet<Guid> userIds = new(capacity);
 
     foreach (ActorId actorId in actorIds)
     {
       Actor? actor = _cacheService.GetActor(actorId);
       if (actor is null)
       {
-        missingIds.Add(actorId);
+        actor = ActorHelper.GetActor(actorId);
+        if (actor.RealmId.HasValue && actor.Type == ActorType.User)
+        {
+          userIds.Add(actor.Id);
+        }
       }
       else
       {
@@ -37,7 +41,16 @@ internal class ActorService : IActorService
       }
     }
 
-    // TODO(fpion): fetch from Krakenar
+    if (userIds.Count > 0)
+    {
+      //IReadOnlyCollection<User> users = await _userService.FindAsync(userIds, cancellationToken);
+      //foreach (User user in users)
+      //{
+      //  Actor actor = new(user);
+      //  ActorId actorId = ActorHelper.GetActorId(actor);
+      //  actors[actorId] = actor;
+      //} // TODO(fpion): load from Krakenar
+    }
 
     foreach (Actor actor in actors.Values)
     {
