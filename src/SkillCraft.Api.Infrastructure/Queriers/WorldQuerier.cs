@@ -40,7 +40,7 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<WorldModel?> ReadAsync(WorldId id, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.OwnerId == _context.UserId.Value)
+      .Where(x => _context.IsAdministrator || x.OwnerId == _context.UserId.Value)
       .Where(x => x.StreamId == id.Value)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
@@ -48,7 +48,7 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.OwnerId == _context.UserId.Value)
+      .Where(x => _context.IsAdministrator || x.OwnerId == _context.UserId.Value)
       .Where(x => x.Id == id)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
@@ -61,7 +61,7 @@ internal class WorldQuerier : IWorldQuerier
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Worlds.Name);
 
     IQueryable<WorldEntity> query = _worlds.FromQuery(builder).AsNoTracking()
-      .Where(x => x.OwnerId == _context.UserId.Value);
+      .Where(x => _context.IsAdministrator || x.OwnerId == _context.UserId.Value);
 
     long total = await query.LongCountAsync(cancellationToken);
 

@@ -12,7 +12,7 @@ internal class AddHeaderParameters : IOperationFilter
     {
       In = ParameterLocation.Header,
       Name = ResolveWorld.Header,
-      Description = "Enter your wworld ID in the input below:"
+      Description = "Enter your world ID in the input below:"
     });
   }
 }

@@ -1,4 +1,6 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Infrastructure.Caching;
 
@@ -12,28 +14,26 @@ public interface IActorService
 internal class ActorService : IActorService
 {
   private readonly ICacheService _cacheService;
+  private readonly IUserService _userService;
 
-  public ActorService(ICacheService cacheService)
+  public ActorService(ICacheService cacheService, IUserService userService)
   {
     _cacheService = cacheService;
+    _userService = userService;
   }
 
   public async Task<IReadOnlyDictionary<ActorId, Actor>> FindAsync(IEnumerable<ActorId> actorIds, CancellationToken cancellationToken)
   {
     int capacity = actorIds.Count();
     Dictionary<ActorId, Actor> actors = new(capacity);
-    HashSet<Guid> userIds = new(capacity);
+    HashSet<ActorId> missingIds = new(capacity);
 
     foreach (ActorId actorId in actorIds)
     {
       Actor? actor = _cacheService.GetActor(actorId);
       if (actor is null)
       {
-        actor = ActorHelper.GetActor(actorId);
-        if (actor.RealmId.HasValue && actor.Type == ActorType.User)
-        {
-          userIds.Add(actor.Id);
-        }
+        missingIds.Add(actorId);
       }
       else
       {
@@ -41,15 +41,28 @@ internal class ActorService : IActorService
       }
     }
 
-    if (userIds.Count > 0)
+    if (missingIds.Count > 0)
     {
-      //IReadOnlyCollection<User> users = await _userService.FindAsync(userIds, cancellationToken);
-      //foreach (User user in users)
-      //{
-      //  Actor actor = new(user);
-      //  ActorId actorId = ActorHelper.GetActorId(actor);
-      //  actors[actorId] = actor;
-      //} // TODO(fpion): load from Krakenar
+      SearchUsersPayload payload = new();
+      foreach (ActorId actorId in missingIds)
+      {
+        Actor actor = ActorHelper.GetActor(actorId);
+        if (actor.RealmId.HasValue && actor.Type == ActorType.User)
+        {
+          payload.Ids.Add(actor.Id);
+        }
+      }
+
+      if (payload.Ids.Count > 0)
+      {
+        SearchResults<User> users = await _userService.SearchAsync(payload, cancellationToken);
+        foreach (User user in users.Items)
+        {
+          Actor actor = new(user);
+          ActorId actorId = ActorHelper.GetActorId(actor);
+          actors[actorId] = actor;
+        }
+      }
     }
 
     foreach (Actor actor in actors.Values)

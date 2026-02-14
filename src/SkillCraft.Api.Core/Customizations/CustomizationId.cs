@@ -16,6 +16,11 @@ public readonly struct CustomizationId
     StreamId = streamId;
 
     Entity entity = Entity.Parse(streamId.Value, Customization.EntityKind);
+    if (!entity.WorldId.HasValue)
+    {
+      throw new ArgumentException("A world identifier is required.", nameof(streamId));
+    }
+    WorldId = entity.WorldId.Value;
     EntityId = entity.Id;
   }
 

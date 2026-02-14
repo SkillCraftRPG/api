@@ -1,6 +1,6 @@
 ﻿using SkillCraft.Api.Contracts.Customizations;
+using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Events;
-using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
@@ -22,7 +22,7 @@ internal class CustomizationEntity : AggregateEntity, IWorldScoped
 
   public CustomizationEntity(WorldEntity world, CustomizationCreated @event) : base(@event)
   {
-    Id = new WorldId(@event.StreamId).ToGuid();
+    Id = new CustomizationId(@event.StreamId).EntityId;
 
     World = world;
     WorldId = world.WorldId;
