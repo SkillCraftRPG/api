@@ -18,7 +18,7 @@ public static class DependencyInjectionExtensions
     WorldService.Register(services);
 
     return services
-      .AddLogitarCQRS()
+      .AddLogitarCQRS() // TODO(fpion): custom exceptions
       .AddLogitarEventSourcing()
       .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))

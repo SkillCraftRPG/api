@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Contracts.Customizations;
+using SkillCraft.Api.Models.Parameters;
 
 namespace SkillCraft.Api.Controllers;
 
@@ -56,6 +58,15 @@ public class CustomizationController : ControllerBase
   {
     CreateOrReplaceCustomizationResult result = await _customizationService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  [ProducesResponseType<CustomizationModel>(StatusCodes.Status200OK)]
+  public async Task<ActionResult<SearchResults<CustomizationModel>>> SearchAsync(SearchCustomizationsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchCustomizationsPayload payload = parameters.ToPayload();
+    SearchResults<CustomizationModel> customizations = await _customizationService.SearchAsync(payload, cancellationToken);
+    return Ok(customizations);
   }
 
   [HttpPatch("{id}")]
