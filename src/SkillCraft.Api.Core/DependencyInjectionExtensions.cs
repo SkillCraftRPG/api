@@ -20,6 +20,7 @@ public static class DependencyInjectionExtensions
       .AddLogitarCQRS()
       .AddLogitarEventSourcing()
       .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddTransient<IPermissionService, PermissionService>()
       .AddTransient<IStorageService, StorageService>();
   }
