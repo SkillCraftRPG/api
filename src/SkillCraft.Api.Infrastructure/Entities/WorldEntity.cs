@@ -15,6 +15,7 @@ internal class WorldEntity : AggregateEntity
   public string? Description { get; private set; }
 
   public List<CustomizationEntity> Customizations { get; private set; } = [];
+  public StorageSummaryEntity? StorageSummary { get; private set; }
 
   public WorldEntity(WorldCreated @event) : base(@event)
   {

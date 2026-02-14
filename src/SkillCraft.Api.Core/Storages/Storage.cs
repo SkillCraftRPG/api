@@ -42,6 +42,14 @@ public class Storage : AggregateRoot
     AllocatedBytes = @event.AllocatedBytes;
   }
 
+  public void Delete(UserId userId)
+  {
+    if (!IsDeleted)
+    {
+      Raise(new StorageDeleted(), userId.ActorId);
+    }
+  }
+
   public void EnsureAvailable(Entity entity)
   {
     if (!entity.Size.HasValue)

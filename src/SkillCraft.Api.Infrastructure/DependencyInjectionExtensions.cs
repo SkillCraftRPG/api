@@ -33,6 +33,7 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)
   {
     CustomizationEvents.Register(services);
+    StorageEvents.Register(services);
     WorldEvents.Register(services);
     return services;
   }
@@ -41,6 +42,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddTransient<ICustomizationQuerier, CustomizationQuerier>()
+      .AddTransient<IStorageQuerier, StorageQuerier>()
       .AddTransient<IWorldQuerier, WorldQuerier>();
   }
 
