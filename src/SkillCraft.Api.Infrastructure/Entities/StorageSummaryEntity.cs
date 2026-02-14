@@ -16,6 +16,8 @@ internal class StorageSummaryEntity : AggregateEntity
     private set { }
   }
 
+  public List<StorageDetailEntity> Detail { get; private set; } = [];
+
   public StorageSummaryEntity(WorldEntity world, StorageInitialized @event) : base(@event)
   {
     World = world;
@@ -33,7 +35,17 @@ internal class StorageSummaryEntity : AggregateEntity
   {
     Update(@event);
 
-    // TODO(fpion): update UsedBytes
-    // TODO(fpion): upsert StoredEntity
+    StorageDetailEntity? detail = Detail.SingleOrDefault(x => x.Key == @event.Key);
+    if (detail is null)
+    {
+      detail = new StorageDetailEntity(this, @event);
+      Detail.Add(detail);
+    }
+    else
+    {
+      UsedBytes -= detail.Size;
+      detail.Update(@event);
+    }
+    UsedBytes += detail.Size;
   }
 }

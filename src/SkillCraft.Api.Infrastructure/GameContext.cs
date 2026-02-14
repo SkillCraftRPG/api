@@ -12,6 +12,7 @@ public class GameContext : DbContext
   }
 
   internal DbSet<CustomizationEntity> Customizations => Set<CustomizationEntity>();
+  internal DbSet<StorageDetailEntity> StorageDetail => Set<StorageDetailEntity>();
   internal DbSet<StorageSummaryEntity> StorageSummary => Set<StorageSummaryEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();
 

@@ -31,7 +31,9 @@ internal class StorageEvents : IEventHandler<EntityStored>, IEventHandler<Storag
     try
     {
       long expectedVersion = @event.Version - 1;
-      StorageSummaryEntity? storage = await _game.StorageSummary.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+      StorageSummaryEntity? storage = await _game.StorageSummary
+        .Include(x => x.Detail)
+        .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
       if (storage is null)
       {
         throw new InvalidOperationException($"The storage entity 'StreamId={@event.StreamId}' was expected to be found at version {expectedVersion}, but was not found.");
