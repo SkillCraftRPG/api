@@ -1,4 +1,4 @@
-﻿using Logitar.EventSourcing;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Events;
 
@@ -14,6 +14,7 @@ internal class WorldEntity : AggregateEntity
   public string Name { get; private set; } = string.Empty;
   public string? Description { get; private set; }
 
+  public List<CasteEntity> Castes { get; private set; } = [];
   public List<CustomizationEntity> Customizations { get; private set; } = [];
   public StorageSummaryEntity? StorageSummary { get; private set; }
 

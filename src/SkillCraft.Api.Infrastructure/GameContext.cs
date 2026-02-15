@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure;
@@ -11,6 +11,7 @@ public class GameContext : DbContext
   {
   }
 
+  internal DbSet<CasteEntity> Castes => Set<CasteEntity>();
   internal DbSet<CustomizationEntity> Customizations => Set<CustomizationEntity>();
   internal DbSet<StorageDetailEntity> StorageDetail => Set<StorageDetailEntity>();
   internal DbSet<StorageSummaryEntity> StorageSummary => Set<StorageSummaryEntity>();
