@@ -1,4 +1,5 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -9,7 +10,7 @@ public class Caste : AggregateRoot, IEntityProvider
   public const string EntityKind = "Caste";
 
   private CasteUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null || _updated.Skill is not null;
 
   public new CasteId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -51,6 +52,20 @@ public class Caste : AggregateRoot, IEntityProvider
       {
         _description = value;
         _updated.Description = new Change<Description>(value);
+      }
+    }
+  }
+
+  private GameSkill? _skill = null;
+  public GameSkill? Skill
+  {
+    get => _skill;
+    set
+    {
+      if (_skill != value)
+      {
+        _skill = value;
+        _updated.Skill = new Change<GameSkill?>(value);
       }
     }
   }
@@ -106,6 +121,11 @@ public class Caste : AggregateRoot, IEntityProvider
     if (@event.Description is not null)
     {
       _description = @event.Description.Value;
+    }
+
+    if (@event.Skill is not null)
+    {
+      _skill = @event.Skill.Value;
     }
   }
 

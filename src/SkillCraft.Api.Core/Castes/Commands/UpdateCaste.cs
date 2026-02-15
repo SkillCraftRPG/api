@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Core.Castes.Validators;
@@ -55,6 +55,11 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     if (payload.Description is not null)
     {
       caste.Description = Description.TryCreate(payload.Description.Value);
+    }
+
+    if (payload.Skill is not null)
+    {
+      caste.Skill = payload.Skill.Value;
     }
 
     caste.Update(_context.UserId);

@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Core.Castes.Validators;
@@ -67,6 +67,8 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
 
     caste.Summary = Summary.TryCreate(payload.Summary);
     caste.Description = Description.TryCreate(payload.Description);
+
+    caste.Skill = payload.Skill;
 
     caste.Update(userId);
 

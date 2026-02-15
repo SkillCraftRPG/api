@@ -1,3 +1,4 @@
+﻿using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Castes.Events;
 
@@ -16,6 +17,8 @@ internal class CasteEntity : AggregateEntity, IWorldScoped
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
+
+  public GameSkill? Skill { get; private set; }
 
   public CasteEntity(WorldEntity world, CasteCreated @event) : base(@event)
   {
@@ -47,6 +50,11 @@ internal class CasteEntity : AggregateEntity, IWorldScoped
     if (@event.Description is not null)
     {
       Description = @event.Description.Value?.Value;
+    }
+
+    if (@event.Skill is not null)
+    {
+      Skill = @event.Skill.Value;
     }
   }
 

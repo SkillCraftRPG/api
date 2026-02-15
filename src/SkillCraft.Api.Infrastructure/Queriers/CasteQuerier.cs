@@ -53,6 +53,11 @@ internal class CasteQuerier : ICasteQuerier
       .ApplyIdFilter(GameDb.Castes.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Castes.Name, GameDb.Castes.Summary);
 
+    if (payload.Skill.HasValue)
+    {
+      builder.Where(GameDb.Castes.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
+    }
+
     IQueryable<CasteEntity> query = _castes.FromQuery(builder).AsNoTracking()
       .WhereWorld(_context.WorldId);
 
