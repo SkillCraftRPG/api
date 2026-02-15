@@ -7,7 +7,7 @@ using SkillCraft.Api.Core.Customizations;
 
 namespace SkillCraft.Api.Customizations;
 
-[Trait(Traits.Category, Categories.Unit)]
+[Trait(Traits.Category, Categories.Integration)]
 public class CustomizationIntegrationTests : IntegrationTests
 {
   private readonly ICustomizationRepository _customizationRepository;
