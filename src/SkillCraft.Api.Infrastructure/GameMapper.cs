@@ -5,6 +5,7 @@ using Logitar.EventSourcing;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
+using SkillCraft.Api.Contracts.Educations;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -59,6 +60,28 @@ internal class GameMapper
       Summary = source.Summary,
       Description = source.Description
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public EducationModel ToEducation(EducationEntity source)
+  {
+    EducationModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      Skill = source.Skill,
+      WealthMultiplier = source.WealthMultiplier
+    };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
+    }
 
     MapAggregate(source, destination);
 
