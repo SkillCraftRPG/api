@@ -13,7 +13,7 @@ internal class UpdateEducationValidator : AbstractValidator<UpdateEducationPaylo
     When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 
     When(x => x.Skill is not null, () => RuleFor(x => x.Skill!.Value).IsInEnum());
-    When(x => x.WealthMultiplier?.Value is not null, () => RuleFor(x => x.WealthMultiplier!.Value!).WealthMultiplier());
+    When(x => x.WealthMultiplier?.Value is not null, () => RuleFor(x => x.WealthMultiplier!.Value!.Value).WealthMultiplier());
     When(x => x.Feature?.Value is not null, () => RuleFor(x => x.Feature!.Value!).SetValidator(new FeatureValidator()));
   }
 }

@@ -7,6 +7,6 @@ public record UpdateEducationPayload
   public Update<string>? Description { get; set; }
 
   public Update<GameSkill?>? Skill { get; set; }
-  public Update<int>? WealthMultiplier { get; set; }
+  public Update<int?>? WealthMultiplier { get; set; }
   public Update<FeatureModel>? Feature { get; set; }
 }
