@@ -7,7 +7,7 @@ using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Worlds;
 
-[Trait(Traits.Category, Categories.Unit)]
+[Trait(Traits.Category, Categories.Integration)]
 public class WorldIntegrationTests : IntegrationTests
 {
   private readonly IWorldRepository _worldRepository;
