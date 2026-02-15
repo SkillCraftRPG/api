@@ -24,8 +24,11 @@ public class Customization : AggregateRoot, IEntityProvider
     get => _name ?? throw new InvalidOperationException("The customization has not been initialized.");
     set
     {
-      _name = value;
-      _updated.Name = value;
+      if (_name != value)
+      {
+        _name = value;
+        _updated.Name = value;
+      }
     }
   }
   private Summary? _summary = null;
@@ -34,8 +37,11 @@ public class Customization : AggregateRoot, IEntityProvider
     get => _summary;
     set
     {
-      _summary = value;
-      _updated.Summary = new Change<Summary>(value);
+      if (_summary != value)
+      {
+        _summary = value;
+        _updated.Summary = new Change<Summary>(value);
+      }
     }
   }
   private Description? _description = null;
@@ -44,8 +50,11 @@ public class Customization : AggregateRoot, IEntityProvider
     get => _description;
     set
     {
-      _description = value;
-      _updated.Description = new Change<Description>(value);
+      if (_description != value)
+      {
+        _description = value;
+        _updated.Description = new Change<Description>(value);
+      }
     }
   }
 

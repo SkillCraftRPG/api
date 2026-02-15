@@ -19,8 +19,11 @@ public class World : AggregateRoot, IEntityProvider
     get => _name ?? throw new InvalidOperationException("The world has not been initialized.");
     set
     {
-      _name = value;
-      _updated.Name = value;
+      if (_name != value)
+      {
+        _name = value;
+        _updated.Name = value;
+      }
     }
   }
   private Description? _description = null;
@@ -29,8 +32,11 @@ public class World : AggregateRoot, IEntityProvider
     get => _description;
     set
     {
-      _description = value;
-      _updated.Description = new Change<Description>(value);
+      if (_description != value)
+      {
+        _description = value;
+        _updated.Description = new Change<Description>(value);
+      }
     }
   }
 
