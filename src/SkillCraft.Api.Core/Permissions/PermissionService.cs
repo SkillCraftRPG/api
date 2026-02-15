@@ -28,18 +28,25 @@ internal class PermissionService : IPermissionService
   }
   public async Task CheckAsync(string action, IEntityProvider? resource, CancellationToken cancellationToken)
   {
+    bool isAllowed;
+    Entity? entity = resource?.GetEntity();
     if (_context.IsAdministrator)
     {
-      return;
+      isAllowed = true;
     }
-
-    Entity? entity = resource?.GetEntity();
-    bool isAllowed = (entity?.Kind) switch
+    else if (resource is World world)
     {
-      null => await IsAllowedAsync(action, cancellationToken),
-      Customization.EntityKind or World.EntityKind => await IsAllowedAsync(action, entity, cancellationToken),
-      _ => throw new NotSupportedException($"The entity kind '{entity.Kind}' is not supported."),
-    };
+      isAllowed = IsAllowed(action, world);
+    }
+    else
+    {
+      isAllowed = (entity?.Kind) switch
+      {
+        null => await IsAllowedAsync(action, cancellationToken),
+        Customization.EntityKind => IsAllowed(action, entity),
+        _ => throw new NotSupportedException($"The entity kind '{entity.Kind}' is not supported."),
+      };
+    }
 
     if (!isAllowed)
     {
@@ -61,13 +68,15 @@ internal class PermissionService : IPermissionService
     return count < _settings.WorldLimit;
   }
 
-  private async Task<bool> IsAllowedAsync(string action, Entity entity, CancellationToken cancellationToken)
+  private bool IsAllowed(string action, World world) => action switch
   {
-    WorldId? worldId = entity.WorldId;
-    if (worldId is null && entity.Kind == World.EntityKind)
-    {
-      worldId = new(entity.Id);
-    }
-    return worldId.HasValue && _context.WorldId == worldId.Value && _context.IsWorldOwner;
-  }
+    Actions.Delete or Actions.Update => world.OwnerId == _context.UserId,
+    _ => false,
+  };
+
+  private bool IsAllowed(string action, Entity entity) => action switch
+  {
+    Actions.Delete or Actions.Update => entity.WorldId.HasValue && entity.WorldId.Value == _context.WorldId && _context.IsWorldOwner,
+    _ => false,
+  };
 }
