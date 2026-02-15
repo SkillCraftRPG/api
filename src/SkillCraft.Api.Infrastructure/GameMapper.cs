@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -34,7 +34,8 @@ internal class GameMapper
       Name = source.Name,
       Summary = source.Summary,
       Description = source.Description,
-      Skill = source.Skill
+      Skill = source.Skill,
+      WealthRoll = source.WealthRoll
     };
 
     MapAggregate(source, destination);

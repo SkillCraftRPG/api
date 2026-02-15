@@ -25,6 +25,7 @@ internal class CasteConfiguration : AggregateConfiguration<CasteEntity>, IEntity
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
     builder.Property(x => x.Skill).HasMaxLength(16).HasConversion(new EnumToStringConverter<GameSkill>());
+    builder.Property(x => x.WealthRoll).HasMaxLength(Roll.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Castes).OnDelete(DeleteBehavior.Restrict);
   }

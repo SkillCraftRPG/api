@@ -7,4 +7,5 @@ public record CreateOrReplaceCastePayload
   public string? Description { get; set; }
 
   public GameSkill? Skill { get; set; }
+  public string? WealthRoll { get; set; }
 }

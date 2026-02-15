@@ -69,6 +69,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
     caste.Description = Description.TryCreate(payload.Description);
 
     caste.Skill = payload.Skill;
+    caste.WealthRoll = Roll.TryCreate(payload.WealthRoll);
 
     caste.Update(userId);
 

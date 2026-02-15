@@ -10,7 +10,8 @@ public class Caste : AggregateRoot, IEntityProvider
   public const string EntityKind = "Caste";
 
   private CasteUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null || _updated.Skill is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
+    || _updated.Skill is not null || _updated.WealthRoll is not null;
 
   public new CasteId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -69,6 +70,19 @@ public class Caste : AggregateRoot, IEntityProvider
       }
     }
   }
+  private Roll? _wealthRoll = null;
+  public Roll? WealthRoll
+  {
+    get => _wealthRoll;
+    set
+    {
+      if (_wealthRoll != value)
+      {
+        _wealthRoll = value;
+        _updated.WealthRoll = new Change<Roll>(value);
+      }
+    }
+  }
 
   public Caste() : base()
   {
@@ -88,7 +102,7 @@ public class Caste : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0);
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + (WealthRoll?.Size ?? 0);
 
   public void Delete(UserId userId)
   {
@@ -126,6 +140,10 @@ public class Caste : AggregateRoot, IEntityProvider
     if (@event.Skill is not null)
     {
       _skill = @event.Skill.Value;
+    }
+    if (@event.WealthRoll is not null)
+    {
+      _wealthRoll = @event.WealthRoll.Value;
     }
   }
 

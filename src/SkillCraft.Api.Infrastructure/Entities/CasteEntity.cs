@@ -19,6 +19,7 @@ internal class CasteEntity : AggregateEntity, IWorldScoped
   public string? Description { get; private set; }
 
   public GameSkill? Skill { get; private set; }
+  public string? WealthRoll { get; private set; }
 
   public CasteEntity(WorldEntity world, CasteCreated @event) : base(@event)
   {
@@ -55,6 +56,10 @@ internal class CasteEntity : AggregateEntity, IWorldScoped
     if (@event.Skill is not null)
     {
       Skill = @event.Skill.Value;
+    }
+    if (@event.WealthRoll is not null)
+    {
+      WealthRoll = @event.WealthRoll.Value?.Value;
     }
   }
 
