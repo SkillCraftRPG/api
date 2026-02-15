@@ -7,6 +7,7 @@ public record Summary
   public const int MaximumLength = 80;
 
   public string Value { get; }
+  public long Size => Value.Length;
 
   public Summary(string value)
   {

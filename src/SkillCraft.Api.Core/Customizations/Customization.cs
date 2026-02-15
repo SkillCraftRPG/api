@@ -83,7 +83,7 @@ public class Customization : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Description?.Size ?? 0);
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0);
 
   public void Delete(UserId userId)
   {
