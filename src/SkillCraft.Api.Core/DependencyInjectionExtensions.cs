@@ -18,10 +18,12 @@ public static class DependencyInjectionExtensions
     WorldService.Register(services);
 
     return services
-      .AddLogitarCQRS() // TODO(fpion): custom exceptions
       .AddLogitarEventSourcing()
       .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton(serviceProvider => RetrySettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddTransient<ICommandBus, CommandBus>()
+      .AddTransient<IQueryBus, QueryBus>()
       .AddTransient<ILoggingService, LoggingService>()
       .AddTransient<IPermissionService, PermissionService>()
       .AddTransient<IStorageService, StorageService>();
