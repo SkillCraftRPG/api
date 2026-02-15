@@ -23,4 +23,9 @@ internal static class ValidationExtensions
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Summary.MaximumLength);
   }
+
+  public static IRuleBuilderOptions<T, int> WealthMultiplier<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
 }

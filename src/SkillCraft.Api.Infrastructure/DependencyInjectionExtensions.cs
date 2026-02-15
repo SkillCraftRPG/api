@@ -1,9 +1,10 @@
-using Logitar.EventSourcing.EntityFrameworkCore.Relational;
+﻿using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
@@ -35,6 +36,7 @@ public static class DependencyInjectionExtensions
   {
     CasteEvents.Register(services);
     CustomizationEvents.Register(services);
+    EducationEvents.Register(services);
     StorageEvents.Register(services);
     WorldEvents.Register(services);
     return services;
@@ -45,6 +47,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddTransient<ICasteQuerier, CasteQuerier>()
       .AddTransient<ICustomizationQuerier, CustomizationQuerier>()
+      .AddTransient<IEducationQuerier, EducationQuerier>()
       .AddTransient<IStorageQuerier, StorageQuerier>()
       .AddTransient<IWorldQuerier, WorldQuerier>();
   }
@@ -54,6 +57,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddTransient<ICasteRepository, CasteRepository>()
       .AddTransient<ICustomizationRepository, CustomizationRepository>()
+      .AddTransient<IEducationRepository, EducationRepository>()
       .AddTransient<IStorageRepository, StorageRepository>()
       .AddTransient<IWorldRepository, WorldRepository>();
   }

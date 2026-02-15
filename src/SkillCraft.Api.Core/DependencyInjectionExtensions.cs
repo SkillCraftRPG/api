@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Logging;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
@@ -16,6 +17,7 @@ public static class DependencyInjectionExtensions
   public static IServiceCollection AddSkillCraftApiCore(this IServiceCollection services)
   {
     CasteService.Register(services);
+    EducationService.Register(services);
     CustomizationService.Register(services);
     WorldService.Register(services);
 
