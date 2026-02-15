@@ -55,7 +55,7 @@ internal class CustomizationQuerier : ICustomizationQuerier
 
     if (payload.Kind.HasValue)
     {
-      builder.Where(GameDb.Customizations.Kind, Operators.IsEqualTo(payload.Kind.Value));
+      builder.Where(GameDb.Customizations.Kind, Operators.IsEqualTo(payload.Kind.Value.ToString()));
     }
 
     IQueryable<CustomizationEntity> query = _customizations.FromQuery(builder).AsNoTracking()
