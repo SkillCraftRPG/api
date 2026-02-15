@@ -14,14 +14,13 @@ public readonly struct StorageId
 
   public StorageId(StreamId streamId)
   {
+    StreamId = streamId;
+
     string[] values = streamId.Value.Split(Separator);
     if (values.Length != 2 || values.Last() != Storage.EntityKind)
     {
       throw new ArgumentException($"The value '{streamId}' is not a valid storage identifier.", nameof(streamId));
     }
-
-    StreamId = streamId;
-
     WorldId = new WorldId(values.First());
   }
 
