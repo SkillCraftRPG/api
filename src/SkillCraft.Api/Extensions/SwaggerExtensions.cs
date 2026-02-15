@@ -26,7 +26,7 @@ internal static class SwaggerExtensions
           Name = "Francis Pion",
           Url = new Uri("https://www.francispion.ca/", UriKind.Absolute)
         },
-        Description = "🚧TODO",
+        Description = "A multi-tenant game backend managing world-scoped data, character sheets, and real-time gameplay state for interactive roleplaying experiences.\r\n",
         License = new OpenApiLicense
         {
           Name = "Use under MIT",
