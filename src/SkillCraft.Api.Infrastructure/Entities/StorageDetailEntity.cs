@@ -19,12 +19,13 @@ internal class StorageDetailEntity
 
   public StorageDetailEntity(StorageSummaryEntity summary, EntityStored @event)
   {
-    Entity entity = Entity.Parse(@event.Key);
+    Key = @event.Key;
 
     Summary = summary;
     WorldId = summary.WorldId;
     WorldUid = summary.WorldUid;
 
+    Entity entity = Entity.Parse(@event.Key);
     EntityKind = entity.Kind;
     EntityId = entity.Id;
 
