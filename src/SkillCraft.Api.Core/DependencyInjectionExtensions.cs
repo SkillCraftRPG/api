@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,6 +6,7 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Logging;
+using SkillCraft.Api.Core.Parties;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
@@ -19,6 +20,7 @@ public static class DependencyInjectionExtensions
     CasteService.Register(services);
     EducationService.Register(services);
     CustomizationService.Register(services);
+    PartyService.Register(services);
     WorldService.Register(services);
 
     return services

@@ -57,6 +57,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     Assert.Equal(Actor, customization.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, customization.UpdatedOn, TimeSpan.FromSeconds(1));
 
+    Assert.Equal(payload.Kind, customization.Kind);
     Assert.Equal(payload.Name.Trim(), customization.Name);
     Assert.Equal(payload.Summary.Trim(), customization.Summary);
     Assert.Equal(payload.Description.Trim(), customization.Description);

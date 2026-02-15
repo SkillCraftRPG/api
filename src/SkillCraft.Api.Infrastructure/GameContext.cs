@@ -14,6 +14,7 @@ public class GameContext : DbContext
   internal DbSet<CasteEntity> Castes => Set<CasteEntity>();
   internal DbSet<CustomizationEntity> Customizations => Set<CustomizationEntity>();
   internal DbSet<EducationEntity> Educations => Set<EducationEntity>();
+  internal DbSet<PartyEntity> Parties => Set<PartyEntity>();
   internal DbSet<StorageDetailEntity> StorageDetail => Set<StorageDetailEntity>();
   internal DbSet<StorageSummaryEntity> StorageSummary => Set<StorageSummaryEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();

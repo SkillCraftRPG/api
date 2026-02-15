@@ -6,6 +6,7 @@ using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Contracts.Educations;
+using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -58,6 +59,20 @@ internal class GameMapper
       Kind = source.Kind,
       Name = source.Name,
       Summary = source.Summary,
+      Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public PartyModel ToParty(PartyEntity source)
+  {
+    PartyModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
       Description = source.Description
     };
 
