@@ -1,0 +1,27 @@
+﻿using FluentValidation;
+
+namespace SkillCraft.Api.Core;
+
+public record Name
+{
+  public const int MaximumLength = 100;
+
+  public string Value { get; }
+  public long Size => Value.Length;
+
+  public Name(string value)
+  {
+    Value = value.Trim();
+    new Validator().ValidateAndThrow(this);
+  }
+
+  public override string ToString() => Value;
+
+  private class Validator : AbstractValidator<Name>
+  {
+    public Validator()
+    {
+      RuleFor(x => x.Value).Name();
+    }
+  }
+}
