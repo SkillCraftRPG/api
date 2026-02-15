@@ -42,6 +42,7 @@ public class WorldController : ControllerBase
 
   [HttpGet("{id}")]
   [ProducesResponseType<WorldModel>(StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<ActionResult<WorldModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     WorldModel? world = await _worldService.ReadAsync(id, cancellationToken);
