@@ -8,4 +8,5 @@ public record CreateOrReplaceCastePayload
 
   public GameSkill? Skill { get; set; }
   public string? WealthRoll { get; set; }
+  public FeatureModel? Feature { get; set; }
 }

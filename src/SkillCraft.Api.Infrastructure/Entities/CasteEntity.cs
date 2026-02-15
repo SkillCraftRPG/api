@@ -1,4 +1,5 @@
 ﻿using SkillCraft.Api.Contracts;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Castes.Events;
 
@@ -20,6 +21,8 @@ internal class CasteEntity : AggregateEntity, IWorldScoped
 
   public GameSkill? Skill { get; private set; }
   public string? WealthRoll { get; private set; }
+  public string? FeatureName { get; private set; }
+  public string? FeatureDescription { get; private set; }
 
   public CasteEntity(WorldEntity world, CasteCreated @event) : base(@event)
   {
@@ -61,6 +64,16 @@ internal class CasteEntity : AggregateEntity, IWorldScoped
     {
       WealthRoll = @event.WealthRoll.Value?.Value;
     }
+    if (@event.Feature is not null)
+    {
+      SetFeature(@event.Feature.Value);
+    }
+  }
+
+  private void SetFeature(Feature? feature)
+  {
+    FeatureName = feature?.Name.Value;
+    FeatureDescription = feature?.Description?.Value;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

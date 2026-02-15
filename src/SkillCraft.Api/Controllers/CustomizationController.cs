@@ -42,6 +42,7 @@ public class CustomizationController : ControllerBase
 
   [HttpGet("{id}")]
   [ProducesResponseType<CustomizationModel>(StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<ActionResult<CustomizationModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     CustomizationModel? customization = await _customizationService.ReadAsync(id, cancellationToken);

@@ -11,4 +11,5 @@ public record CasteUpdated : DomainEvent
 
   public Change<GameSkill?>? Skill { get; set; }
   public Change<Roll>? WealthRoll { get; set; }
+  public Change<Feature>? Feature { get; set; }
 }

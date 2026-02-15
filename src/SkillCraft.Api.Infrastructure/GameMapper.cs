@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Contracts.Worlds;
@@ -37,6 +38,11 @@ internal class GameMapper
       Skill = source.Skill,
       WealthRoll = source.WealthRoll
     };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
+    }
 
     MapAggregate(source, destination);
 

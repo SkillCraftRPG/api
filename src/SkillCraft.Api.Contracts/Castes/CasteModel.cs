@@ -10,6 +10,7 @@ public class CasteModel : Aggregate
 
   public GameSkill? Skill { get; set; }
   public string? WealthRoll { get; set; }
+  public FeatureModel? Feature { get; set; }
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

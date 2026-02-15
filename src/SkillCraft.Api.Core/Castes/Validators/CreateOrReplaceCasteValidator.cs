@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using SkillCraft.Api.Contracts.Castes;
+using SkillCraft.Api.Core.Validators;
 
 namespace SkillCraft.Api.Core.Castes.Validators;
 
@@ -13,5 +14,6 @@ internal class CreateOrReplaceCasteValidator : AbstractValidator<CreateOrReplace
 
     RuleFor(x => x.Skill).IsInEnum();
     When(x => !string.IsNullOrWhiteSpace(x.WealthRoll), () => RuleFor(x => x.WealthRoll!).Roll());
+    When(x => x.Feature is not null, () => RuleFor(x => x.Feature!).SetValidator(new FeatureValidator()));
   }
 }

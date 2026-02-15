@@ -65,6 +65,10 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     {
       caste.WealthRoll = Roll.TryCreate(payload.WealthRoll.Value);
     }
+    if (payload.Feature is not null)
+    {
+      caste.Feature = payload.Feature.Value is null ? null : new Feature(new Name(payload.Feature.Value.Name), Description.TryCreate(payload.Feature.Value.Description));
+    }
 
     caste.Update(_context.UserId);
 

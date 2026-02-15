@@ -11,7 +11,7 @@ public class Caste : AggregateRoot, IEntityProvider
 
   private CasteUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Skill is not null || _updated.WealthRoll is not null;
+    || _updated.Skill is not null || _updated.WealthRoll is not null || _updated.Feature is not null;
 
   public new CasteId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -83,6 +83,19 @@ public class Caste : AggregateRoot, IEntityProvider
       }
     }
   }
+  private Feature? _feature = null;
+  public Feature? Feature
+  {
+    get => _feature;
+    set
+    {
+      if (_feature != value)
+      {
+        _feature = value;
+        _updated.Feature = new Change<Feature>(value);
+      }
+    }
+  }
 
   public Caste() : base()
   {
@@ -102,7 +115,7 @@ public class Caste : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + (WealthRoll?.Size ?? 0);
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + (WealthRoll?.Size ?? 0) + (Feature?.Size ?? 0);
 
   public void Delete(UserId userId)
   {
@@ -144,6 +157,10 @@ public class Caste : AggregateRoot, IEntityProvider
     if (@event.WealthRoll is not null)
     {
       _wealthRoll = @event.WealthRoll.Value;
+    }
+    if (@event.Feature is not null)
+    {
+      _feature = @event.Feature.Value;
     }
   }
 

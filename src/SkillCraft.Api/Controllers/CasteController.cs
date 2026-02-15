@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Contracts.Castes;
@@ -42,6 +42,7 @@ public class CasteController : ControllerBase
 
   [HttpGet("{id}")]
   [ProducesResponseType<CasteModel>(StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<ActionResult<CasteModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     CasteModel? caste = await _casteService.ReadAsync(id, cancellationToken);

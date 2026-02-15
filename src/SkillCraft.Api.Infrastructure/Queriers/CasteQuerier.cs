@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
@@ -51,7 +51,7 @@ internal class CasteQuerier : ICasteQuerier
   {
     IQueryBuilder builder = _sqlHelper.Query(GameDb.Castes.Table).SelectAll(GameDb.Castes.Table)
       .ApplyIdFilter(GameDb.Castes.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Castes.Name, GameDb.Castes.Summary);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Castes.Name, GameDb.Castes.Summary, GameDb.Castes.FeatureName);
 
     if (payload.Skill.HasValue)
     {
