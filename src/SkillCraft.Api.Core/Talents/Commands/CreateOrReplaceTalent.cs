@@ -1,9 +1,9 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Talents;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Talents.Validators;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Talents.Validators;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents.Commands;
@@ -55,7 +55,7 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
     {
       await _permissionService.CheckAsync(Actions.CreateTalent, cancellationToken);
 
-      talent = new Talent(worldId, name, userId, talentId);
+      talent = new Talent(worldId, new Tier(payload.Tier), name, userId, talentId);
       created = true;
     }
     else
@@ -68,6 +68,10 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
     talent.Summary = Summary.TryCreate(payload.Summary);
     talent.Description = Description.TryCreate(payload.Description);
 
+    talent.AllowMultiplePurchases = payload.AllowMultiplePurchases;
+    talent.Skill = payload.Skill;
+    await SetRequiredTalentAsync(talent, payload, worldId, cancellationToken);
+
     talent.Update(userId);
 
     await _storageService.ExecuteWithQuotaAsync(
@@ -77,5 +81,17 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
 
     TalentModel model = await _talentQuerier.ReadAsync(talent, cancellationToken);
     return new CreateOrReplaceTalentResult(model, created);
+  }
+
+  private async Task SetRequiredTalentAsync(Talent talent, CreateOrReplaceTalentPayload payload, WorldId worldId, CancellationToken cancellationToken)
+  {
+    Talent? requiredTalent = null;
+    if (payload.RequiredTalentId.HasValue)
+    {
+      TalentId requiredTalentId = new(payload.RequiredTalentId.Value, worldId);
+      requiredTalent = await _talentRepository.LoadAsync(requiredTalentId, cancellationToken)
+        ?? throw new EntityNotFoundException(new Entity(Talent.EntityKind, payload.RequiredTalentId.Value, worldId), nameof(payload.RequiredTalentId));
+    }
+    talent.SetRequiredTalent(requiredTalent);
   }
 }

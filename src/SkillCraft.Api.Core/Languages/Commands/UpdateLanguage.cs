@@ -64,17 +64,7 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
       language.Description = Description.TryCreate(payload.Description.Value);
     }
 
-    if (payload.ScriptId is not null)
-    {
-      Script? script = null;
-      if (payload.ScriptId.Value.HasValue)
-      {
-        ScriptId scriptId = new(payload.ScriptId.Value.Value, worldId);
-        script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
-          ?? throw new EntityNotFoundException(new Entity(Script.EntityKind, payload.ScriptId.Value.Value), nameof(payload.ScriptId));
-      }
-      language.SetScript(script);
-    }
+    await SetScriptAsync(language, payload, worldId, cancellationToken);
     if (payload.TypicalSpeakers is not null)
     {
       language.TypicalSpeakers = TypicalSpeakers.TryCreate(payload.TypicalSpeakers.Value);
@@ -88,5 +78,20 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
       cancellationToken);
 
     return await _languageQuerier.ReadAsync(language, cancellationToken);
+  }
+
+  private async Task SetScriptAsync(Language language, UpdateLanguagePayload payload, WorldId worldId, CancellationToken cancellationToken)
+  {
+    if (payload.ScriptId is not null)
+    {
+      Script? script = null;
+      if (payload.ScriptId.Value.HasValue)
+      {
+        ScriptId scriptId = new(payload.ScriptId.Value.Value, worldId);
+        script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
+          ?? throw new EntityNotFoundException(new Entity(Script.EntityKind, payload.ScriptId.Value.Value), nameof(payload.ScriptId));
+      }
+      language.SetScript(script);
+    }
   }
 }

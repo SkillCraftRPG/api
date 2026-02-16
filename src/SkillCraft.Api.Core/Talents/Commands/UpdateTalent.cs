@@ -1,9 +1,10 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Talents;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Talents.Validators;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Talents.Validators;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents.Commands;
 
@@ -36,7 +37,9 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
     UpdateTalentPayload payload = command.Payload;
     new UpdateTalentValidator().ValidateAndThrow(payload);
 
-    TalentId talentId = new(command.Id, _context.WorldId);
+    WorldId worldId = _context.WorldId;
+
+    TalentId talentId = new(command.Id, worldId);
     Talent? talent = await _talentRepository.LoadAsync(talentId, cancellationToken);
     if (talent is null)
     {
@@ -57,6 +60,16 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
       talent.Description = Description.TryCreate(payload.Description.Value);
     }
 
+    if (payload.AllowMultiplePurchases.HasValue)
+    {
+      talent.AllowMultiplePurchases = payload.AllowMultiplePurchases.Value;
+    }
+    if (payload.Skill is not null)
+    {
+      talent.Skill = payload.Skill.Value;
+    }
+    await SetRequiredTalentAsync(talent, payload, worldId, cancellationToken);
+
     talent.Update(_context.UserId);
 
     await _storageService.ExecuteWithQuotaAsync(
@@ -65,5 +78,20 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
       cancellationToken);
 
     return await _talentQuerier.ReadAsync(talent, cancellationToken);
+  }
+
+  private async Task SetRequiredTalentAsync(Talent talent, UpdateTalentPayload payload, WorldId worldId, CancellationToken cancellationToken)
+  {
+    if (payload.RequiredTalentId is not null)
+    {
+      Talent? requiredTalent = null;
+      if (payload.RequiredTalentId.Value.HasValue)
+      {
+        TalentId requiredTalentId = new(payload.RequiredTalentId.Value.Value, worldId);
+        requiredTalent = await _talentRepository.LoadAsync(requiredTalentId, cancellationToken)
+          ?? throw new EntityNotFoundException(new Entity(Talent.EntityKind, payload.RequiredTalentId.Value.Value, worldId), nameof(payload.RequiredTalentId));
+      }
+      talent.SetRequiredTalent(requiredTalent);
+    }
   }
 }

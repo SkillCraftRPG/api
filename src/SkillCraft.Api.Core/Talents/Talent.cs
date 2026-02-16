@@ -1,4 +1,5 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -9,11 +10,15 @@ public class Talent : AggregateRoot, IEntityProvider
   public const string EntityKind = "Talent";
 
   private TalentUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
+    || _updated.AllowMultiplePurchases is not null || _updated.Skill is not null || _updated.RequiredTalentId is not null;
 
   public new TalentId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
+
+  private Tier? _tier = null;
+  public Tier Tier => _tier ?? throw new InvalidOperationException("The talent has not been initialized.");
 
   private Name? _name = null;
   public Name Name
@@ -55,21 +60,50 @@ public class Talent : AggregateRoot, IEntityProvider
     }
   }
 
+  private bool _allowMultiplePurchases = false;
+  public bool AllowMultiplePurchases
+  {
+    get => _allowMultiplePurchases;
+    set
+    {
+      if (_allowMultiplePurchases != value)
+      {
+        _allowMultiplePurchases = value;
+        _updated.AllowMultiplePurchases = value;
+      }
+    }
+  }
+  private GameSkill? _skill = null;
+  public GameSkill? Skill
+  {
+    get => _skill;
+    set
+    {
+      if (_skill != value)
+      {
+        _skill = value;
+        _updated.Skill = new Change<GameSkill?>(value);
+      }
+    }
+  }
+  public TalentId? RequiredTalentId { get; private set; }
+
   public Talent() : base()
   {
   }
 
-  public Talent(World world, Name name, UserId? userId = null, TalentId? talentId = null)
-    : this(world.Id, name, userId ?? world.OwnerId, talentId)
+  public Talent(World world, Tier tier, Name name, UserId? userId = null, TalentId? talentId = null)
+    : this(world.Id, tier, name, userId ?? world.OwnerId, talentId)
   {
   }
-  public Talent(WorldId worldId, Name name, UserId userId, TalentId? talentId = null)
+  public Talent(WorldId worldId, Tier tier, Name name, UserId userId, TalentId? talentId = null)
     : base((talentId ?? TalentId.NewId(worldId)).StreamId)
   {
-    Raise(new TalentCreated(name), userId.ActorId);
+    Raise(new TalentCreated(tier, name), userId.ActorId);
   }
   protected virtual void Handle(TalentCreated @event)
   {
+    _tier = @event.Tier;
     _name = @event.Name;
   }
 
@@ -84,6 +118,15 @@ public class Talent : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
+
+  public void SetRequiredTalent(Talent? requiredTalent)
+  {
+    if (RequiredTalentId != requiredTalent?.Id)
+    {
+      RequiredTalentId = requiredTalent?.Id;
+      _updated.RequiredTalentId = new Change<TalentId?>(requiredTalent?.Id);
+    }
+  }
 
   public void Update(UserId userId)
   {
@@ -106,6 +149,19 @@ public class Talent : AggregateRoot, IEntityProvider
     if (@event.Description is not null)
     {
       _description = @event.Description.Value;
+    }
+
+    if (@event.AllowMultiplePurchases is not null)
+    {
+      _allowMultiplePurchases = @event.AllowMultiplePurchases.Value;
+    }
+    if (@event.Skill is not null)
+    {
+      _skill = @event.Skill.Value;
+    }
+    if (@event.RequiredTalentId is not null)
+    {
+      RequiredTalentId = @event.RequiredTalentId.Value;
     }
   }
 
