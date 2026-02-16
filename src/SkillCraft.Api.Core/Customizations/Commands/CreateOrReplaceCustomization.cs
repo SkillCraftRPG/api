@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Core.Customizations.Validators;
@@ -64,7 +65,12 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
 
       if (payload.Kind != customization.Kind)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        ValidationFailure failure = new(nameof(payload.Kind), "The customization kind cannot be changed.", payload.Kind)
+        {
+          CustomState = new { customization.Kind },
+          ErrorCode = "CustomizationKindCannotBeChanged"
+        };
+        throw new ValidationException([failure]);
       }
 
       customization.Name = name;
