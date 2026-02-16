@@ -11,4 +11,5 @@ public record LineageUpdated : DomainEvent
   public Speeds? Speeds { get; set; }
   public Size? Size { get; set; }
   public Weight? Weight { get; set; }
+  public Age? Age { get; set; }
 }

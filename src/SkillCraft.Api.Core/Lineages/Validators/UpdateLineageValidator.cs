@@ -14,5 +14,6 @@ internal class UpdateLineageValidator : AbstractValidator<UpdateLineagePayload>
     When(x => x.Speeds is not null, () => RuleFor(x => x.Speeds!).SetValidator(new SpeedsValidator()));
     When(x => x.Size is not null, () => RuleFor(x => x.Size!).SetValidator(new SizeValidator()));
     When(x => x.Weight is not null, () => RuleFor(x => x.Weight!).SetValidator(new WeightValidator()));
+    When(x => x.Age is not null, () => RuleFor(x => x.Age!).SetValidator(new AgeValidator()));
   }
 }

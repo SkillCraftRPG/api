@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts;
+using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -81,7 +81,8 @@ internal class GameMapper
       Description = source.Description,
       Speeds = new SpeedsModel(source.Walk, source.Climb, source.Swim, source.Fly, source.Hover, source.Burrow),
       Size = new SizeModel(source.SizeCategory, source.Height),
-      Weight = new WeightModel(source.Malnutrition, source.Skinny, source.Normal, source.Overweight, source.Obese)
+      Weight = new WeightModel(source.Malnutrition, source.Skinny, source.Normal, source.Overweight, source.Obese),
+      Age = new AgeModel(source.Teenager, source.Adult, source.Mature, source.Venerable)
     };
 
     if (source.Parent is not null)

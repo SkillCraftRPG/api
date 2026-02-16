@@ -14,5 +14,6 @@ internal class CreateOrReplaceLineageValidator : AbstractValidator<CreateOrRepla
     RuleFor(x => x.Speeds).SetValidator(new SpeedsValidator());
     RuleFor(x => x.Size).SetValidator(new SizeValidator());
     RuleFor(x => x.Weight).SetValidator(new WeightValidator());
+    RuleFor(x => x.Age).SetValidator(new AgeValidator());
   }
 }

@@ -12,7 +12,7 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   private LineageUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Speeds is not null || _updated.Size is not null || _updated.Weight is not null;
+    || _updated.Speeds is not null || _updated.Size is not null || _updated.Weight is not null || _updated.Age is not null;
 
   public new LineageId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -73,8 +73,8 @@ public class Lineage : AggregateRoot, IEntityProvider
       }
     }
   }
-  private Size? _size = null;
-  public Size? Size
+  private Size _size = new();
+  public Size Size
   {
     get => _size;
     set
@@ -86,8 +86,8 @@ public class Lineage : AggregateRoot, IEntityProvider
       }
     }
   }
-  private Weight? _weight = null;
-  public Weight? Weight
+  private Weight _weight = new();
+  public Weight Weight
   {
     get => _weight;
     set
@@ -96,6 +96,19 @@ public class Lineage : AggregateRoot, IEntityProvider
       {
         _weight = value;
         _updated.Weight = value;
+      }
+    }
+  }
+  private Age _age = new();
+  public Age Age
+  {
+    get => _age;
+    set
+    {
+      if (_age != value)
+      {
+        _age = value;
+        _updated.Age = value;
       }
     }
   }
@@ -186,6 +199,10 @@ public class Lineage : AggregateRoot, IEntityProvider
     if (@event.Weight is not null)
     {
       _weight = @event.Weight;
+    }
+    if (@event.Age is not null)
+    {
+      _age = @event.Age;
     }
   }
 

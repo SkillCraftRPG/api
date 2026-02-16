@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages;
@@ -40,6 +40,11 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public string? Normal { get; private set; }
   public string? Overweight { get; private set; }
   public string? Obese { get; private set; }
+
+  public int Teenager { get; private set; }
+  public int Adult { get; private set; }
+  public int Mature { get; private set; }
+  public int Venerable { get; private set; }
 
   public LineageEntity(WorldEntity world, LineageEntity? parent, LineageCreated @event) : base(@event)
   {
@@ -108,6 +113,13 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
       Normal = @event.Weight.Normal?.Value;
       Overweight = @event.Weight.Overweight?.Value;
       Obese = @event.Weight.Obese?.Value;
+    }
+    if (@event.Age is not null)
+    {
+      Teenager = @event.Age.Teenager;
+      Adult = @event.Age.Adult;
+      Mature = @event.Age.Mature;
+      Venerable = @event.Age.Venerable;
     }
   }
 

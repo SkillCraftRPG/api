@@ -13,7 +13,7 @@ public record Speeds : ISpeeds
   public bool Hover { get; set; }
   public int Burrow { get; set; }
 
-  public Speeds() : this(0, 0, 0, 0, false, 0)
+  public Speeds()
   {
   }
 
@@ -21,6 +21,7 @@ public record Speeds : ISpeeds
   {
   }
 
+  [JsonConstructor]
   public Speeds(int walk, int climb, int swim, int fly, bool hover, int burrow)
   {
     Walk = walk;
