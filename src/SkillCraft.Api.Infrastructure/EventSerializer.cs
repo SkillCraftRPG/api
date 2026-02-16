@@ -1,4 +1,4 @@
-using SkillCraft.Api.Infrastructure.Converters;
+﻿using SkillCraft.Api.Infrastructure.Converters;
 
 namespace SkillCraft.Api.Infrastructure;
 

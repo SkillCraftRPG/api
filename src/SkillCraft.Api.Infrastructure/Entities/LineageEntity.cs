@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 
@@ -30,6 +31,9 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public int Fly { get; private set; }
   public bool Hover { get; private set; }
   public int Burrow { get; private set; }
+
+  public SizeCategory SizeCategory { get; private set; }
+  public string? Height { get; private set; }
 
   public LineageEntity(WorldEntity world, LineageEntity? parent, LineageCreated @event) : base(@event)
   {
@@ -85,6 +89,11 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
       Fly = @event.Speeds.Fly;
       Hover = @event.Speeds.Hover;
       Burrow = @event.Speeds.Burrow;
+    }
+    if (@event.Size is not null)
+    {
+      SizeCategory = @event.Size.Category;
+      Height = @event.Size.Height.Value;
     }
   }
 

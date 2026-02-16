@@ -1,4 +1,4 @@
-﻿using Logitar.EventSourcing;
+using Logitar.EventSourcing;
 
 namespace SkillCraft.Api.Core.Lineages.Events;
 
@@ -9,4 +9,5 @@ public record LineageUpdated : DomainEvent
   public Change<Description>? Description { get; set; }
 
   public Speeds? Speeds { get; set; }
+  public Size? Size { get; set; }
 }

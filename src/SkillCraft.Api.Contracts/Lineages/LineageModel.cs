@@ -9,6 +9,7 @@ public class LineageModel : Aggregate
   public string? Description { get; set; }
 
   public SpeedsModel Speeds { get; set; } = new();
+  public SizeModel Size { get; set; } = new();
 
   public LineageModel? Parent { get; set; }
   public List<LineageModel> Children { get; set; } = [];

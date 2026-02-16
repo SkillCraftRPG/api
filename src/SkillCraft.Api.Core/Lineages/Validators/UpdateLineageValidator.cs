@@ -12,5 +12,6 @@ internal class UpdateLineageValidator : AbstractValidator<UpdateLineagePayload>
     When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 
     When(x => x.Speeds is not null, () => RuleFor(x => x.Speeds!).SetValidator(new SpeedsValidator()));
+    When(x => x.Size is not null, () => RuleFor(x => x.Size!).SetValidator(new SizeValidator()));
   }
 }

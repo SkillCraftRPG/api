@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Lineages;
@@ -88,6 +88,7 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     lineage.Description = Description.TryCreate(payload.Description);
 
     lineage.Speeds = new Speeds(payload.Speeds);
+    lineage.Size = new Size(payload.Size.Category, payload.Size.Height);
 
     lineage.Update(userId);
 

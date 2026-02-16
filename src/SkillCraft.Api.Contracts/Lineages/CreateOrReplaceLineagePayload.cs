@@ -9,4 +9,5 @@ public record CreateOrReplaceLineagePayload
   public string? Description { get; set; }
 
   public SpeedsModel Speeds { get; set; } = new();
+  public SizeModel Size { get; set; } = new();
 }

@@ -79,7 +79,8 @@ internal class GameMapper
       Name = source.Name,
       Summary = source.Summary,
       Description = source.Description,
-      Speeds = new SpeedsModel(source.Walk, source.Climb, source.Swim, source.Fly, source.Hover, source.Burrow)
+      Speeds = new SpeedsModel(source.Walk, source.Climb, source.Swim, source.Fly, source.Hover, source.Burrow),
+      Size = new SizeModel(source.SizeCategory, source.Height ?? string.Empty) // TODO(fpion): implement
     };
 
     if (source.Parent is not null)

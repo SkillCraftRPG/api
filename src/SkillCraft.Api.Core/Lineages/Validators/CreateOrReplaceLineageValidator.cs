@@ -12,5 +12,6 @@ internal class CreateOrReplaceLineageValidator : AbstractValidator<CreateOrRepla
     When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
 
     RuleFor(x => x.Speeds).SetValidator(new SpeedsValidator());
+    RuleFor(x => x.Size).SetValidator(new SizeValidator());
   }
 }

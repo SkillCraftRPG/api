@@ -1,4 +1,4 @@
-﻿namespace SkillCraft.Api.Contracts.Lineages;
+namespace SkillCraft.Api.Contracts.Lineages;
 
 public record UpdateLineagePayload
 {
@@ -7,4 +7,5 @@ public record UpdateLineagePayload
   public Update<string>? Description { get; set; }
 
   public SpeedsModel? Speeds { get; set; }
+  public SizeModel? Size { get; set; }
 }
