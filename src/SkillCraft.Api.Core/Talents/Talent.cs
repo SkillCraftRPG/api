@@ -125,7 +125,7 @@ public class Talent : AggregateRoot, IEntityProvider
     {
       if (requiredTalent is not null && requiredTalent.Tier.Value > Tier.Value)
       {
-        throw new ArgumentException("", nameof(requiredTalent)); // TODO(fpion): message
+        throw new ArgumentException("The required talent tier must be lower than or equal to the requiring talent tier.", nameof(requiredTalent));
       }
       RequiredTalentId = requiredTalent?.Id;
       _updated.RequiredTalentId = new Change<TalentId?>(requiredTalent?.Id);
