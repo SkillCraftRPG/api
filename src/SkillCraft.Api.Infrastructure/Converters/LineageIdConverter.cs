@@ -1,6 +1,4 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using SkillCraft.Api.Core.Lineages;
+﻿using SkillCraft.Api.Core.Lineages;
 
 namespace SkillCraft.Api.Infrastructure.Converters;
 
