@@ -64,9 +64,16 @@ public class Lineage : AggregateRoot, IEntityProvider
   public Lineage(WorldId worldId, Name name, Lineage? parent, UserId userId, LineageId? lineageId = null)
     : base((lineageId ?? LineageId.NewId(worldId)).StreamId)
   {
-    if (parent?.ParentId is not null)
+    if (parent is not null)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      if (parent.WorldId != worldId)
+      {
+        throw new NotImplementedException(); // TODO(fpion): implement
+      }
+      else if (parent.ParentId.HasValue)
+      {
+        throw new NotImplementedException(); // TODO(fpion): implement
+      }
     }
 
     Raise(new LineageCreated(parent?.Id, name), userId.ActorId);
