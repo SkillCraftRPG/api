@@ -2,6 +2,7 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Parties;
+using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Permissions;
@@ -46,7 +47,7 @@ internal class PermissionService : IPermissionService
       isAllowed = (entity?.Kind) switch
       {
         null => await IsAllowedAsync(action, cancellationToken),
-        Caste.EntityKind or Customization.EntityKind or Education.EntityKind or Party.EntityKind => IsAllowed(action, entity),
+        Caste.EntityKind or Customization.EntityKind or Education.EntityKind or Party.EntityKind or Script.EntityKind => IsAllowed(action, entity),
         _ => throw new NotSupportedException($"The entity kind '{entity.Kind}' is not supported."),
       };
     }
@@ -61,7 +62,7 @@ internal class PermissionService : IPermissionService
 
   private async Task<bool> IsAllowedAsync(string action, CancellationToken cancellationToken) => action switch
   {
-    Actions.CreateCaste or Actions.CreateCustomization or Actions.CreateEducation or Actions.CreateParty => _context.IsWorldOwner,
+    Actions.CreateCaste or Actions.CreateCustomization or Actions.CreateEducation or Actions.CreateParty or Actions.CreateScript => _context.IsWorldOwner,
     Actions.CreateWorld => await CanCreateWorldAsync(cancellationToken),
     _ => false,
   };
