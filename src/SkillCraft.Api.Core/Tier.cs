@@ -4,8 +4,8 @@ namespace SkillCraft.Api.Core;
 
 public record Tier
 {
-  public const int Minimum = 0;
-  public const int Maximum = 3;
+  public const int MinimumValue = 0;
+  public const int MaximumValue = 3;
 
   public int Value { get; }
 

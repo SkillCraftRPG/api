@@ -31,7 +31,7 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, int> Tier<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(Core.Tier.Minimum, Core.Tier.Maximum);
+    return ruleBuilder.InclusiveBetween(Core.Tier.MinimumValue, Core.Tier.MaximumValue);
   }
 
   public static IRuleBuilderOptions<T, int> WealthMultiplier<T>(this IRuleBuilder<T, int> ruleBuilder)
