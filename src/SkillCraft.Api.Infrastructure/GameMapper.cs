@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -6,6 +6,7 @@ using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Contracts.Educations;
+using SkillCraft.Api.Contracts.Languages;
 using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Contracts.Scripts;
 using SkillCraft.Api.Contracts.Worlds;
@@ -91,6 +92,31 @@ internal class GameMapper
       Summary = source.Summary,
       Description = source.Description
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LanguageModel ToLanguage(LanguageEntity source)
+  {
+    LanguageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      TypicalSpeakers = source.TypicalSpeakers
+    };
+
+    if (source.Script is not null)
+    {
+      destination.Script = ToScript(source.Script);
+    }
+    else if (source.ScriptId.HasValue)
+    {
+      throw new ArgumentException("The script is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Primitives;
 using SkillCraft.Api.Contracts.Worlds;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Extensions;
 
@@ -35,7 +36,7 @@ internal class ResolveWorld
         }
         if (world is null)
         {
-          throw new WorldNotFoundException(id, Header);
+          throw new EntityNotFoundException(new Entity(World.EntityKind, id), Header);
         }
         context.SetWorld(world);
       }

@@ -17,6 +17,7 @@ internal class WorldEntity : AggregateEntity
   public List<CasteEntity> Castes { get; private set; } = [];
   public List<CustomizationEntity> Customizations { get; private set; } = [];
   public List<EducationEntity> Educations { get; private set; } = [];
+  public List<LanguageEntity> Languages { get; private set; } = [];
   public List<PartyEntity> Parties { get; private set; } = [];
   public List<ScriptEntity> Scripts { get; private set; } = [];
   public StorageSummaryEntity? StorageSummary { get; private set; }

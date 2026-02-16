@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Parties;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Storages;
@@ -39,6 +40,7 @@ public static class DependencyInjectionExtensions
     CasteEvents.Register(services);
     CustomizationEvents.Register(services);
     EducationEvents.Register(services);
+    LanguageEvents.Register(services);
     PartyEvents.Register(services);
     ScriptEvents.Register(services);
     StorageEvents.Register(services);
@@ -52,6 +54,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<ICasteQuerier, CasteQuerier>()
       .AddTransient<ICustomizationQuerier, CustomizationQuerier>()
       .AddTransient<IEducationQuerier, EducationQuerier>()
+      .AddTransient<ILanguageQuerier, LanguageQuerier>()
       .AddTransient<IPartyQuerier, PartyQuerier>()
       .AddTransient<IScriptQuerier, ScriptQuerier>()
       .AddTransient<IStorageQuerier, StorageQuerier>()
@@ -64,6 +67,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<ICasteRepository, CasteRepository>()
       .AddTransient<ICustomizationRepository, CustomizationRepository>()
       .AddTransient<IEducationRepository, EducationRepository>()
+      .AddTransient<ILanguageRepository, LanguageRepository>()
       .AddTransient<IPartyRepository, PartyRepository>()
       .AddTransient<IScriptRepository, ScriptRepository>()
       .AddTransient<IStorageRepository, StorageRepository>()
