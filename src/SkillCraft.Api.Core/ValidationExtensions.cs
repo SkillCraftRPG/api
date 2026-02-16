@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace SkillCraft.Api.Core;
 
@@ -16,7 +16,7 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, string> Roll<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
-    return ruleBuilder.NotEmpty().MaximumLength(Core.Roll.MaximumLength); // TODO(fpion): RegExp
+    return ruleBuilder.NotEmpty().MaximumLength(Core.Roll.MaximumLength).Matches(Core.Roll.Pattern);
   }
 
   public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)
