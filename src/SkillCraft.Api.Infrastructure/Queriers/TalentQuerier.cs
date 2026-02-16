@@ -3,6 +3,7 @@ using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Talents;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
@@ -54,6 +55,38 @@ internal class TalentQuerier : ITalentQuerier
     IQueryBuilder builder = _sqlHelper.Query(GameDb.Talents.Table).SelectAll(GameDb.Talents.Table)
       .ApplyIdFilter(GameDb.Talents.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Talents.Name, GameDb.Talents.Summary);
+
+    if (payload.Tiers.Count > 0)
+    {
+      object[] tiers = payload.Tiers.Distinct().Select(tier => (object)tier).ToArray();
+      builder.Where(GameDb.Talents.Tier, Operators.IsIn(tiers));
+    }
+    if (!string.IsNullOrWhiteSpace(payload.Skill))
+    {
+      string skill = payload.Skill.Trim();
+      if (Enum.TryParse(skill, out GameSkill skillValue))
+      {
+        builder.Where(GameDb.Talents.Skill, Operators.IsEqualTo(skillValue.ToString()));
+      }
+      else if (skill.Equals("any", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Talents.Skill, Operators.IsNotNull());
+      }
+      else if (skill.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Talents.Skill, Operators.IsNull());
+      }
+    }
+    if (payload.AllowMultiplePurchases.HasValue)
+    {
+      builder.Where(GameDb.Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
+    }
+    if (payload.RequiredTalent is not null)
+    {
+      builder.Where(GameDb.Talents.RequiredTalentUid, payload.RequiredTalent.Id.HasValue
+        ? Operators.IsEqualTo(payload.RequiredTalent.Id.Value)
+        : Operators.IsNull());
+    }
 
     IQueryable<TalentEntity> query = _talents.FromQuery(builder).AsNoTracking()
       .WhereWorld(_context.WorldId)

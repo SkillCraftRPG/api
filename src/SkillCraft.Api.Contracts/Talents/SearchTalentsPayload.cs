@@ -4,10 +4,10 @@ namespace SkillCraft.Api.Contracts.Talents;
 
 public record SearchTalentsPayload : SearchPayload
 {
-  // TODO(fpion): Tier
+  public List<int> Tiers { get; set; } = [];
   public bool? AllowMultiplePurchases { get; set; }
-  // TODO(fpion): Skill
-  // TODO(fpion): RequiredTalent
+  public string? Skill { get; set; }
+  public EntityFilter? RequiredTalent { get; set; }
 
   public new List<TalentSortOption> Sort { get; set; } = [];
 }
