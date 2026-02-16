@@ -8,6 +8,7 @@ using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Parties;
 using SkillCraft.Api.Core.Scripts;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
@@ -43,6 +44,7 @@ public static class DependencyInjectionExtensions
     LanguageEvents.Register(services);
     PartyEvents.Register(services);
     ScriptEvents.Register(services);
+    TalentEvents.Register(services);
     StorageEvents.Register(services);
     WorldEvents.Register(services);
     return services;
@@ -57,6 +59,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<ILanguageQuerier, LanguageQuerier>()
       .AddTransient<IPartyQuerier, PartyQuerier>()
       .AddTransient<IScriptQuerier, ScriptQuerier>()
+      .AddTransient<ITalentQuerier, TalentQuerier>()
       .AddTransient<IStorageQuerier, StorageQuerier>()
       .AddTransient<IWorldQuerier, WorldQuerier>();
   }
@@ -70,6 +73,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<ILanguageRepository, LanguageRepository>()
       .AddTransient<IPartyRepository, PartyRepository>()
       .AddTransient<IScriptRepository, ScriptRepository>()
+      .AddTransient<ITalentRepository, TalentRepository>()
       .AddTransient<IStorageRepository, StorageRepository>()
       .AddTransient<IWorldRepository, WorldRepository>();
   }
