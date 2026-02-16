@@ -1,6 +1,5 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Mvc;
-using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Languages;
 
 namespace SkillCraft.Api.Models.Parameters;
@@ -12,21 +11,11 @@ public record SearchLanguagesParameters : SearchParameters
 
   public virtual SearchLanguagesPayload ToPayload()
   {
-    SearchLanguagesPayload payload = new();
-    Fill(payload);
-
-    if (!string.IsNullOrWhiteSpace(Script))
+    SearchLanguagesPayload payload = new()
     {
-      string script = Script.Trim();
-      if (script.Equals("null", StringComparison.InvariantCultureIgnoreCase))
-      {
-        payload.Script = new EntityFilter(null);
-      }
-      else if (Guid.TryParse(script, out Guid id))
-      {
-        payload.Script = new EntityFilter(id);
-      }
-    }
+      Script = Script
+    };
+    Fill(payload);
 
     foreach (SortOption item in ((SearchPayload)payload).Sort)
     {

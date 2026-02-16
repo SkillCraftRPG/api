@@ -137,7 +137,7 @@ public class CasteIntegrationTests : IntegrationTests
 
     SearchCastesPayload payload = new()
     {
-      Skill = GameSkill.Performance,
+      Skill = GameSkill.Performance.ToString(),
       Skip = 1,
       Limit = 1
     };

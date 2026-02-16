@@ -3,6 +3,7 @@ using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Castes;
@@ -53,9 +54,21 @@ internal class CasteQuerier : ICasteQuerier
       .ApplyIdFilter(GameDb.Castes.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Castes.Name, GameDb.Castes.Summary, GameDb.Castes.FeatureName);
 
-    if (payload.Skill.HasValue)
+    if (!string.IsNullOrWhiteSpace(payload.Skill))
     {
-      builder.Where(GameDb.Castes.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
+      string skill = payload.Skill.Trim();
+      if (Enum.TryParse(skill, out GameSkill skillValue))
+      {
+        builder.Where(GameDb.Castes.Skill, Operators.IsEqualTo(skillValue.ToString()));
+      }
+      else if (skill.Equals("any", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Castes.Skill, Operators.IsNotNull());
+      }
+      else if (skill.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Castes.Skill, Operators.IsNull());
+      }
     }
 
     IQueryable<CasteEntity> query = _castes.FromQuery(builder).AsNoTracking()

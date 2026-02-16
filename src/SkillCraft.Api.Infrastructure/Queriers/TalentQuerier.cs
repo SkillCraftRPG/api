@@ -61,6 +61,10 @@ internal class TalentQuerier : ITalentQuerier
       object[] tiers = payload.Tiers.Distinct().Select(tier => (object)tier).ToArray();
       builder.Where(GameDb.Talents.Tier, Operators.IsIn(tiers));
     }
+    if (payload.AllowMultiplePurchases.HasValue)
+    {
+      builder.Where(GameDb.Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
+    }
     if (!string.IsNullOrWhiteSpace(payload.Skill))
     {
       string skill = payload.Skill.Trim();
@@ -77,15 +81,21 @@ internal class TalentQuerier : ITalentQuerier
         builder.Where(GameDb.Talents.Skill, Operators.IsNull());
       }
     }
-    if (payload.AllowMultiplePurchases.HasValue)
-    {
-      builder.Where(GameDb.Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
-    }
     if (payload.RequiredTalent is not null)
     {
-      builder.Where(GameDb.Talents.RequiredTalentUid, payload.RequiredTalent.Id.HasValue
-        ? Operators.IsEqualTo(payload.RequiredTalent.Id.Value)
-        : Operators.IsNull());
+      string requiredTalent = payload.RequiredTalent.Trim();
+      if (Guid.TryParse(requiredTalent, out Guid id))
+      {
+        builder.Where(GameDb.Talents.RequiredTalentUid, Operators.IsEqualTo(id));
+      }
+      else if (requiredTalent.Equals("any", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Talents.RequiredTalentId, Operators.IsNotNull());
+      }
+      else if (requiredTalent.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Talents.RequiredTalentId, Operators.IsNull());
+      }
     }
 
     IQueryable<TalentEntity> query = _talents.FromQuery(builder).AsNoTracking()

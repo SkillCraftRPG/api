@@ -137,7 +137,7 @@ public class EducationIntegrationTests : IntegrationTests
 
     SearchEducationsPayload payload = new()
     {
-      Skill = GameSkill.Knowledge,
+      Skill = GameSkill.Knowledge.ToString(),
       Skip = 1,
       Limit = 1
     };

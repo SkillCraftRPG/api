@@ -152,6 +152,133 @@ public class TalentIntegrationTests : IntegrationTests
     Assert.Equal(discipline.EntityId, result.Id);
   }
 
+  [Theory(DisplayName = "It should return the correct search results (AllowMultiplePurchases).")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_AllowMultiplePurchases_When_Search_Then_Results(bool allowMultiplePurchases)
+  {
+    Talent competence = new(World, new Tier(0), new Name("Compétence"), UserId);
+    competence.AllowMultiplePurchases = true;
+    competence.Update(UserId);
+    await _talentRepository.SaveAsync(competence);
+
+    SearchTalentsPayload payload = new()
+    {
+      AllowMultiplePurchases = allowMultiplePurchases
+    };
+    SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
+
+    if (allowMultiplePurchases)
+    {
+      Assert.Equal(1, results.Total);
+
+      TalentModel result = Assert.Single(results.Items);
+      Assert.Equal(competence.EntityId, result.Id);
+    }
+    else
+    {
+      Assert.Equal(2, results.Total);
+      Assert.All(results.Items, talent => Assert.NotEqual(competence.EntityId, talent.Id));
+    }
+  }
+
+  [Theory(DisplayName = "It should return the correct search results (Skill).")]
+  [InlineData("AnY")]
+  [InlineData("  none  ")]
+  [InlineData("Melee")]
+  public async Task Given_Skill_When_Search_Then_Results(string skill)
+  {
+    Talent acrobaties = new(World, new Tier(0), new Name("Acrobaties"), UserId);
+    acrobaties.Skill = GameSkill.Acrobatics;
+    acrobaties.Update(UserId);
+    await _talentRepository.SaveAsync([acrobaties]);
+
+    SearchTalentsPayload payload = new()
+    {
+      Skill = skill
+    };
+    SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
+
+    if (Enum.TryParse(skill, out GameSkill skillValue))
+    {
+      Assert.Equal(1, results.Total);
+
+      TalentModel result = Assert.Single(results.Items);
+      Assert.Equal(skillValue, result.Skill);
+    }
+    if (skill.Trim().Equals("any", StringComparison.InvariantCultureIgnoreCase))
+    {
+      Assert.Equal(2, results.Total);
+      Assert.All(results.Items, talent => Assert.NotNull(talent.Skill));
+    }
+    else if (skill.Trim().Equals("none", StringComparison.InvariantCultureIgnoreCase))
+    {
+      Assert.Equal(1, results.Total);
+
+      TalentModel result = Assert.Single(results.Items);
+      Assert.Null(result.Skill);
+    }
+  }
+
+  [Theory(DisplayName = "It should return the correct search results (RequiredTalent).")]
+  [InlineData("AnY")]
+  [InlineData("  none  ")]
+  [InlineData("Formation martiale")]
+  public async Task Given_RequiredTalent_When_Search_Then_Results(string requiredTalent)
+  {
+    _talent.Name = new Name("Formation martiale");
+    _talent.SetRequiredTalent(_melee);
+    _talent.Update(UserId);
+    Talent manoeuvresDeCombat = new(World, new Tier(1), new Name("Manœuvres de combat"), UserId);
+    manoeuvresDeCombat.SetRequiredTalent(_talent);
+    manoeuvresDeCombat.Update(UserId);
+    await _talentRepository.SaveAsync([_talent, manoeuvresDeCombat]);
+
+    SearchTalentsPayload payload = new()
+    {
+      RequiredTalent = requiredTalent == _talent.Name.Value ? _talent.EntityId.ToString() : requiredTalent
+    };
+    SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
+
+    if (requiredTalent.Trim().Equals("any", StringComparison.InvariantCultureIgnoreCase))
+    {
+      Assert.Equal(2, results.Total);
+      Assert.All(results.Items, talent => Assert.NotNull(talent.RequiredTalent));
+    }
+    else if (requiredTalent.Trim().Equals("none", StringComparison.InvariantCultureIgnoreCase))
+    {
+      Assert.Equal(1, results.Total);
+
+      TalentModel result = Assert.Single(results.Items);
+      Assert.Null(result.RequiredTalent);
+    }
+    else
+    {
+      Assert.Equal(1, results.Total);
+
+      TalentModel result = Assert.Single(results.Items);
+      Assert.Equal(requiredTalent.Trim(), result.RequiredTalent?.Name, ignoreCase: true);
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (Tiers).")]
+  public async Task Given_Tiers_When_Search_Then_Results()
+  {
+    Talent manoeuvresDeCombat = new(World, new Tier(1), new Name("Manœuvres de combat"), UserId);
+    Talent poigneDeFer = new(World, new Tier(1), new Name("Poigne de fer"), UserId);
+    await _talentRepository.SaveAsync([manoeuvresDeCombat, poigneDeFer]);
+
+    SearchTalentsPayload payload = new()
+    {
+      Tiers = [1, 2, 3]
+    };
+    SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
+
+    Assert.Equal(2, results.Total);
+    Assert.Contains(results.Items, talent => talent.Id == manoeuvresDeCombat.EntityId);
+    Assert.Contains(results.Items, talent => talent.Id == poigneDeFer.EntityId);
+  }
+
   [Fact(DisplayName = "It should update an existing talent.")]
   public async Task Given_Exists_When_Update_ThenUpdated()
   {

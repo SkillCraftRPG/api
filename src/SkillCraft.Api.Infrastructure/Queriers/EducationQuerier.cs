@@ -1,8 +1,9 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Educations;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Educations;
@@ -53,9 +54,21 @@ internal class EducationQuerier : IEducationQuerier
       .ApplyIdFilter(GameDb.Educations.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Educations.Name, GameDb.Educations.Summary, GameDb.Educations.FeatureName);
 
-    if (payload.Skill.HasValue)
+    if (!string.IsNullOrWhiteSpace(payload.Skill))
     {
-      builder.Where(GameDb.Educations.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
+      string skill = payload.Skill.Trim();
+      if (Enum.TryParse(skill, out GameSkill skillValue))
+      {
+        builder.Where(GameDb.Educations.Skill, Operators.IsEqualTo(skillValue.ToString()));
+      }
+      else if (skill.Equals("any", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Educations.Skill, Operators.IsNotNull());
+      }
+      else if (skill.Equals("none", StringComparison.InvariantCultureIgnoreCase))
+      {
+        builder.Where(GameDb.Educations.Skill, Operators.IsNull());
+      }
     }
 
     IQueryable<EducationEntity> query = _educations.FromQuery(builder).AsNoTracking()

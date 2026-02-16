@@ -138,7 +138,7 @@ public class LanguageIntegrationTests : IntegrationTests
 
     SearchLanguagesPayload payload = new()
     {
-      Script = new EntityFilter(_renon.EntityId),
+      Script = _renon.EntityId.ToString(),
       Skip = 1,
       Limit = 1
     };

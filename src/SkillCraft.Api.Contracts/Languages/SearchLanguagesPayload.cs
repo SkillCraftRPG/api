@@ -4,7 +4,7 @@ namespace SkillCraft.Api.Contracts.Languages;
 
 public record SearchLanguagesPayload : SearchPayload
 {
-  public EntityFilter? Script { get; set; }
+  public string? Script { get; set; }
 
   public new List<LanguageSortOption> Sort { get; set; } = [];
 }

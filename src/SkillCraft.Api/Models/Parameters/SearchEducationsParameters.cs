@@ -1,6 +1,5 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Mvc;
-using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Educations;
 
 namespace SkillCraft.Api.Models.Parameters;
@@ -8,7 +7,7 @@ namespace SkillCraft.Api.Models.Parameters;
 public record SearchEducationsParameters : SearchParameters
 {
   [FromQuery(Name = "skill")]
-  public GameSkill? Skill { get; set; }
+  public string? Skill { get; set; }
 
   public virtual SearchEducationsPayload ToPayload()
   {

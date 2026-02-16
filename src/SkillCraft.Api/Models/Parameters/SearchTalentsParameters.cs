@@ -1,6 +1,5 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Mvc;
-using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Talents;
 
 namespace SkillCraft.Api.Models.Parameters;
@@ -24,23 +23,11 @@ public record SearchTalentsParameters : SearchParameters
     SearchTalentsPayload payload = new()
     {
       AllowMultiplePurchases = AllowMultiplePurchases,
-      Skill = Skill
+      Skill = Skill,
+      RequiredTalent = RequiredTalent
     };
     payload.Tiers.AddRange(Tiers);
     Fill(payload);
-
-    if (!string.IsNullOrWhiteSpace(RequiredTalent))
-    {
-      string requiredTalent = RequiredTalent.Trim();
-      if (requiredTalent.Equals("null", StringComparison.InvariantCultureIgnoreCase))
-      {
-        payload.RequiredTalent = new EntityFilter(null);
-      }
-      else if (Guid.TryParse(requiredTalent, out Guid id))
-      {
-        payload.RequiredTalent = new EntityFilter(id);
-      }
-    }
 
     foreach (SortOption item in ((SearchPayload)payload).Sort)
     {
