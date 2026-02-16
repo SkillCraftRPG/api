@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages;
@@ -34,6 +34,12 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
 
   public SizeCategory SizeCategory { get; private set; }
   public string? Height { get; private set; }
+
+  public string? Malnutrition { get; private set; }
+  public string? Skinny { get; private set; }
+  public string? Normal { get; private set; }
+  public string? Overweight { get; private set; }
+  public string? Obese { get; private set; }
 
   public LineageEntity(WorldEntity world, LineageEntity? parent, LineageCreated @event) : base(@event)
   {
@@ -94,6 +100,14 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     {
       SizeCategory = @event.Size.Category;
       Height = @event.Size.Height.Value;
+    }
+    if (@event.Weight is not null)
+    {
+      Malnutrition = @event.Weight.Malnutrition?.Value;
+      Skinny = @event.Weight.Skinny?.Value;
+      Normal = @event.Weight.Normal?.Value;
+      Overweight = @event.Weight.Overweight?.Value;
+      Obese = @event.Weight.Obese?.Value;
     }
   }
 

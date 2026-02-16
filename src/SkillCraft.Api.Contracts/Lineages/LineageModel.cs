@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts;
+using Krakenar.Contracts;
 
 namespace SkillCraft.Api.Contracts.Lineages;
 
@@ -10,6 +10,7 @@ public class LineageModel : Aggregate
 
   public SpeedsModel Speeds { get; set; } = new();
   public SizeModel Size { get; set; } = new();
+  public WeightModel Weight { get; set; } = new();
 
   public LineageModel? Parent { get; set; }
   public List<LineageModel> Children { get; set; } = [];

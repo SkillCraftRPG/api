@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillCraft.Api.Contracts.Lineages;
@@ -27,6 +27,11 @@ internal class LineageConfiguration : AggregateConfiguration<LineageEntity>, IEn
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
     builder.Property(x => x.SizeCategory).HasMaxLength(10).HasConversion(new EnumToStringConverter<SizeCategory>());
     builder.Property(x => x.Height).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Malnutrition).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Skinny).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Normal).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Overweight).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Obese).HasMaxLength(Roll.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Lineages).OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Parent).WithMany(x => x.Children)

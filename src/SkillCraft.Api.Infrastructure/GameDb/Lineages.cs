@@ -1,4 +1,4 @@
-﻿using Logitar.Data;
+using Logitar.Data;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.GameDb;
@@ -22,8 +22,13 @@ internal static class Lineages
   public static readonly ColumnId Hover = new(nameof(LineageEntity.Hover), Table);
   public static readonly ColumnId Id = new(nameof(LineageEntity.Id), Table);
   public static readonly ColumnId LineageId = new(nameof(LineageEntity.LineageId), Table);
+  public static readonly ColumnId Malnutrition = new(nameof(LineageEntity.Malnutrition), Table);
   public static readonly ColumnId Name = new(nameof(LineageEntity.Name), Table);
+  public static readonly ColumnId Normal = new(nameof(LineageEntity.Normal), Table);
+  public static readonly ColumnId Obese = new(nameof(LineageEntity.Obese), Table);
+  public static readonly ColumnId Overweight = new(nameof(LineageEntity.Overweight), Table);
   public static readonly ColumnId ParentId = new(nameof(LineageEntity.ParentId), Table);
+  public static readonly ColumnId Skinny = new(nameof(LineageEntity.Skinny), Table);
   public static readonly ColumnId ParentUid = new(nameof(LineageEntity.ParentUid), Table);
   public static readonly ColumnId SizeCategory = new(nameof(LineageEntity.SizeCategory), Table);
   public static readonly ColumnId Summary = new(nameof(LineageEntity.Summary), Table);

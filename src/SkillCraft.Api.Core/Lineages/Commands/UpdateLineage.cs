@@ -65,6 +65,15 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     {
       lineage.Size = new Size(payload.Size.Category, new Roll(payload.Size.Height));
     }
+    if (payload.Weight is not null)
+    {
+      lineage.Weight = new Weight(
+        Roll.TryCreate(payload.Weight.Malnutrition),
+        Roll.TryCreate(payload.Weight.Skinny),
+        Roll.TryCreate(payload.Weight.Normal),
+        Roll.TryCreate(payload.Weight.Overweight),
+        Roll.TryCreate(payload.Weight.Obese));
+    }
 
     lineage.Update(_context.UserId);
 

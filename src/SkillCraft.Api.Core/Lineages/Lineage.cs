@@ -1,7 +1,6 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Logitar.EventSourcing;
-using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -13,7 +12,7 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   private LineageUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Speeds is not null || _updated.Size is not null;
+    || _updated.Speeds is not null || _updated.Size is not null || _updated.Weight is not null;
 
   public new LineageId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -74,7 +73,6 @@ public class Lineage : AggregateRoot, IEntityProvider
       }
     }
   }
-
   private Size? _size = null;
   public Size? Size
   {
@@ -85,6 +83,19 @@ public class Lineage : AggregateRoot, IEntityProvider
       {
         _size = value;
         _updated.Size = value;
+      }
+    }
+  }
+  private Weight? _weight = null;
+  public Weight? Weight
+  {
+    get => _weight;
+    set
+    {
+      if (_weight != value)
+      {
+        _weight = value;
+        _updated.Weight = value;
       }
     }
   }
@@ -171,6 +182,10 @@ public class Lineage : AggregateRoot, IEntityProvider
     if (@event.Size is not null)
     {
       _size = @event.Size;
+    }
+    if (@event.Weight is not null)
+    {
+      _weight = @event.Weight;
     }
   }
 

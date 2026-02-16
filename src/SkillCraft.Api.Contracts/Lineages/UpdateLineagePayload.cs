@@ -8,4 +8,5 @@ public record UpdateLineagePayload
 
   public SpeedsModel? Speeds { get; set; }
   public SizeModel? Size { get; set; }
+  public WeightModel? Weight { get; set; }
 }
