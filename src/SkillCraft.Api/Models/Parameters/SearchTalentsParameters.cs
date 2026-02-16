@@ -1,13 +1,26 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Contracts.Talents;
 
 namespace SkillCraft.Api.Models.Parameters;
 
 public record SearchTalentsParameters : SearchParameters
 {
+  // TODO(fpion): Tier
+
+  [FromQuery(Name = "multiple")]
+  public bool? AllowMultiplePurchases { get; set; }
+
+  // TODO(fpion): Skill
+
+  // TODO(fpion): RequiredTalent
+
   public virtual SearchTalentsPayload ToPayload()
   {
-    SearchTalentsPayload payload = new();
+    SearchTalentsPayload payload = new()
+    {
+      AllowMultiplePurchases = AllowMultiplePurchases
+    };
     Fill(payload);
 
     foreach (SortOption item in ((SearchPayload)payload).Sort)
