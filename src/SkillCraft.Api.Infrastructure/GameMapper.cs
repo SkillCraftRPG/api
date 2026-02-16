@@ -105,7 +105,8 @@ internal class GameMapper
       Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
-      Description = source.Description
+      Description = source.Description,
+      TypicalSpeakers = source.TypicalSpeakers
     };
 
     MapAggregate(source, destination);

@@ -19,6 +19,7 @@ internal static class Languages
   public static readonly ColumnId LanguageId = new(nameof(LanguageEntity.LanguageId), Table);
   public static readonly ColumnId Name = new(nameof(LanguageEntity.Name), Table);
   public static readonly ColumnId Summary = new(nameof(LanguageEntity.Summary), Table);
+  public static readonly ColumnId TypicalSpeakers = new(nameof(LanguageEntity.TypicalSpeakers), Table);
   public static readonly ColumnId WorldId = new(nameof(LanguageEntity.WorldId), Table);
   public static readonly ColumnId WorldUid = new(nameof(LanguageEntity.WorldUid), Table);
 }

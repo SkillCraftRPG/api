@@ -1,8 +1,8 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Languages;
-using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Languages.Validators;
+using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
 
 namespace SkillCraft.Api.Core.Languages.Commands;
@@ -55,6 +55,15 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     if (payload.Description is not null)
     {
       language.Description = Description.TryCreate(payload.Description.Value);
+    }
+
+    if (payload.ScriptId is not null)
+    {
+      // TODO(fpion): implement
+    }
+    if (payload.TypicalSpeakers is not null)
+    {
+      language.TypicalSpeakers = TypicalSpeakers.TryCreate(payload.TypicalSpeakers.Value);
     }
 
     language.Update(_context.UserId);

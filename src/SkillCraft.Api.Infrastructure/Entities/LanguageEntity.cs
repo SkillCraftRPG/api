@@ -1,4 +1,4 @@
-using SkillCraft.Api.Core.Languages;
+﻿using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -16,6 +16,8 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
+
+  public string? TypicalSpeakers { get; private set; }
 
   public LanguageEntity(WorldEntity world, LanguageCreated @event) : base(@event)
   {
@@ -47,6 +49,11 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
     if (@event.Description is not null)
     {
       Description = @event.Description.Value?.Value;
+    }
+
+    if (@event.TypicalSpeakers is not null)
+    {
+      TypicalSpeakers = @event.TypicalSpeakers.Value?.Value;
     }
   }
 

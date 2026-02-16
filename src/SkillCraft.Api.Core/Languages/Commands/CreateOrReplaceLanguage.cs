@@ -1,8 +1,8 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Languages;
-using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Languages.Validators;
+using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
 
@@ -67,6 +67,9 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
 
     language.Summary = Summary.TryCreate(payload.Summary);
     language.Description = Description.TryCreate(payload.Description);
+
+    // TODO(fpion): Script
+    language.TypicalSpeakers = TypicalSpeakers.TryCreate(payload.TypicalSpeakers);
 
     language.Update(userId);
 

@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -9,7 +9,7 @@ public class Language : AggregateRoot, IEntityProvider
   public const string EntityKind = "Language";
 
   private LanguageUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null || _updated.TypicalSpeakers is not null;
 
   public new LanguageId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -55,6 +55,20 @@ public class Language : AggregateRoot, IEntityProvider
     }
   }
 
+  private TypicalSpeakers? _typicalSpeakers = null;
+  public TypicalSpeakers? TypicalSpeakers
+  {
+    get => _typicalSpeakers;
+    set
+    {
+      if (_typicalSpeakers != value)
+      {
+        _typicalSpeakers = value;
+        _updated.TypicalSpeakers = new Change<TypicalSpeakers>(value);
+      }
+    }
+  }
+
   public Language() : base()
   {
   }
@@ -73,7 +87,7 @@ public class Language : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0);
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + (TypicalSpeakers?.Size ?? 0);
 
   public void Delete(UserId userId)
   {
@@ -106,6 +120,11 @@ public class Language : AggregateRoot, IEntityProvider
     if (@event.Description is not null)
     {
       _description = @event.Description.Value;
+    }
+
+    if (@event.TypicalSpeakers is not null)
+    {
+      _typicalSpeakers = @event.TypicalSpeakers.Value;
     }
   }
 
