@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Lineages;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages.Validators;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
@@ -14,6 +15,7 @@ internal record CreateOrReplaceLineageCommand(CreateOrReplaceLineagePayload Payl
 internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrReplaceLineageCommand, CreateOrReplaceLineageResult>
 {
   private readonly IContext _context;
+  private readonly ILanguageRepository _languageRepository;
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
@@ -21,12 +23,14 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
 
   public CreateOrReplaceLineageCommandHandler(
     IContext context,
+    ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService,
     IStorageService storageService)
   {
     _context = context;
+    _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
@@ -87,6 +91,8 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     lineage.Summary = Summary.TryCreate(payload.Summary);
     lineage.Description = Description.TryCreate(payload.Description);
 
+    await SetLanguagesAsync(lineage, payload, worldId, cancellationToken);
+
     lineage.Speeds = new Speeds(payload.Speeds);
     lineage.Size = new Size(payload.Size.Category, Roll.TryCreate(payload.Size.Height));
     lineage.Weight = new Weight(
@@ -106,5 +112,22 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
 
     LineageModel model = await _lineageQuerier.ReadAsync(lineage, cancellationToken);
     return new CreateOrReplaceLineageResult(model, created);
+  }
+
+  private async Task SetLanguagesAsync(Lineage lineage, CreateOrReplaceLineagePayload payload, WorldId worldId, CancellationToken cancellationToken)
+  {
+    IReadOnlyCollection<Language> languages = [];
+    if (payload.Languages.Ids.Count > 0)
+    {
+      HashSet<LanguageId> languageIds = payload.Languages.Ids.Select(entityId => new LanguageId(entityId, worldId)).ToHashSet();
+      languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
+
+      HashSet<LanguageId> missingIds = languageIds.Except(languages.Select(language => language.Id)).ToHashSet();
+      if (missingIds.Count > 0)
+      {
+        throw new NotImplementedException(); // TODO(fpion): 404 Not Found
+      }
+    }
+    lineage.Languages = new LineageLanguages(languages, payload.Languages.Extra, Description.TryCreate(payload.Languages.Text));
   }
 }

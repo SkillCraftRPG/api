@@ -12,6 +12,7 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   private LineageUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
+    || _updated.Languages is not null
     || _updated.Speeds is not null || _updated.Size is not null || _updated.Weight is not null || _updated.Age is not null;
 
   public new LineageId Id => new(base.Id);
@@ -56,6 +57,25 @@ public class Lineage : AggregateRoot, IEntityProvider
       {
         _description = value;
         _updated.Description = new Change<Description>(value);
+      }
+    }
+  }
+
+  private LineageLanguages _languages = new();
+  public LineageLanguages Languages
+  {
+    get => _languages;
+    set
+    {
+      if (_languages != value)
+      {
+        if (value.Ids.Any(languageId => languageId.WorldId != WorldId))
+        {
+          throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(Languages));
+        }
+
+        _languages = value;
+        _updated.Languages = value;
       }
     }
   }
@@ -186,6 +206,11 @@ public class Lineage : AggregateRoot, IEntityProvider
     if (@event.Description is not null)
     {
       _description = @event.Description.Value;
+    }
+
+    if (@event.Languages is not null)
+    {
+      _languages = @event.Languages;
     }
 
     if (@event.Speeds is not null)

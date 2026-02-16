@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Lineages;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages.Validators;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Lineages.Commands;
 
@@ -12,6 +14,7 @@ internal record UpdateLineageCommand(Guid Id, UpdateLineagePayload Payload) : IC
 internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageCommand, LineageModel?>
 {
   private readonly IContext _context;
+  private readonly ILanguageRepository _languageRepository;
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
@@ -19,12 +22,14 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
 
   public UpdateLineageCommandHandler(
     IContext context,
+    ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService,
     IStorageService storageService)
   {
     _context = context;
+    _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
@@ -36,7 +41,9 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     UpdateLineagePayload payload = command.Payload;
     new UpdateLineageValidator().ValidateAndThrow(payload);
 
-    LineageId lineageId = new(command.Id, _context.WorldId);
+    WorldId worldId = _context.WorldId;
+
+    LineageId lineageId = new(command.Id, worldId);
     Lineage? lineage = await _lineageRepository.LoadAsync(lineageId, cancellationToken);
     if (lineage is null)
     {
@@ -56,6 +63,8 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     {
       lineage.Description = Description.TryCreate(payload.Description.Value);
     }
+
+    await SetLanguagesAsync(lineage, payload, worldId, cancellationToken);
 
     if (payload.Speeds is not null)
     {
@@ -87,5 +96,25 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
       cancellationToken);
 
     return await _lineageQuerier.ReadAsync(lineage, cancellationToken);
+  }
+
+  private async Task SetLanguagesAsync(Lineage lineage, UpdateLineagePayload payload, WorldId worldId, CancellationToken cancellationToken)
+  {
+    if (payload.Languages is not null)
+    {
+      IReadOnlyCollection<Language> languages = [];
+      if (payload.Languages.Ids.Count > 0)
+      {
+        HashSet<LanguageId> languageIds = payload.Languages.Ids.Select(entityId => new LanguageId(entityId, worldId)).ToHashSet();
+        languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
+
+        HashSet<LanguageId> missingIds = languageIds.Except(languages.Select(language => language.Id)).ToHashSet();
+        if (missingIds.Count > 0)
+        {
+          throw new NotImplementedException(); // TODO(fpion): 404 Not Found
+        }
+      }
+      lineage.Languages = new LineageLanguages(languages, payload.Languages.Extra, Description.TryCreate(payload.Languages.Text));
+    }
   }
 }

@@ -18,10 +18,12 @@ internal static class Lineages
   public static readonly ColumnId Burrow = new(nameof(LineageEntity.Burrow), Table);
   public static readonly ColumnId Climb = new(nameof(LineageEntity.Climb), Table);
   public static readonly ColumnId Description = new(nameof(LineageEntity.Description), Table);
+  public static readonly ColumnId ExtraLanguages = new(nameof(LineageEntity.ExtraLanguages), Table);
   public static readonly ColumnId Fly = new(nameof(LineageEntity.Fly), Table);
   public static readonly ColumnId Height = new(nameof(LineageEntity.Height), Table);
   public static readonly ColumnId Hover = new(nameof(LineageEntity.Hover), Table);
   public static readonly ColumnId Id = new(nameof(LineageEntity.Id), Table);
+  public static readonly ColumnId LanguagesText = new(nameof(LineageEntity.LanguagesText), Table);
   public static readonly ColumnId LineageId = new(nameof(LineageEntity.LineageId), Table);
   public static readonly ColumnId Malnutrition = new(nameof(LineageEntity.Malnutrition), Table);
   public static readonly ColumnId Mature = new(nameof(LineageEntity.Mature), Table);

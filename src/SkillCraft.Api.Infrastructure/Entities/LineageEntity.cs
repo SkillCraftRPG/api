@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages;
@@ -24,6 +24,10 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
+
+  public List<LineageLanguageEntity> Languages { get; private set; } = [];
+  public int ExtraLanguages { get; private set; }
+  public string? LanguagesText { get; private set; }
 
   public int Walk { get; private set; }
   public int Climb { get; private set; }
@@ -65,12 +69,24 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   {
   }
 
+  public void AddLanguage(LanguageEntity language)
+  {
+    Languages.Add(new LineageLanguageEntity(this, language));
+  }
+
   public override IReadOnlyCollection<ActorId> GetActorIds()
   {
     HashSet<ActorId> actorIds = new(base.GetActorIds());
     if (Parent is not null)
     {
       actorIds.AddRange(Parent.GetActorIds());
+    }
+    foreach (LineageLanguageEntity entity in Languages)
+    {
+      if (entity.Language is not null)
+      {
+        actorIds.AddRange(entity.Language.GetActorIds());
+      }
     }
     return actorIds;
   }
@@ -90,6 +106,12 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     if (@event.Description is not null)
     {
       Description = @event.Description.Value?.Value;
+    }
+
+    if (@event.Languages is not null)
+    {
+      ExtraLanguages = @event.Languages.Extra;
+      LanguagesText = @event.Languages.Text?.Value;
     }
 
     if (@event.Speeds is not null)

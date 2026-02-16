@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
@@ -33,18 +33,20 @@ internal class LineageQuerier : ILineageQuerier
   public async Task<LineageModel?> ReadAsync(LineageId id, CancellationToken cancellationToken)
   {
     LineageEntity? lineage = await _lineages.AsNoTracking()
-      .Include(x => x.Parent)
       .WhereWorld(_context.WorldId)
       .Where(x => x.StreamId == id.Value)
+      .Include(x => x.Parent)
+      .Include(x => x.Languages).ThenInclude(x => x.Language).ThenInclude(x => x!.Script)
       .SingleOrDefaultAsync(cancellationToken);
     return lineage is null ? null : await MapAsync(lineage, cancellationToken);
   }
   public async Task<LineageModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     LineageEntity? lineage = await _lineages.AsNoTracking()
-      .Include(x => x.Parent)
       .WhereWorld(_context.WorldId)
       .Where(x => x.Id == id)
+      .Include(x => x.Parent)
+      .Include(x => x.Languages).ThenInclude(x => x.Language).ThenInclude(x => x!.Script)
       .SingleOrDefaultAsync(cancellationToken);
     return lineage is null ? null : await MapAsync(lineage, cancellationToken);
   }
@@ -56,8 +58,8 @@ internal class LineageQuerier : ILineageQuerier
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Lineages.Name, GameDb.Lineages.Summary);
 
     IQueryable<LineageEntity> query = _lineages.FromQuery(builder).AsNoTracking()
-      .Include(x => x.Parent)
-      .WhereWorld(_context.WorldId);
+      .WhereWorld(_context.WorldId)
+      .Include(x => x.Parent);
 
     long total = await query.LongCountAsync(cancellationToken);
 

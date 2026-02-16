@@ -1,4 +1,4 @@
-namespace SkillCraft.Api.Contracts.Lineages;
+﻿namespace SkillCraft.Api.Contracts.Lineages;
 
 public record CreateOrReplaceLineagePayload
 {
@@ -7,6 +7,8 @@ public record CreateOrReplaceLineagePayload
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
   public string? Description { get; set; }
+
+  public LanguagesPayload Languages { get; set; } = new();
 
   public SpeedsModel Speeds { get; set; } = new();
   public SizeModel Size { get; set; } = new();

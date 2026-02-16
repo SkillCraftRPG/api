@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -71,6 +71,28 @@ internal class GameMapper
     return destination;
   }
 
+  public EducationModel ToEducation(EducationEntity source)
+  {
+    EducationModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      Skill = source.Skill,
+      WealthMultiplier = source.WealthMultiplier
+    };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
   public LineageModel ToLineage(LineageEntity source)
   {
     LineageModel destination = new()
@@ -93,6 +115,14 @@ internal class GameMapper
     {
       throw new ArgumentException("The parent is required.", nameof(source));
     }
+
+    foreach (LineageLanguageEntity entity in source.Languages)
+    {
+      LanguageEntity language = entity.Language ?? throw new ArgumentException("The language is required.", nameof(source));
+      destination.Languages.Items.Add(ToLanguage(language));
+    }
+    destination.Languages.Extra = source.ExtraLanguages;
+    destination.Languages.Text = source.LanguagesText;
 
     MapAggregate(source, destination);
 
@@ -169,28 +199,6 @@ internal class GameMapper
     else if (source.ScriptId.HasValue)
     {
       throw new ArgumentException("The script is required.", nameof(source));
-    }
-
-    MapAggregate(source, destination);
-
-    return destination;
-  }
-
-  public EducationModel ToEducation(EducationEntity source)
-  {
-    EducationModel destination = new()
-    {
-      Id = source.Id,
-      Name = source.Name,
-      Summary = source.Summary,
-      Description = source.Description,
-      Skill = source.Skill,
-      WealthMultiplier = source.WealthMultiplier
-    };
-
-    if (source.FeatureName is not null)
-    {
-      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
     }
 
     MapAggregate(source, destination);
