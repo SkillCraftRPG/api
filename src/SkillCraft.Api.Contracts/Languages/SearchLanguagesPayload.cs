@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 
 namespace SkillCraft.Api.Contracts.Languages;
 

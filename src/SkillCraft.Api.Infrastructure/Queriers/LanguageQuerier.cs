@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
@@ -35,6 +35,7 @@ internal class LanguageQuerier : ILanguageQuerier
     LanguageEntity? language = await _languages.AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Where(x => x.StreamId == id.Value)
+      .Include(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
     return language is null ? null : await MapAsync(language, cancellationToken);
   }
@@ -43,6 +44,7 @@ internal class LanguageQuerier : ILanguageQuerier
     LanguageEntity? language = await _languages.AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Where(x => x.Id == id)
+      .Include(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
     return language is null ? null : await MapAsync(language, cancellationToken);
   }
@@ -54,7 +56,8 @@ internal class LanguageQuerier : ILanguageQuerier
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Languages.Name, GameDb.Languages.Summary);
 
     IQueryable<LanguageEntity> query = _languages.FromQuery(builder).AsNoTracking()
-      .WhereWorld(_context.WorldId);
+      .WhereWorld(_context.WorldId)
+      .Include(x => x.Script);
 
     long total = await query.LongCountAsync(cancellationToken);
 

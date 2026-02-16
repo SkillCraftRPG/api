@@ -1,4 +1,6 @@
-﻿using SkillCraft.Api.Core.Languages;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -36,6 +38,16 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
 
   private LanguageEntity() : base()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Script is not null)
+    {
+      actorIds.AddRange(Script.GetActorIds());
+    }
+    return actorIds;
   }
 
   public void Update(ScriptEntity? script, LanguageUpdated @event)

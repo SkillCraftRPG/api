@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -108,6 +108,15 @@ internal class GameMapper
       Description = source.Description,
       TypicalSpeakers = source.TypicalSpeakers
     };
+
+    if (source.Script is not null)
+    {
+      destination.Script = ToScript(source.Script);
+    }
+    else if (source.ScriptId.HasValue)
+    {
+      throw new ArgumentException("The script is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 
