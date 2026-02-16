@@ -19,7 +19,7 @@ public record SearchLanguagesParameters : SearchParameters
       string script = Script.Trim();
       if (script.Equals("null", StringComparison.InvariantCultureIgnoreCase))
       {
-        payload.Script = new ScriptFilter(Id: null);
+        payload.Script = new ScriptFilter(null);
       }
       else if (Guid.TryParse(script, out Guid id))
       {
