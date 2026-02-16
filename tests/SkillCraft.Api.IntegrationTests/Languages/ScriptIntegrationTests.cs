@@ -123,16 +123,26 @@ public class LanguageIntegrationTests : IntegrationTests
   public async Task Given_Payload_When_Search_Then_Results()
   {
     Language commun = new(World, new Name("Commun"), UserId);
+    commun.SetScript(_renon);
+    commun.Update(UserId);
+    Language harseme = new(World, new Name("Harsème"), UserId);
+    harseme.SetScript(_renon);
+    harseme.Update(UserId);
     Language imperial = new(World, new Name("Impérial"), UserId);
+    imperial.SetScript(_renon);
+    imperial.Update(UserId);
     Language wisgorne = new(World, new Name("Wisgorne"), UserId);
-    await _languageRepository.SaveAsync([commun, imperial, wisgorne]);
+    wisgorne.SetScript(_renon);
+    wisgorne.Update(UserId);
+    await _languageRepository.SaveAsync([commun, harseme, imperial, wisgorne]);
 
     SearchLanguagesPayload payload = new()
     {
+      Script = new ScriptFilter(_renon.EntityId),
       Skip = 1,
       Limit = 1
     };
-    payload.Ids.AddRange([commun.EntityId, imperial.EntityId, wisgorne.EntityId, Guid.Empty]);
+    payload.Ids.AddRange([_language.EntityId, commun.EntityId, imperial.EntityId, wisgorne.EntityId, Guid.Empty]);
     payload.Search.Operator = SearchOperator.Or;
     payload.Search.Terms.AddRange([new SearchTerm("Lang%"), new SearchTerm("%m%")]);
     payload.Sort.Add(new LanguageSortOption(LanguageSort.Name, isDescending: true));

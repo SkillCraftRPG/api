@@ -55,6 +55,11 @@ internal class LanguageQuerier : ILanguageQuerier
       .ApplyIdFilter(GameDb.Languages.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Languages.Name, GameDb.Languages.Summary);
 
+    if (payload.Script is not null)
+    {
+      builder.Where(GameDb.Languages.ScriptUid, payload.Script.Id.HasValue ? Operators.IsEqualTo(payload.Script.Id.Value) : Operators.IsNull());
+    }
+
     IQueryable<LanguageEntity> query = _languages.FromQuery(builder).AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Include(x => x.Script);

@@ -10,7 +10,8 @@ public class Language : AggregateRoot, IEntityProvider
   public const string EntityKind = "Language";
 
   private LanguageUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null || _updated.TypicalSpeakers is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
+    || _updated.ScriptId is not null || _updated.TypicalSpeakers is not null;
 
   public new LanguageId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
