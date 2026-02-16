@@ -8,6 +8,7 @@ public class LineageModel : Aggregate
   public string? Summary { get; set; }
   public string? Description { get; set; }
 
+  public List<FeatureModel> Features { get; set; } = [];
   public LanguagesModel Languages { get; set; } = new();
 
   public SpeedsModel Speeds { get; set; } = new();
