@@ -6,6 +6,7 @@ using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Contracts.Educations;
+using SkillCraft.Api.Contracts.Languages;
 using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Contracts.Scripts;
 using SkillCraft.Api.Contracts.Worlds;
@@ -85,6 +86,21 @@ internal class GameMapper
   public ScriptModel ToScript(ScriptEntity source)
   {
     ScriptModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LanguageModel ToLanguage(LanguageEntity source)
+  {
+    LanguageModel destination = new()
     {
       Id = source.Id,
       Name = source.Name,
