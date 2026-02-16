@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts;
+using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -7,6 +7,7 @@ using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Contracts.Educations;
 using SkillCraft.Api.Contracts.Parties;
+using SkillCraft.Api.Contracts.Scripts;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -73,6 +74,21 @@ internal class GameMapper
     {
       Id = source.Id,
       Name = source.Name,
+      Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ScriptModel ToScript(ScriptEntity source)
+  {
+    ScriptModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
       Description = source.Description
     };
 
