@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -14,6 +14,8 @@ public class Lineage : AggregateRoot, IEntityProvider
   public new LineageId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
+
+  public LineageId? ParentId { get; private set; }
 
   private Name? _name = null;
   public Name Name
@@ -59,17 +61,20 @@ public class Lineage : AggregateRoot, IEntityProvider
   {
   }
 
-  public Lineage(World world, Name name, UserId? userId = null, LineageId? lineageId = null)
-    : this(world.Id, name, userId ?? world.OwnerId, lineageId)
-  {
-  }
-  public Lineage(WorldId worldId, Name name, UserId userId, LineageId? lineageId = null)
+  public Lineage(WorldId worldId, Name name, Lineage? parent, UserId userId, LineageId? lineageId = null)
     : base((lineageId ?? LineageId.NewId(worldId)).StreamId)
   {
-    Raise(new LineageCreated(name), userId.ActorId);
+    if (parent?.ParentId is not null)
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
+
+    Raise(new LineageCreated(parent?.Id, name), userId.ActorId);
   }
   protected virtual void Handle(LineageCreated @event)
   {
+    ParentId = @event.ParentId;
+
     _name = @event.Name;
   }
 

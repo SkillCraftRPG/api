@@ -1,4 +1,5 @@
-using SkillCraft.Api.Contracts.Lineages;
+﻿using Logitar;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 
@@ -14,11 +15,16 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
 
   public Guid Id { get; private set; }
 
+  public LineageEntity? Parent { get; private set; }
+  public int? ParentId { get; private set; }
+  public Guid? ParentUid { get; private set; }
+  public List<LineageEntity> Children { get; private set; } = [];
+
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
 
-  public LineageEntity(WorldEntity world, LineageCreated @event) : base(@event)
+  public LineageEntity(WorldEntity world, LineageEntity? parent, LineageCreated @event) : base(@event)
   {
     Id = new LineageId(@event.StreamId).EntityId;
 
@@ -26,11 +32,25 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     WorldId = world.WorldId;
     WorldUid = world.Id;
 
+    Parent = parent;
+    ParentId = parent?.LineageId;
+    ParentUid = parent?.Id;
+
     Name = @event.Name.Value;
   }
 
   private LineageEntity() : base()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Parent is not null)
+    {
+      actorIds.AddRange(Parent.GetActorIds());
+    }
+    return actorIds;
   }
 
   public void Update(LineageUpdated @event)

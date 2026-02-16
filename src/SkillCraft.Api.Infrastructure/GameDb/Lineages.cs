@@ -19,6 +19,8 @@ internal static class Lineages
   public static readonly ColumnId Id = new(nameof(LineageEntity.Id), Table);
   public static readonly ColumnId Name = new(nameof(LineageEntity.Name), Table);
   public static readonly ColumnId Summary = new(nameof(LineageEntity.Summary), Table);
+  public static readonly ColumnId ParentId = new(nameof(LineageEntity.ParentId), Table);
+  public static readonly ColumnId ParentUid = new(nameof(LineageEntity.ParentUid), Table);
   public static readonly ColumnId WorldId = new(nameof(LineageEntity.WorldId), Table);
   public static readonly ColumnId WorldUid = new(nameof(LineageEntity.WorldUid), Table);
 }

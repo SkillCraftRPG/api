@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,7 +40,14 @@ internal class LineageEvents : IEventHandler<LineageCreated>, IEventHandler<Line
       WorldEntity world = await _game.Worlds.SingleOrDefaultAsync(x => x.StreamId == lineageId.WorldId.Value, cancellationToken)
         ?? throw new InvalidOperationException($"The world entity 'StreamId={lineageId.WorldId}' was not found.");
 
-      lineage = new LineageEntity(world, @event);
+      LineageEntity? parent = null;
+      if (@event.ParentId is not null)
+      {
+        parent = await _game.Lineages.SingleOrDefaultAsync(x => x.StreamId == @event.ParentId.Value.Value, cancellationToken)
+          ?? throw new InvalidOperationException($"The lineage entity 'StreamId={@event.ParentId.Value}' was not found.");
+      }
+
+      lineage = new LineageEntity(world, parent, @event);
       _game.Lineages.Add(lineage);
       await _game.SaveChangesAsync(cancellationToken);
     }

@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -80,6 +80,15 @@ internal class GameMapper
       Summary = source.Summary,
       Description = source.Description
     };
+
+    if (source.Parent is not null)
+    {
+      destination.Parent = ToLineage(source.Parent);
+    }
+    else if (source.ParentId.HasValue)
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
 
     MapAggregate(source, destination);
 

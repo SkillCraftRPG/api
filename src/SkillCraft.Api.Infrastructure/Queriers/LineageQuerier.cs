@@ -33,6 +33,7 @@ internal class LineageQuerier : ILineageQuerier
   public async Task<LineageModel?> ReadAsync(LineageId id, CancellationToken cancellationToken)
   {
     LineageEntity? lineage = await _lineages.AsNoTracking()
+      .Include(x => x.Parent)
       .WhereWorld(_context.WorldId)
       .Where(x => x.StreamId == id.Value)
       .SingleOrDefaultAsync(cancellationToken);
@@ -41,6 +42,7 @@ internal class LineageQuerier : ILineageQuerier
   public async Task<LineageModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     LineageEntity? lineage = await _lineages.AsNoTracking()
+      .Include(x => x.Parent)
       .WhereWorld(_context.WorldId)
       .Where(x => x.Id == id)
       .SingleOrDefaultAsync(cancellationToken);
@@ -54,6 +56,7 @@ internal class LineageQuerier : ILineageQuerier
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Lineages.Name, GameDb.Lineages.Summary);
 
     IQueryable<LineageEntity> query = _lineages.FromQuery(builder).AsNoTracking()
+      .Include(x => x.Parent)
       .WhereWorld(_context.WorldId);
 
     long total = await query.LongCountAsync(cancellationToken);

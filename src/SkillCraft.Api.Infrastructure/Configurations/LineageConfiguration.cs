@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -16,6 +16,8 @@ internal class LineageConfiguration : AggregateConfiguration<LineageEntity>, IEn
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
     builder.HasIndex(x => x.WorldUid);
+    builder.HasIndex(x => x.ParentId);
+    builder.HasIndex(x => x.ParentUid);
     builder.HasIndex(x => x.Name);
     builder.HasIndex(x => x.Summary);
 
@@ -23,5 +25,8 @@ internal class LineageConfiguration : AggregateConfiguration<LineageEntity>, IEn
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Lineages).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Parent).WithMany(x => x.Children)
+      .HasPrincipalKey(x => x.LineageId).HasForeignKey(x => x.ParentId)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }
