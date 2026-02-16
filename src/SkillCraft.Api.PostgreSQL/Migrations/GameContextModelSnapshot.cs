@@ -650,6 +650,110 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.ToTable("StorageSummary", "Game");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.TalentEntity", b =>
+                {
+                    b.Property<int>("TalentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TalentId"));
+
+                    b.Property<bool>("AllowMultiplePurchases")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("RequiredTalentId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("RequiredTalentUid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Skill")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<int>("Tier")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorldUid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("TalentId");
+
+                    b.HasIndex("AllowMultiplePurchases");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("RequiredTalentId");
+
+                    b.HasIndex("RequiredTalentUid");
+
+                    b.HasIndex("Skill");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("Summary");
+
+                    b.HasIndex("Tier");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldUid");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.ToTable("Talents", "Game");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Property<int>("WorldId")
@@ -816,6 +920,24 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.TalentEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.TalentEntity", "RequiredTalent")
+                        .WithMany("RequiringTalents")
+                        .HasForeignKey("RequiredTalentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Talents")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RequiredTalent");
+
+                    b.Navigation("World");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ScriptEntity", b =>
                 {
                     b.Navigation("Languages");
@@ -824,6 +946,11 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.StorageSummaryEntity", b =>
                 {
                     b.Navigation("Detail");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.TalentEntity", b =>
+                {
+                    b.Navigation("RequiringTalents");
                 });
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.WorldEntity", b =>
@@ -841,6 +968,8 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("Scripts");
 
                     b.Navigation("StorageSummary");
+
+                    b.Navigation("Talents");
                 });
 #pragma warning restore 612, 618
         }

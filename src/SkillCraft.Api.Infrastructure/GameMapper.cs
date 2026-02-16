@@ -9,6 +9,7 @@ using SkillCraft.Api.Contracts.Educations;
 using SkillCraft.Api.Contracts.Languages;
 using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Contracts.Scripts;
+using SkillCraft.Api.Contracts.Talents;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -92,6 +93,29 @@ internal class GameMapper
       Summary = source.Summary,
       Description = source.Description
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public TalentModel ToTalent(TalentEntity source)
+  {
+    TalentModel destination = new()
+    {
+      Id = source.Id,
+      Tier = source.Tier,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      AllowMultiplePurchases = source.AllowMultiplePurchases,
+      Skill = source.Skill
+    };
+
+    if (source.RequiredTalent is not null)
+    {
+      destination.RequiredTalent = ToTalent(source.RequiredTalent);
+    }
 
     MapAggregate(source, destination);
 

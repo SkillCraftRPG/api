@@ -20,6 +20,7 @@ internal class WorldEntity : AggregateEntity
   public List<LanguageEntity> Languages { get; private set; } = [];
   public List<PartyEntity> Parties { get; private set; } = [];
   public List<ScriptEntity> Scripts { get; private set; } = [];
+  public List<TalentEntity> Talents { get; private set; } = [];
   public StorageSummaryEntity? StorageSummary { get; private set; }
 
   public WorldEntity(WorldCreated @event) : base(@event)

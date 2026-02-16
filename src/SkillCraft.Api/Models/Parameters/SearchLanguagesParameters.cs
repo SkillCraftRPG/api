@@ -11,21 +11,11 @@ public record SearchLanguagesParameters : SearchParameters
 
   public virtual SearchLanguagesPayload ToPayload()
   {
-    SearchLanguagesPayload payload = new();
-    Fill(payload);
-
-    if (!string.IsNullOrWhiteSpace(Script))
+    SearchLanguagesPayload payload = new()
     {
-      string script = Script.Trim();
-      if (script.Equals("null", StringComparison.InvariantCultureIgnoreCase))
-      {
-        payload.Script = new ScriptFilter(null);
-      }
-      else if (Guid.TryParse(script, out Guid id))
-      {
-        payload.Script = new ScriptFilter(id);
-      }
-    }
+      Script = Script
+    };
+    Fill(payload);
 
     foreach (SortOption item in ((SearchPayload)payload).Sort)
     {
