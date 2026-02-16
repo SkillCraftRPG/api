@@ -1,5 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages.Events;
+using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Languages;
@@ -55,6 +56,7 @@ public class Language : AggregateRoot, IEntityProvider
     }
   }
 
+  public ScriptId? ScriptId { get; private set; }
   private TypicalSpeakers? _typicalSpeakers = null;
   public TypicalSpeakers? TypicalSpeakers
   {
@@ -99,6 +101,15 @@ public class Language : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
 
+  public void SetScript(Script? script)
+  {
+    if (ScriptId != script?.Id)
+    {
+      ScriptId = script?.Id;
+      _updated.ScriptId = new Change<ScriptId?>(script?.Id);
+    }
+  }
+
   public void Update(UserId userId)
   {
     if (HasUpdates)
@@ -122,6 +133,10 @@ public class Language : AggregateRoot, IEntityProvider
       _description = @event.Description.Value;
     }
 
+    if (@event.ScriptId is not null)
+    {
+      ScriptId = @event.ScriptId.Value;
+    }
     if (@event.TypicalSpeakers is not null)
     {
       _typicalSpeakers = @event.TypicalSpeakers.Value;

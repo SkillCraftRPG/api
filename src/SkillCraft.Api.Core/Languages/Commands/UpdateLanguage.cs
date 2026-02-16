@@ -3,7 +3,9 @@ using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Languages;
 using SkillCraft.Api.Core.Languages.Validators;
 using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Languages.Commands;
 
@@ -15,6 +17,7 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
   private readonly IPermissionService _permissionService;
   private readonly ILanguageQuerier _languageQuerier;
   private readonly ILanguageRepository _languageRepository;
+  private readonly IScriptRepository _scriptRepository;
   private readonly IStorageService _storageService;
 
   public UpdateLanguageCommandHandler(
@@ -22,12 +25,14 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     IPermissionService permissionService,
     ILanguageQuerier languageQuerier,
     ILanguageRepository languageRepository,
+    IScriptRepository scriptRepository,
     IStorageService storageService)
   {
     _context = context;
     _permissionService = permissionService;
     _languageQuerier = languageQuerier;
     _languageRepository = languageRepository;
+    _scriptRepository = scriptRepository;
     _storageService = storageService;
   }
 
@@ -36,7 +41,9 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     UpdateLanguagePayload payload = command.Payload;
     new UpdateLanguageValidator().ValidateAndThrow(payload);
 
-    LanguageId languageId = new(command.Id, _context.WorldId);
+    WorldId worldId = _context.WorldId;
+
+    LanguageId languageId = new(command.Id, worldId);
     Language? language = await _languageRepository.LoadAsync(languageId, cancellationToken);
     if (language is null)
     {
@@ -59,7 +66,14 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
 
     if (payload.ScriptId is not null)
     {
-      // TODO(fpion): implement
+      Script? script = null;
+      if (payload.ScriptId.Value.HasValue)
+      {
+        ScriptId scriptId = new(payload.ScriptId.Value.Value, worldId);
+        script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
+          ?? throw new EntityNotFoundException(new Entity(Script.EntityKind, payload.ScriptId.Value.Value), nameof(payload.ScriptId));
+      }
+      language.SetScript(script);
     }
     if (payload.TypicalSpeakers is not null)
     {

@@ -1,4 +1,4 @@
-using SkillCraft.Api.Core.Scripts;
+﻿using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -16,6 +16,8 @@ internal class ScriptEntity : AggregateEntity, IWorldScoped
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
+
+  public List<LanguageEntity> Languages { get; private set; } = [];
 
   public ScriptEntity(WorldEntity world, ScriptCreated @event) : base(@event)
   {

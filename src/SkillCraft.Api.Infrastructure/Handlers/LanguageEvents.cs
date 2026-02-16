@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -89,7 +89,14 @@ internal class LanguageEvents : IEventHandler<LanguageCreated>, IEventHandler<La
         throw new InvalidOperationException($"The language entity '{language}' was expected to be found at version {expectedVersion}, but was found at version {language.Version}.");
       }
 
-      language.Update(@event);
+      ScriptEntity? script = null;
+      if (@event.ScriptId?.Value is not null)
+      {
+        script = await _game.Scripts.SingleOrDefaultAsync(x => x.StreamId == @event.ScriptId.Value.Value.Value, cancellationToken)
+          ?? throw new InvalidOperationException($"The script entity 'StreamId={@event.ScriptId.Value}' was not found.");
+      }
+
+      language.Update(script, @event);
       await _game.SaveChangesAsync(cancellationToken);
     }
     catch (Exception exception)

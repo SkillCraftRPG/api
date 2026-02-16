@@ -17,6 +17,10 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
 
+  public ScriptEntity? Script { get; private set; }
+  public int? ScriptId { get; private set; }
+  public Guid? ScriptUid { get; private set; }
+
   public string? TypicalSpeakers { get; private set; }
 
   public LanguageEntity(WorldEntity world, LanguageCreated @event) : base(@event)
@@ -34,7 +38,7 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
   {
   }
 
-  public void Update(LanguageUpdated @event)
+  public void Update(ScriptEntity? script, LanguageUpdated @event)
   {
     base.Update(@event);
 
@@ -51,6 +55,12 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
       Description = @event.Description.Value?.Value;
     }
 
+    if (@event.ScriptId is not null)
+    {
+      Script = script;
+      ScriptId = script?.ScriptId;
+      ScriptUid = script?.Id;
+    }
     if (@event.TypicalSpeakers is not null)
     {
       TypicalSpeakers = @event.TypicalSpeakers.Value?.Value;

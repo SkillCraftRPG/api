@@ -1,4 +1,4 @@
-using Logitar.Data;
+﻿using Logitar.Data;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.GameDb;
@@ -18,6 +18,8 @@ internal static class Languages
   public static readonly ColumnId Id = new(nameof(LanguageEntity.Id), Table);
   public static readonly ColumnId LanguageId = new(nameof(LanguageEntity.LanguageId), Table);
   public static readonly ColumnId Name = new(nameof(LanguageEntity.Name), Table);
+  public static readonly ColumnId ScriptId = new(nameof(LanguageEntity.ScriptId), Table);
+  public static readonly ColumnId ScriptUid = new(nameof(LanguageEntity.ScriptUid), Table);
   public static readonly ColumnId Summary = new(nameof(LanguageEntity.Summary), Table);
   public static readonly ColumnId TypicalSpeakers = new(nameof(LanguageEntity.TypicalSpeakers), Table);
   public static readonly ColumnId WorldId = new(nameof(LanguageEntity.WorldId), Table);
