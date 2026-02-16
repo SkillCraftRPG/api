@@ -62,6 +62,11 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
     {
       await _permissionService.CheckAsync(Actions.Update, customization, cancellationToken);
 
+      if (payload.Kind != customization.Kind)
+      {
+        throw new NotImplementedException(); // TODO(fpion): implement
+      }
+
       customization.Name = name;
     }
 
