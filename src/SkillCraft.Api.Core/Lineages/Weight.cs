@@ -8,6 +8,11 @@ public record Weight
   public Roll? Overweight { get; }
   public Roll? Obese { get; }
 
+  public Weight(string? malnutrition = null, string? skinny = null, string? normal = null, string? overweight = null, string? obese = null)
+    : this(Roll.TryCreate(malnutrition), Roll.TryCreate(skinny), Roll.TryCreate(normal), Roll.TryCreate(overweight), Roll.TryCreate(obese))
+  {
+  }
+
   public Weight(Roll? malnutrition = null, Roll? skinny = null, Roll? normal = null, Roll? overweight = null, Roll? obese = null)
   {
     Malnutrition = malnutrition;

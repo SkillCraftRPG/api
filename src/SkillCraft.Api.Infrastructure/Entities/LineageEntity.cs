@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages;
@@ -99,7 +99,7 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     if (@event.Size is not null)
     {
       SizeCategory = @event.Size.Category;
-      Height = @event.Size.Height.Value;
+      Height = @event.Size.Height?.Value;
     }
     if (@event.Weight is not null)
     {

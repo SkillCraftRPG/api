@@ -88,13 +88,8 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     lineage.Description = Description.TryCreate(payload.Description);
 
     lineage.Speeds = new Speeds(payload.Speeds);
-    lineage.Size = new Size(payload.Size.Category, new Roll(payload.Size.Height));
-    lineage.Weight = new Weight(
-      Roll.TryCreate(payload.Weight.Malnutrition),
-      Roll.TryCreate(payload.Weight.Skinny),
-      Roll.TryCreate(payload.Weight.Normal),
-      Roll.TryCreate(payload.Weight.Overweight),
-      Roll.TryCreate(payload.Weight.Obese));
+    lineage.Size = new Size(payload.Size.Category, payload.Size.Height);
+    lineage.Weight = new Weight(payload.Weight.Malnutrition, payload.Weight.Skinny, payload.Weight.Normal, payload.Weight.Overweight, payload.Weight.Obese);
 
     lineage.Update(userId);
 

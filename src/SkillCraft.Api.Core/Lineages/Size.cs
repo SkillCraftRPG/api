@@ -6,9 +6,14 @@ namespace SkillCraft.Api.Core.Lineages;
 public record Size
 {
   public SizeCategory Category { get; }
-  public Roll Height { get; }
+  public Roll? Height { get; }
 
-  public Size(SizeCategory category, Roll height)
+  public Size(SizeCategory category, string? height = null)
+    : this(category, Roll.TryCreate(height))
+  {
+  }
+
+  public Size(SizeCategory category, Roll? height = null)
   {
     Category = category;
     Height = height;

@@ -80,7 +80,7 @@ internal class GameMapper
       Summary = source.Summary,
       Description = source.Description,
       Speeds = new SpeedsModel(source.Walk, source.Climb, source.Swim, source.Fly, source.Hover, source.Burrow),
-      Size = new SizeModel(source.SizeCategory, source.Height ?? string.Empty),
+      Size = new SizeModel(source.SizeCategory, source.Height),
       Weight = new WeightModel(source.Malnutrition, source.Skinny, source.Normal, source.Overweight, source.Obese)
     };
 
