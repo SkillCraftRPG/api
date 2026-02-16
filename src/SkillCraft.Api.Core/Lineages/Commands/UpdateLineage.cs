@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages.Validators;
@@ -55,6 +55,11 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     if (payload.Description is not null)
     {
       lineage.Description = Description.TryCreate(payload.Description.Value);
+    }
+
+    if (payload.Speeds is not null)
+    {
+      lineage.Speeds = new Speeds(payload.Speeds);
     }
 
     lineage.Update(_context.UserId);

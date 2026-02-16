@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Lineages.Validators;
@@ -55,38 +56,38 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.CreateLineage, cancellationToken);
 
-      //LineageId? parentId = null;
-      //if (payload.ParentId.HasValue)
-      //{
-      //  parentId = new LineageId(payload.ParentId.Value, worldId);
-      //  Lineage? parent = await _lineageRepository.LoadAsync(parentId, cancellationToken);
-      //  if (parent is null)
-      //  {
-      //    throw new ArgumentException($"The parent lineage '{payload.ParentId.Value}' was not found.", nameof(payload));
-      //  }
-      //  if (parent.ParentId.HasValue)
-      //  {
-      //    throw new ArgumentException("The parent lineage cannot have a parent.", nameof(payload));
-      //  }
-      //} // TODO(fpion): implement
+      Lineage? parent = null;
+      if (payload.ParentId.HasValue)
+      {
+        LineageId parentId = new(payload.ParentId.Value, worldId);
+        parent = await _lineageRepository.LoadAsync(parentId, cancellationToken)
+          ?? throw new EntityNotFoundException(new Entity(Lineage.EntityKind, payload.ParentId.Value, worldId), nameof(payload.ParentId));
+      }
 
-      lineage = new Lineage(worldId, name, parent: null, userId, lineageId); // TODO(fpion): implement
+      lineage = new Lineage(worldId, name, parent, userId, lineageId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, lineage, cancellationToken);
 
-      //if (payload.ParentId.HasValue && payload.ParentId.Value != lineage.ParentId?.EntityId)
-      //{
-      //  throw new ArgumentException("The parent lineage cannot be changed after creation.", nameof(payload));
-      //} // TODO(fpion): implement
+      if (payload.ParentId != lineage.ParentId?.EntityId)
+      {
+        ValidationFailure failure = new(nameof(payload.ParentId), "The lineage parent cannot be changed.", payload.ParentId)
+        {
+          CustomState = new { ParentId = lineage.ParentId?.EntityId },
+          ErrorCode = "LineageParentCannotBeChanged"
+        };
+        throw new ValidationException([failure]);
+      }
 
       lineage.Name = name;
     }
 
     lineage.Summary = Summary.TryCreate(payload.Summary);
     lineage.Description = Description.TryCreate(payload.Description);
+
+    lineage.Speeds = new Speeds(payload.Speeds);
 
     lineage.Update(userId);
 

@@ -78,7 +78,8 @@ internal class GameMapper
       Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
-      Description = source.Description
+      Description = source.Description,
+      Speeds = new SpeedsModel(source.Walk, source.Climb, source.Swim, source.Fly, source.Hover, source.Burrow)
     };
 
     if (source.Parent is not null)
@@ -87,7 +88,7 @@ internal class GameMapper
     }
     else if (source.ParentId.HasValue)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new ArgumentException("The parent is required.", nameof(source));
     }
 
     MapAggregate(source, destination);

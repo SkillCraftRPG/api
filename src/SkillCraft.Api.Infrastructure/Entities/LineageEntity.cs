@@ -24,6 +24,13 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
 
+  public int Walk { get; private set; }
+  public int Climb { get; private set; }
+  public int Swim { get; private set; }
+  public int Fly { get; private set; }
+  public bool Hover { get; private set; }
+  public int Burrow { get; private set; }
+
   public LineageEntity(WorldEntity world, LineageEntity? parent, LineageCreated @event) : base(@event)
   {
     Id = new LineageId(@event.StreamId).EntityId;
@@ -68,6 +75,16 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     if (@event.Description is not null)
     {
       Description = @event.Description.Value?.Value;
+    }
+
+    if (@event.Speeds is not null)
+    {
+      Walk = @event.Speeds.Walk;
+      Climb = @event.Speeds.Climb;
+      Swim = @event.Speeds.Swim;
+      Fly = @event.Speeds.Fly;
+      Hover = @event.Speeds.Hover;
+      Burrow = @event.Speeds.Burrow;
     }
   }
 

@@ -1,4 +1,6 @@
-﻿using Logitar.EventSourcing;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -9,7 +11,8 @@ public class Lineage : AggregateRoot, IEntityProvider
   public const string EntityKind = "Lineage";
 
   private LineageUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
+    || _updated.Speeds is not null;
 
   public new LineageId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -57,10 +60,28 @@ public class Lineage : AggregateRoot, IEntityProvider
     }
   }
 
+  private Speeds _speeds = new();
+  public Speeds Speeds
+  {
+    get => _speeds;
+    set
+    {
+      if (_speeds != value)
+      {
+        _speeds = value;
+        _updated.Speeds = value;
+      }
+    }
+  }
+
   public Lineage() : base()
   {
   }
 
+  public Lineage(World world, Name name, Lineage? parent, UserId userId, LineageId? lineageId = null)
+    : this(world.Id, name, parent, userId, lineageId)
+  {
+  }
   public Lineage(WorldId worldId, Name name, Lineage? parent, UserId userId, LineageId? lineageId = null)
     : base((lineageId ?? LineageId.NewId(worldId)).StreamId)
   {
@@ -68,11 +89,19 @@ public class Lineage : AggregateRoot, IEntityProvider
     {
       if (parent.WorldId != worldId)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        throw new ArgumentException($"The parent (WorldId={parent.WorldId}) and child (WorldId={worldId}) lineages should be in the same world.", nameof(parent));
       }
       else if (parent.ParentId.HasValue)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        ValidationFailure failure = new(nameof(ParentId), "The parent lineage should not have a parent.", parent.EntityId)
+        {
+          CustomState = new
+          {
+            ParentId = parent.ParentId.Value.EntityId
+          },
+          ErrorCode = "InvalidLineageParent"
+        };
+        throw new ValidationException([failure]);
       }
     }
 
@@ -118,6 +147,11 @@ public class Lineage : AggregateRoot, IEntityProvider
     if (@event.Description is not null)
     {
       _description = @event.Description.Value;
+    }
+
+    if (@event.Speeds is not null)
+    {
+      _speeds = @event.Speeds;
     }
   }
 
