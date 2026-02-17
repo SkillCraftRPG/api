@@ -107,6 +107,7 @@ internal class GameMapper
       Weight = source.GetWeight(),
       Age = new AgeModel(source.Teenager, source.Adult, source.Mature, source.Venerable)
     };
+    destination.Features.AddRange(source.GetFeatures());
 
     if (source.Parent is not null)
     {

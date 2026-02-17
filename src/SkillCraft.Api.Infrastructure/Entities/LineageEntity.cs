@@ -1,6 +1,8 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Lineages;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 
@@ -24,6 +26,8 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
+
+  public string? Features { get; private set; }
 
   public List<LineageLanguageEntity> Languages { get; private set; } = [];
   public int ExtraLanguages { get; private set; }
@@ -115,6 +119,10 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
       Description = @event.Description.Value?.Value;
     }
 
+    if (@event.Features is not null)
+    {
+      SetFeatures(@event.Features);
+    }
     if (@event.Languages is not null)
     {
       ExtraLanguages = @event.Languages.Extra;
@@ -141,6 +149,16 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     {
       SetAge(@event.Age);
     }
+  }
+
+  public IReadOnlyCollection<FeatureModel> GetFeatures()
+  {
+    Dictionary<string, string?> features = (Features is null ? null : JsonSerializer.Deserialize<Dictionary<string, string?>>(Features)) ?? [];
+    return features.Select(feature => new FeatureModel(feature.Key, feature.Value)).ToList().AsReadOnly();
+  }
+  private void SetFeatures(IEnumerable<Feature> features)
+  {
+    Features = features.Any() ? JsonSerializer.Serialize(features.GroupBy(x => x.Name.Value).ToDictionary(x => x.Key, x => x.Last().Description?.Value)) : null;
   }
 
   public NamesModel GetNames()

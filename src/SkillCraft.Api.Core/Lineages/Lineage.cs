@@ -13,7 +13,7 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   private LineageUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Languages is not null || _updated.Names is not null
+    || _updated.Features is not null || _updated.Languages is not null || _updated.Names is not null
     || _updated.Speeds is not null || _updated.Size is not null || _updated.Weight is not null || _updated.Age is not null;
 
   public new LineageId Id => new(base.Id);
@@ -62,6 +62,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     }
   }
 
+  public IReadOnlyCollection<Feature> Features { get; private set; } = [];
   public LineageLanguages Languages { get; private set; } = new();
   private Names _names = new();
   public Names Names
@@ -170,7 +171,10 @@ public class Lineage : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) /* TODO(fpion): Features */ + Languages.Size + Names.Size + (Size.Height?.Size ?? 0) + Weight.Size;
+  public long CalculateSize()
+  {
+    return Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Features.Sum(feature => feature.Size) + Languages.Size + Names.Size + (Size.Height?.Size ?? 0) + Weight.Size;
+  }
 
   public void Delete(UserId userId)
   {
@@ -181,6 +185,16 @@ public class Lineage : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
+
+  public void SetFeatures(IEnumerable<Feature> features)
+  {
+    features = features.GroupBy(x => x.Name).Select(x => x.Last());
+    if (!Features.SequenceEqual(features))
+    {
+      Features = features.ToList().AsReadOnly();
+      _updated.Features = Features;
+    }
+  }
 
   public void SetLanguages(IEnumerable<Language> languages, int extra = 0, Description? text = null)
   {
@@ -224,6 +238,10 @@ public class Lineage : AggregateRoot, IEntityProvider
       _description = @event.Description.Value;
     }
 
+    if (@event.Features is not null)
+    {
+      Features = @event.Features;
+    }
     if (@event.Languages is not null)
     {
       Languages = @event.Languages;

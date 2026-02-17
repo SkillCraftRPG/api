@@ -22,6 +22,7 @@ internal class LineageConfiguration : AggregateConfiguration<LineageEntity>, IEn
     builder.HasIndex(x => x.ParentUid);
     builder.HasIndex(x => x.Name);
     builder.HasIndex(x => x.Summary);
+    builder.HasIndex(x => x.SizeCategory);
 
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
