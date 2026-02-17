@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using SkillCraft.Api.Contracts.Lineages;
+using SkillCraft.Api.Core.Validators;
 
 namespace SkillCraft.Api.Core.Lineages.Validators;
 
@@ -11,7 +12,7 @@ internal class UpdateLineageValidator : AbstractValidator<UpdateLineagePayload>
     When(x => !string.IsNullOrWhiteSpace(x.Summary?.Value), () => RuleFor(x => x.Summary!.Value!).Summary());
     When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 
-    // TODO(fpion): Features
+    When(x => x.Features is not null, () => RuleForEach(x => x.Features).SetValidator(new FeatureValidator()));
     When(x => x.Languages is not null, () => RuleFor(x => x.Languages!).SetValidator(new LanguagesValidator()));
     When(x => x.Names is not null, () => RuleFor(x => x.Names!).SetValidator(new NamesValidator()));
 
