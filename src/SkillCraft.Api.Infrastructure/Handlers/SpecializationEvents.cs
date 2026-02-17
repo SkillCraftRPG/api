@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -89,7 +89,14 @@ internal class SpecializationEvents : IEventHandler<SpecializationCreated>, IEve
         throw new InvalidOperationException($"The specialization entity '{specialization}' was expected to be found at version {expectedVersion}, but was found at version {specialization.Version}.");
       }
 
-      specialization.Update(@event);
+      TalentEntity? requiredTalent = null;
+      if (@event.Requirements is not null && @event.Requirements.TalentId.HasValue)
+      {
+        requiredTalent = await _game.Talents.SingleOrDefaultAsync(x => x.StreamId == @event.Requirements.TalentId.Value.Value, cancellationToken)
+          ?? throw new InvalidOperationException($"The talent entity 'StreamId={@event.Requirements.TalentId}' was not found.");
+      }
+
+      specialization.Update(requiredTalent, @event);
       await _game.SaveChangesAsync(cancellationToken);
     }
     catch (Exception exception)

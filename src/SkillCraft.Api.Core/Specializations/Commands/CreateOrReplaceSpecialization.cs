@@ -4,13 +4,14 @@ using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Specializations.Validators;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Specializations.Commands;
 
 internal record CreateOrReplaceSpecializationCommand(CreateOrReplaceSpecializationPayload Payload, Guid? Id) : ICommand<CreateOrReplaceSpecializationResult>;
 
-internal class CreateOrReplaceSpecializationCommandHandler : ICommandHandler<CreateOrReplaceSpecializationCommand, CreateOrReplaceSpecializationResult>
+internal class CreateOrReplaceSpecializationCommandHandler : SaveSpecialization, ICommandHandler<CreateOrReplaceSpecializationCommand, CreateOrReplaceSpecializationResult>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
@@ -23,7 +24,8 @@ internal class CreateOrReplaceSpecializationCommandHandler : ICommandHandler<Cre
     IPermissionService permissionService,
     ISpecializationQuerier specializationQuerier,
     ISpecializationRepository specializationRepository,
-    IStorageService storageService)
+    IStorageService storageService,
+    ITalentRepository talentRepository) : base(talentRepository)
   {
     _context = context;
     _permissionService = permissionService;
@@ -69,7 +71,8 @@ internal class CreateOrReplaceSpecializationCommandHandler : ICommandHandler<Cre
     specialization.Summary = Summary.TryCreate(payload.Summary);
     specialization.Description = Description.TryCreate(payload.Description);
 
-    // TODO(fpion): Requirements { Talent, Other }
+    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, worldId, cancellationToken);
+    SetRequirements(specialization, payload.Requirements, talents);
     // TODO(fpion): Options { Talents, Other }
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 

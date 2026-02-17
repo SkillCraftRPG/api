@@ -30,6 +30,8 @@ internal class TalentEntity : AggregateEntity, IWorldScoped
   public Guid? RequiredTalentUid { get; private set; }
   public List<TalentEntity> RequiringTalents { get; private set; } = [];
 
+  public List<SpecializationEntity> RequiringSpecializations { get; private set; } = [];
+
   public TalentEntity(WorldEntity world, TalentCreated @event) : base(@event)
   {
     Id = new TalentId(@event.StreamId).EntityId;

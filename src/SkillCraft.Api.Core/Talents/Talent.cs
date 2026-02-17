@@ -143,7 +143,7 @@ public class Talent : AggregateRoot, IEntityProvider
             },
             ErrorCode = "InvalidTalentRequirement"
           };
-          throw new ValidationException([failure]);
+          throw new ValidationException([failure]); // TODO(fpion): custom exception
         }
       }
 

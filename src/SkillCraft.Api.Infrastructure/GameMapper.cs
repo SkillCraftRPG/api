@@ -220,7 +220,16 @@ internal class GameMapper
       Description = source.Description
     };
 
-    // TODO(fpion): Requirements { Talent, Other }
+    if (source.RequiredTalent is not null)
+    {
+      destination.Requirements.Talent = ToTalent(source.RequiredTalent);
+    }
+    else if (source.RequiredTalentId.HasValue)
+    {
+      throw new ArgumentException("The required talent is required.", nameof(source));
+    }
+    destination.Requirements.Other.AddRange(source.GetOtherRequirements());
+
     // TODO(fpion): Options { Talents, Other }
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 

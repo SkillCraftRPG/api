@@ -10,7 +10,7 @@ public class SpecializationModel : Aggregate
   public string? Summary { get; set; }
   public string? Description { get; set; }
 
-  // TODO(fpion): Requirements { Talent, Other }
+  public RequirementsModel Requirements { get; set; } = new();
   // TODO(fpion): Options { Talents, Other }
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 

@@ -8,7 +8,7 @@ public record CreateOrReplaceSpecializationPayload
   public string? Summary { get; set; }
   public string? Description { get; set; }
 
-  // TODO(fpion): Requirements { Talent, Other }
+  public RequirementsPayload Requirements { get; set; } = new();
   // TODO(fpion): Options { Talents, Other }
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 }

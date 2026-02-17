@@ -1,4 +1,6 @@
-﻿using SkillCraft.Api.Core.Specializations;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Specializations;
 using SkillCraft.Api.Core.Specializations.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -19,7 +21,12 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
 
-  // TODO(fpion): Requirements { Talent, Other }
+  public TalentEntity? RequiredTalent { get; private set; }
+  public int? RequiredTalentId { get; private set; }
+  public Guid? RequiredTalentUid { get; private set; }
+
+  public string? OtherRequirements { get; private set; }
+
   // TODO(fpion): Options { Talents, Other }
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
@@ -40,7 +47,17 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   {
   }
 
-  public void Update(SpecializationUpdated @event)
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (RequiredTalent is not null)
+    {
+      actorIds.AddRange(RequiredTalent.GetActorIds());
+    }
+    return actorIds;
+  }
+
+  public void Update(TalentEntity? requiredTalent, SpecializationUpdated @event)
   {
     base.Update(@event);
 
@@ -56,6 +73,23 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
     {
       Description = @event.Description.Value?.Value;
     }
+
+    if (@event.Requirements is not null)
+    {
+      RequiredTalent = requiredTalent;
+      RequiredTalentId = requiredTalent?.TalentId;
+      RequiredTalentUid = requiredTalent?.Id;
+      SetOtherRequirements(@event.Requirements.Other);
+    }
+  }
+
+  public IReadOnlyCollection<string> GetOtherRequirements()
+  {
+    return (OtherRequirements is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(OtherRequirements)) ?? [];
+  }
+  private void SetOtherRequirements(IEnumerable<string> otherRequirements)
+  {
+    OtherRequirements = otherRequirements.Any() ? JsonSerializer.Serialize(otherRequirements) : null;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

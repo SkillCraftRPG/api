@@ -19,14 +19,18 @@ internal class SpecializationConfiguration : AggregateConfiguration<Specializati
     builder.HasIndex(x => x.Tier);
     builder.HasIndex(x => x.Name);
     builder.HasIndex(x => x.Summary);
+    builder.HasIndex(x => x.RequiredTalentId);
+    builder.HasIndex(x => x.RequiredTalentUid);
 
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
 
-    // TODO(fpion): Requirements { Talent, Other }
     // TODO(fpion): Options { Talents, Other }
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     builder.HasOne(x => x.World).WithMany(x => x.Specializations).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.RequiredTalent).WithMany(x => x.RequiringSpecializations)
+      .HasPrincipalKey(x => x.TalentId).HasForeignKey(x => x.RequiredTalentId)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }

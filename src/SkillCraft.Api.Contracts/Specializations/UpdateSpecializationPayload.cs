@@ -6,7 +6,7 @@ public record UpdateSpecializationPayload
   public Update<string>? Summary { get; set; }
   public Update<string>? Description { get; set; }
 
-  // TODO(fpion): Requirements { Talent, Other }
+  public RequirementsPayload? Requirements { get; set; }
   // TODO(fpion): Options { Talents, Other }
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 }

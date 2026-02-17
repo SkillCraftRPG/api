@@ -4,12 +4,14 @@ using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Specializations.Validators;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Talents;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Specializations.Commands;
 
 internal record UpdateSpecializationCommand(Guid Id, UpdateSpecializationPayload Payload) : ICommand<SpecializationModel?>;
 
-internal class UpdateSpecializationCommandHandler : ICommandHandler<UpdateSpecializationCommand, SpecializationModel?>
+internal class UpdateSpecializationCommandHandler : SaveSpecialization, ICommandHandler<UpdateSpecializationCommand, SpecializationModel?>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
@@ -22,7 +24,8 @@ internal class UpdateSpecializationCommandHandler : ICommandHandler<UpdateSpecia
     IPermissionService permissionService,
     ISpecializationQuerier specializationQuerier,
     ISpecializationRepository specializationRepository,
-    IStorageService storageService)
+    IStorageService storageService,
+    ITalentRepository talentRepository) : base(talentRepository)
   {
     _context = context;
     _permissionService = permissionService;
@@ -36,7 +39,9 @@ internal class UpdateSpecializationCommandHandler : ICommandHandler<UpdateSpecia
     UpdateSpecializationPayload payload = command.Payload;
     new UpdateSpecializationValidator().ValidateAndThrow(payload);
 
-    SpecializationId specializationId = new(command.Id, _context.WorldId);
+    WorldId worldId = _context.WorldId;
+
+    SpecializationId specializationId = new(command.Id, worldId);
     Specialization? specialization = await _specializationRepository.LoadAsync(specializationId, cancellationToken);
     if (specialization is null)
     {
@@ -57,7 +62,11 @@ internal class UpdateSpecializationCommandHandler : ICommandHandler<UpdateSpecia
       specialization.Description = Description.TryCreate(payload.Description.Value);
     }
 
-    // TODO(fpion): Requirements { Talent, Other }
+    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, worldId, cancellationToken);
+    if (payload.Requirements is not null)
+    {
+      SetRequirements(specialization, payload.Requirements, talents);
+    }
     // TODO(fpion): Options { Talents, Other }
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
