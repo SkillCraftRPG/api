@@ -40,12 +40,12 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public string? CustomNames { get; private set; }
   public string? NamesText { get; private set; }
 
-  public int Walk { get; private set; }
-  public int Climb { get; private set; }
-  public int Swim { get; private set; }
-  public int Fly { get; private set; }
+  public int? Walk { get; private set; }
+  public int? Climb { get; private set; }
+  public int? Swim { get; private set; }
+  public int? Fly { get; private set; }
   public bool Hover { get; private set; }
-  public int Burrow { get; private set; }
+  public int? Burrow { get; private set; }
 
   public SizeCategory SizeCategory { get; private set; }
   public string? Height { get; private set; }
