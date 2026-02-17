@@ -3,7 +3,7 @@ using SkillCraft.Api.Core.Languages;
 
 namespace SkillCraft.Api.Core.Lineages;
 
-public record LineageLanguages // TODO(fpion): rename
+public record LanguageProficiencies
 {
   public IReadOnlyCollection<LanguageId> Ids { get; } = [];
   public int Extra { get; }
@@ -12,17 +12,17 @@ public record LineageLanguages // TODO(fpion): rename
   [JsonIgnore]
   public long Size => Text?.Size ?? 0;
 
-  public LineageLanguages()
+  public LanguageProficiencies()
   {
   }
 
-  public LineageLanguages(IEnumerable<Language> languages, int extra, Description? text)
+  public LanguageProficiencies(IEnumerable<Language> languages, int extra, Description? text)
     : this(languages.Select(language => language.Id).ToArray(), extra, text)
   {
   }
 
   [JsonConstructor]
-  public LineageLanguages(IReadOnlyCollection<LanguageId> ids, int extra, Description? text)
+  public LanguageProficiencies(IReadOnlyCollection<LanguageId> ids, int extra, Description? text)
   {
     Ids = ids.Distinct().ToList().AsReadOnly();
     Extra = extra;
@@ -30,7 +30,7 @@ public record LineageLanguages // TODO(fpion): rename
     new Validator().ValidateAndThrow(this);
   }
 
-  private class Validator : AbstractValidator<LineageLanguages>
+  private class Validator : AbstractValidator<LanguageProficiencies>
   {
     public Validator()
     {

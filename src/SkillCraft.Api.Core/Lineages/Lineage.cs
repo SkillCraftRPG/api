@@ -63,7 +63,7 @@ public class Lineage : AggregateRoot, IEntityProvider
   }
 
   public IReadOnlyCollection<Feature> Features { get; private set; } = [];
-  public LineageLanguages Languages { get; private set; } = new();
+  public LanguageProficiencies Languages { get; private set; } = new();
   private Names _names = new();
   public Names Names
   {
@@ -202,7 +202,7 @@ public class Lineage : AggregateRoot, IEntityProvider
   }
   public void SetLanguages(IEnumerable<LanguageId> languageIds, int extra = 0, Description? text = null)
   {
-    LineageLanguages languages = new(languageIds.ToArray(), extra, text);
+    LanguageProficiencies languages = new(languageIds.ToArray(), extra, text);
     if (Languages != languages)
     {
       if (languageIds.Any(languageId => languageId.WorldId != WorldId))

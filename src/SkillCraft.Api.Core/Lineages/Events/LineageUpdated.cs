@@ -9,7 +9,7 @@ public record LineageUpdated : DomainEvent
   public Change<Description>? Description { get; set; }
 
   public IReadOnlyCollection<Feature>? Features { get; set; }
-  public LineageLanguages? Languages { get; set; }
+  public LanguageProficiencies? Languages { get; set; }
   public Names? Names { get; set; }
 
   public Speeds? Speeds { get; set; }
