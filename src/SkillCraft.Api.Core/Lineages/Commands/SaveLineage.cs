@@ -27,7 +27,7 @@ internal abstract class SaveLineage
         throw new LanguagesNotFoundException(worldId, missingIds, propertyName: "Languages.Ids");
       }
     }
-    lineage.Languages = new LineageLanguages(languages, payload.Extra, Description.TryCreate(payload.Text));
+    lineage.SetLanguages(languages, payload.Extra, Description.TryCreate(payload.Text));
   }
 
   protected virtual void SetNames(Lineage lineage, NamesModel names)

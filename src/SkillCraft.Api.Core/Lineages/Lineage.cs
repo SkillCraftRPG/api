@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -61,24 +62,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     }
   }
 
-  private LineageLanguages _languages = new();
-  public LineageLanguages Languages
-  {
-    get => _languages;
-    set
-    {
-      if (_languages != value)
-      {
-        if (value.Ids.Any(languageId => languageId.WorldId != WorldId))
-        {
-          throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(Languages));
-        }
-
-        _languages = value;
-        _updated.Languages = value;
-      }
-    }
-  }
+  public LineageLanguages Languages { get; private set; } = new();
   private Names _names = new();
   public Names Names
   {
@@ -186,7 +170,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Languages.Size + Names.Size + (Size.Height?.Size ?? 0) + Weight.Size; // TODO(fpion): Features
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) /* TODO(fpion): Features */ + Languages.Size + Names.Size + (Size.Height?.Size ?? 0) + Weight.Size;
 
   public void Delete(UserId userId)
   {
@@ -197,6 +181,25 @@ public class Lineage : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
+
+  public void SetLanguages(IEnumerable<Language> languages, int extra = 0, Description? text = null)
+  {
+    SetLanguages(languages.Select(language => language.Id), extra, text);
+  }
+  public void SetLanguages(IEnumerable<LanguageId> languageIds, int extra = 0, Description? text = null)
+  {
+    LineageLanguages languages = new(languageIds.ToArray(), extra, text);
+    if (Languages != languages)
+    {
+      if (languageIds.Any(languageId => languageId.WorldId != WorldId))
+      {
+        throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(languageIds));
+      }
+
+      Languages = languages;
+      _updated.Languages = languages;
+    }
+  }
 
   public void Update(UserId userId)
   {
@@ -223,7 +226,7 @@ public class Lineage : AggregateRoot, IEntityProvider
 
     if (@event.Languages is not null)
     {
-      _languages = @event.Languages;
+      Languages = @event.Languages;
     }
     if (@event.Names is not null)
     {
