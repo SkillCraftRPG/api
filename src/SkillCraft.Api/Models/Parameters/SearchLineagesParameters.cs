@@ -6,6 +6,9 @@ namespace SkillCraft.Api.Models.Parameters;
 
 public record SearchLineagesParameters : SearchParameters
 {
+  [FromQuery(Name = "parent")]
+  public Guid? ParentId { get; set; }
+
   [FromQuery(Name = "language")]
   public Guid? LanguageId { get; set; }
 
@@ -16,6 +19,7 @@ public record SearchLineagesParameters : SearchParameters
   {
     SearchLineagesPayload payload = new()
     {
+      ParentId = ParentId,
       LanguageId = LanguageId,
       SizeCategory = SizeCategory
     };

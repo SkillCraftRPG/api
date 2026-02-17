@@ -219,7 +219,7 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
     Height = size.Height?.Value;
   }
 
-  public WeightModel GetWeight() => new(MaleNames, Skinny, Normal, Overweight, Obese);
+  public WeightModel GetWeight() => new(Malnutrition, Skinny, Normal, Overweight, Obese);
   private void SetWeight(Weight weight)
   {
     Malnutrition = weight.Malnutrition?.Value;

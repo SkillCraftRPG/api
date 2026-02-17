@@ -14,7 +14,7 @@ internal class LineageLanguageEntity
   {
     Lineage = lineage;
     LineageId = lineage.LineageId;
-    LanguageUid = lineage.Id;
+    LineageUid = lineage.Id;
 
     Language = language;
     LanguageId = language.LanguageId;

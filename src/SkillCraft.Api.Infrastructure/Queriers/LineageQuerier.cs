@@ -54,13 +54,14 @@ internal class LineageQuerier : ILineageQuerier
   public async Task<SearchResults<LineageModel>> SearchAsync(SearchLineagesPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(GameDb.Lineages.Table).SelectAll(GameDb.Lineages.Table)
-      .ApplyIdFilter(GameDb.Lineages.Id, payload.Ids);
+      .ApplyIdFilter(GameDb.Lineages.Id, payload.Ids)
+      .Where(GameDb.Lineages.ParentUid, payload.ParentId.HasValue ? Operators.IsEqualTo(payload.ParentId.Value) : Operators.IsNull());
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Lineages.Name, GameDb.Lineages.Summary);
 
     if (payload.LanguageId.HasValue)
     {
       OperatorCondition condition = new(GameDb.LineageLanguages.LanguageUid, Operators.IsEqualTo(payload.LanguageId.Value));
-      builder.LeftJoin(GameDb.LineageLanguages.LineageId, GameDb.Lineages.LineageId, condition);
+      builder.Join(GameDb.LineageLanguages.LineageId, GameDb.Lineages.LineageId, condition);
     }
     if (payload.SizeCategory.HasValue)
     {
