@@ -25,6 +25,8 @@ internal class LanguageEntity : AggregateEntity, IWorldScoped
 
   public string? TypicalSpeakers { get; private set; }
 
+  public List<LineageLanguageEntity> Lineages { get; private set; } = [];
+
   public LanguageEntity(WorldEntity world, LanguageCreated @event) : base(@event)
   {
     Id = new LanguageId(@event.StreamId).EntityId;

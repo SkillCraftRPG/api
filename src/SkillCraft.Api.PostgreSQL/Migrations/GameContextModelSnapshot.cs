@@ -390,6 +390,207 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.ToTable("Languages", "Game");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
+                {
+                    b.Property<int>("LineageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineageId"));
+
+                    b.Property<int?>("Adult")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Burrow")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Climb")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ExtraLanguages")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FamilyNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Features")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FemaleNames")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Fly")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Height")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<bool>("Hover")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LanguagesText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MaleNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Malnutrition")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("Mature")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NamesText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Normal")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Obese")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Overweight")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ParentUid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SizeCategory")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Skinny")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<int?>("Swim")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Teenager")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UnisexNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Venerable")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Walk")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorldUid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LineageId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("ParentUid");
+
+                    b.HasIndex("SizeCategory");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("Summary");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldUid");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.ToTable("Lineages", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageLanguageEntity", b =>
+                {
+                    b.Property<int>("LineageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LanguageUid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LineageUid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LineageId", "LanguageId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("LanguageUid");
+
+                    b.HasIndex("LineageUid");
+
+                    b.ToTable("LineageLanguages", "Game");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.PartyEntity", b =>
                 {
                     b.Property<int>("PartyId")
@@ -876,6 +1077,43 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Lineages")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageLanguageEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", "Language")
+                        .WithMany("Lineages")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", "Lineage")
+                        .WithMany("Languages")
+                        .HasForeignKey("LineageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Lineage");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.PartyEntity", b =>
                 {
                     b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
@@ -938,6 +1176,18 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", b =>
+                {
+                    b.Navigation("Lineages");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("Languages");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ScriptEntity", b =>
                 {
                     b.Navigation("Languages");
@@ -962,6 +1212,8 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("Educations");
 
                     b.Navigation("Languages");
+
+                    b.Navigation("Lineages");
 
                     b.Navigation("Parties");
 

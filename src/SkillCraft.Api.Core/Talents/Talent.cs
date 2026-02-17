@@ -1,4 +1,6 @@
-﻿using Logitar.EventSourcing;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Worlds;
@@ -123,10 +125,27 @@ public class Talent : AggregateRoot, IEntityProvider
   {
     if (RequiredTalentId != requiredTalent?.Id)
     {
-      if (requiredTalent is not null && requiredTalent.Tier.Value > Tier.Value)
+      if (requiredTalent is not null)
       {
-        throw new ArgumentException("The required talent tier must be lower than or equal to the requiring talent tier.", nameof(requiredTalent));
+        if (requiredTalent.WorldId != WorldId)
+        {
+          throw new ArgumentException($"The required (WorldId={requiredTalent.WorldId}) and requiring (WorldId={WorldId}) talents should be in the same world.", nameof(requiredTalent));
+        }
+        else if (requiredTalent.Tier.Value > Tier.Value)
+        {
+          ValidationFailure failure = new(nameof(RequiredTalentId), "The required talent tier should be lower than or equal to the requiring talent tier.", requiredTalent.EntityId)
+          {
+            CustomState = new
+            {
+              Tier = Tier.Value,
+              RequiredTalentTier = requiredTalent.Tier.Value
+            },
+            ErrorCode = "InvalidTalentRequirement"
+          };
+          throw new ValidationException([failure]);
+        }
       }
+
       RequiredTalentId = requiredTalent?.Id;
       _updated.RequiredTalentId = new Change<TalentId?>(requiredTalent?.Id);
     }

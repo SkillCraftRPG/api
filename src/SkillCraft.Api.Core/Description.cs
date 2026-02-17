@@ -5,6 +5,8 @@ namespace SkillCraft.Api.Core;
 public record Description
 {
   public string Value { get; }
+
+  [JsonIgnore]
   public long Size => Value.Length;
 
   public Description(string value)

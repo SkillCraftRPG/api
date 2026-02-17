@@ -1,10 +1,12 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace SkillCraft.Api.Core.Languages;
 
 public record TypicalSpeakers
 {
   public string Value { get; }
+
+  [JsonIgnore]
   public long Size => Value.Length;
 
   public TypicalSpeakers(string value)

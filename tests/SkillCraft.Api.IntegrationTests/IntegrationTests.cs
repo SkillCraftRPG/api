@@ -78,6 +78,7 @@ public abstract class IntegrationTests : IAsyncLifetime
       GameDb.StorageSummary.Table,
       GameDb.Parties.Table,
       GameDb.Talents.Table,
+      GameDb.Lineages.Table,
       GameDb.Languages.Table,
       GameDb.Scripts.Table,
       GameDb.Educations.Table,

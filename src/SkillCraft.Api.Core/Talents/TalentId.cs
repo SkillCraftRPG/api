@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents;

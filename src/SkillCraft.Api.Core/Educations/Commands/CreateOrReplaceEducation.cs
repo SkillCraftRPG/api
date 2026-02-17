@@ -70,7 +70,7 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
 
     education.Skill = payload.Skill;
     education.WealthMultiplier = WealthMultiplier.TryCreate(payload.WealthMultiplier);
-    education.Feature = payload.Feature is null ? null : new Feature(new Name(payload.Feature.Name), Description.TryCreate(payload.Feature.Description));
+    education.Feature = payload.Feature is null ? null : Feature.Create(payload.Feature.Name, payload.Feature.Description);
 
     education.Update(userId);
 

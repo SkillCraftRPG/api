@@ -7,6 +7,7 @@ using SkillCraft.Api.Contracts.Castes;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Contracts.Educations;
 using SkillCraft.Api.Contracts.Languages;
+using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Contracts.Scripts;
 using SkillCraft.Api.Contracts.Talents;
@@ -64,6 +65,66 @@ internal class GameMapper
       Summary = source.Summary,
       Description = source.Description
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public EducationModel ToEducation(EducationEntity source)
+  {
+    EducationModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      Skill = source.Skill,
+      WealthMultiplier = source.WealthMultiplier
+    };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LineageModel ToLineage(LineageEntity source)
+  {
+    LineageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      Names = source.GetNames(),
+      Speeds = source.GetSpeeds(),
+      Size = source.GetSize(),
+      Weight = source.GetWeight(),
+      Age = new AgeModel(source.Teenager, source.Adult, source.Mature, source.Venerable)
+    };
+    destination.Features.AddRange(source.GetFeatures());
+
+    if (source.Parent is not null)
+    {
+      destination.Parent = ToLineage(source.Parent);
+    }
+    else if (source.ParentId.HasValue)
+    {
+      throw new ArgumentException("The parent is required.", nameof(source));
+    }
+
+    foreach (LineageLanguageEntity entity in source.Languages)
+    {
+      LanguageEntity language = entity.Language ?? throw new ArgumentException("The language is required.", nameof(source));
+      destination.Languages.Items.Add(ToLanguage(language));
+    }
+    destination.Languages.Extra = source.ExtraLanguages;
+    destination.Languages.Text = source.LanguagesText;
 
     MapAggregate(source, destination);
 
@@ -140,28 +201,6 @@ internal class GameMapper
     else if (source.ScriptId.HasValue)
     {
       throw new ArgumentException("The script is required.", nameof(source));
-    }
-
-    MapAggregate(source, destination);
-
-    return destination;
-  }
-
-  public EducationModel ToEducation(EducationEntity source)
-  {
-    EducationModel destination = new()
-    {
-      Id = source.Id,
-      Name = source.Name,
-      Summary = source.Summary,
-      Description = source.Description,
-      Skill = source.Skill,
-      WealthMultiplier = source.WealthMultiplier
-    };
-
-    if (source.FeatureName is not null)
-    {
-      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
     }
 
     MapAggregate(source, destination);

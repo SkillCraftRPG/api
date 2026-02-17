@@ -6,6 +6,7 @@ public static class Actions
   public const string CreateCustomization = "CreateCustomization";
   public const string CreateEducation = "CreateEducation";
   public const string CreateLanguage = "CreateLanguage";
+  public const string CreateLineage = "CreateLineage";
   public const string CreateParty = "CreateParty";
   public const string CreateScript = "CreateScript";
   public const string CreateTalent = "CreateTalent";
