@@ -10,12 +10,11 @@ namespace SkillCraft.Api.Core.Talents.Commands;
 
 internal record CreateOrReplaceTalentCommand(CreateOrReplaceTalentPayload Payload, Guid? Id) : ICommand<CreateOrReplaceTalentResult>;
 
-internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrReplaceTalentCommand, CreateOrReplaceTalentResult>
+internal class CreateOrReplaceTalentCommandHandler : SaveTalent, ICommandHandler<CreateOrReplaceTalentCommand, CreateOrReplaceTalentResult>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly ITalentQuerier _talentQuerier;
-  private readonly ITalentRepository _talentRepository;
   private readonly IStorageService _storageService;
 
   public CreateOrReplaceTalentCommandHandler(
@@ -23,12 +22,11 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
     IPermissionService permissionService,
     ITalentQuerier talentQuerier,
     ITalentRepository talentRepository,
-    IStorageService storageService)
+    IStorageService storageService) : base(talentRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _talentQuerier = talentQuerier;
-    _talentRepository = talentRepository;
     _storageService = storageService;
   }
 
@@ -45,7 +43,7 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
     if (command.Id.HasValue)
     {
       talentId = new(command.Id.Value, worldId);
-      talent = await _talentRepository.LoadAsync(talentId, cancellationToken);
+      talent = await TalentRepository.LoadAsync(talentId, cancellationToken);
     }
 
     Name name = new(payload.Name);
@@ -70,28 +68,16 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
 
     talent.AllowMultiplePurchases = payload.AllowMultiplePurchases;
     talent.Skill = payload.Skill;
-    await SetRequiredTalentAsync(talent, payload, worldId, cancellationToken);
+    await SetRequiredTalentAsync(talent, payload.RequiredTalentId, worldId, cancellationToken);
 
     talent.Update(userId);
 
     await _storageService.ExecuteWithQuotaAsync(
       talent,
-      async () => await _talentRepository.SaveAsync(talent, cancellationToken),
+      async () => await TalentRepository.SaveAsync(talent, cancellationToken),
       cancellationToken);
 
     TalentModel model = await _talentQuerier.ReadAsync(talent, cancellationToken);
     return new CreateOrReplaceTalentResult(model, created);
-  }
-
-  private async Task SetRequiredTalentAsync(Talent talent, CreateOrReplaceTalentPayload payload, WorldId worldId, CancellationToken cancellationToken)
-  {
-    Talent? requiredTalent = null;
-    if (payload.RequiredTalentId.HasValue)
-    {
-      TalentId requiredTalentId = new(payload.RequiredTalentId.Value, worldId);
-      requiredTalent = await _talentRepository.LoadAsync(requiredTalentId, cancellationToken)
-        ?? throw new EntityNotFoundException(new Entity(Talent.EntityKind, payload.RequiredTalentId.Value, worldId), nameof(payload.RequiredTalentId));
-    }
-    talent.SetRequiredTalent(requiredTalent);
   }
 }

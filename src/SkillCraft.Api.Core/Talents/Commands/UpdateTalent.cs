@@ -10,12 +10,11 @@ namespace SkillCraft.Api.Core.Talents.Commands;
 
 internal record UpdateTalentCommand(Guid Id, UpdateTalentPayload Payload) : ICommand<TalentModel?>;
 
-internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand, TalentModel?>
+internal class UpdateTalentCommandHandler : SaveTalent, ICommandHandler<UpdateTalentCommand, TalentModel?>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly ITalentQuerier _talentQuerier;
-  private readonly ITalentRepository _talentRepository;
   private readonly IStorageService _storageService;
 
   public UpdateTalentCommandHandler(
@@ -23,12 +22,11 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
     IPermissionService permissionService,
     ITalentQuerier talentQuerier,
     ITalentRepository talentRepository,
-    IStorageService storageService)
+    IStorageService storageService) : base(talentRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _talentQuerier = talentQuerier;
-    _talentRepository = talentRepository;
     _storageService = storageService;
   }
 
@@ -40,7 +38,7 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
     WorldId worldId = _context.WorldId;
 
     TalentId talentId = new(command.Id, worldId);
-    Talent? talent = await _talentRepository.LoadAsync(talentId, cancellationToken);
+    Talent? talent = await TalentRepository.LoadAsync(talentId, cancellationToken);
     if (talent is null)
     {
       return null;
@@ -68,30 +66,18 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
     {
       talent.Skill = payload.Skill.Value;
     }
-    await SetRequiredTalentAsync(talent, payload, worldId, cancellationToken);
+    if (payload.RequiredTalentId is not null)
+    {
+      await SetRequiredTalentAsync(talent, payload.RequiredTalentId.Value, worldId, cancellationToken);
+    }
 
     talent.Update(_context.UserId);
 
     await _storageService.ExecuteWithQuotaAsync(
       talent,
-      async () => await _talentRepository.SaveAsync(talent, cancellationToken),
+      async () => await TalentRepository.SaveAsync(talent, cancellationToken),
       cancellationToken);
 
     return await _talentQuerier.ReadAsync(talent, cancellationToken);
-  }
-
-  private async Task SetRequiredTalentAsync(Talent talent, UpdateTalentPayload payload, WorldId worldId, CancellationToken cancellationToken)
-  {
-    if (payload.RequiredTalentId is not null)
-    {
-      Talent? requiredTalent = null;
-      if (payload.RequiredTalentId.Value.HasValue)
-      {
-        TalentId requiredTalentId = new(payload.RequiredTalentId.Value.Value, worldId);
-        requiredTalent = await _talentRepository.LoadAsync(requiredTalentId, cancellationToken)
-          ?? throw new EntityNotFoundException(new Entity(Talent.EntityKind, payload.RequiredTalentId.Value.Value, worldId), nameof(payload.RequiredTalentId));
-      }
-      talent.SetRequiredTalent(requiredTalent);
-    }
   }
 }
