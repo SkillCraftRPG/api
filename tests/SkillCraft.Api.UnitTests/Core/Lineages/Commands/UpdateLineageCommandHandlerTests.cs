@@ -43,20 +43,23 @@ public class UpdateLineageCommandHandlerTests
       Summary = new Update<string>(_faker.Random.String(length: 999)),
       Features = [new FeatureModel()],
       Languages = new LanguagesPayload(extra: -1),
+      Names = new NamesModel(),
       Speeds = new SpeedsModel(walk: -6, hover: true, burrow: 0),
       Size = new SizeModel((SizeCategory)(-999), "invalid"),
       Weight = new WeightModel(normal: "invalid"),
       Age = new AgeModel(30, 100, 750, 275)
     };
+    payload.Names.Custom.Add(new NameCategory(_faker.Random.String(length: 999)));
 
     UpdateLineageCommand command = new(Guid.Empty, payload);
     var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
 
-    Assert.Equal(11, exception.Errors.Count());
+    Assert.Equal(12, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Summary.Value");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Features[0].Name");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanOrEqualValidator" && e.PropertyName == "Languages.Extra");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Names.Custom[0].Category");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "Speeds.Walk.Value");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotNullValidator" && e.PropertyName == "Speeds.Fly");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "Speeds.Burrow.Value");

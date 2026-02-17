@@ -50,17 +50,22 @@ public record Names
     Unisex = Sanitize(unisex);
 
     Dictionary<string, IReadOnlyCollection<string>> customSanitized = new(capacity: custom.Count);
-    foreach (KeyValuePair<string, IReadOnlyCollection<string>> category in custom)
+    foreach (KeyValuePair<string, IReadOnlyCollection<string>> pair in custom)
     {
-      if (string.IsNullOrWhiteSpace(category.Key))
+      string category = pair.Key.Trim();
+      IReadOnlyCollection<string> names = Sanitize(pair.Value);
+
+      if (category.Length < 1)
       {
         throw new ArgumentException("The category key is required.", nameof(custom));
       }
-
-      IReadOnlyCollection<string> names = Sanitize(category.Value);
-      if (names.Count > 0)
+      else if (category.Length > Name.MaximumLength)
       {
-        customSanitized[category.Key.Trim()] = names;
+        throw new ArgumentException($"The category name '{pair.Key}' must not exceed {Name.MaximumLength} characters.", nameof(custom));
+      }
+      else if (names.Count > 0)
+      {
+        customSanitized[category] = names;
       }
     }
     Custom = customSanitized.AsReadOnly();
