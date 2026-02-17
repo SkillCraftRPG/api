@@ -186,7 +186,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0); // TODO(fpion): Features, Languages, Names, Size, Weight
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Languages.Size + Names.Size + (Size.Height?.Size ?? 0) + Weight.Size; // TODO(fpion): Features
 
   public void Delete(UserId userId)
   {

@@ -8,6 +8,8 @@ public record Roll
   public const string Pattern = "^(?:([1-9]\\d{0,2})\\+)?((?:100|[1-9]\\d?))[dD]((?:100|[1-9]\\d?))$";
 
   public string Value { get; }
+
+  [JsonIgnore]
   public long Size => Value.Length;
 
   public Roll(string value)

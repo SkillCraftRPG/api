@@ -8,6 +8,9 @@ public record Weight
   public Roll? Overweight { get; }
   public Roll? Obese { get; }
 
+  [JsonIgnore]
+  public long Size => (Malnutrition?.Size ?? 0) + (Skinny?.Size ?? 0) + (Normal?.Size ?? 0) + (Overweight?.Size ?? 0) + (Obese?.Size ?? 0);
+
   public Weight()
   {
   }

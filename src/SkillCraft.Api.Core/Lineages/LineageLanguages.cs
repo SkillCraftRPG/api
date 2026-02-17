@@ -9,6 +9,9 @@ public record LineageLanguages // TODO(fpion): rename
   public int Extra { get; }
   public Description? Text { get; }
 
+  [JsonIgnore]
+  public long Size => Text?.Size ?? 0;
+
   public LineageLanguages()
   {
   }

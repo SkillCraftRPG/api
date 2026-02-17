@@ -9,6 +9,9 @@ public record Names
   public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Custom { get; }
   public Description? Text { get; }
 
+  [JsonIgnore]
+  public long Size => Family.Sum(name => name.Length) + Female.Sum(name => name.Length) + Male.Sum(name => name.Length) + Unisex.Sum(name => name.Length) + (Text?.Size ?? 0); // TODO(fpion): Custom
+
   public Names() : this([], [], [], [], new Dictionary<string, IReadOnlyCollection<string>>())
   {
   }
