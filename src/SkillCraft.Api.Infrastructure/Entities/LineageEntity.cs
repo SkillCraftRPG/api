@@ -56,10 +56,10 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public string? Overweight { get; private set; }
   public string? Obese { get; private set; }
 
-  public int Teenager { get; private set; }
-  public int Adult { get; private set; }
-  public int Mature { get; private set; }
-  public int Venerable { get; private set; }
+  public int? Teenager { get; private set; }
+  public int? Adult { get; private set; }
+  public int? Mature { get; private set; }
+  public int? Venerable { get; private set; }
 
   public LineageEntity(WorldEntity world, LineageEntity? parent, LineageCreated @event) : base(@event)
   {

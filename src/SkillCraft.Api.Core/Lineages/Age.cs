@@ -6,10 +6,10 @@ namespace SkillCraft.Api.Core.Lineages;
 
 public record Age : IAge
 {
-  public int Teenager { get; }
-  public int Adult { get; }
-  public int Mature { get; }
-  public int Venerable { get; }
+  public int? Teenager { get; }
+  public int? Adult { get; }
+  public int? Mature { get; }
+  public int? Venerable { get; }
 
   public Age()
   {
@@ -20,7 +20,7 @@ public record Age : IAge
   }
 
   [JsonConstructor]
-  public Age(int teenager, int adult, int mature, int venerable)
+  public Age(int? teenager, int? adult, int? mature, int? venerable)
   {
     Teenager = teenager;
     Adult = adult;
