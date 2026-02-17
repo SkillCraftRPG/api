@@ -63,7 +63,11 @@ public class Education : AggregateRoot, IEntityProvider
     get => _skill;
     set
     {
-      if (_skill != value)
+      if (value.HasValue && !Enum.IsDefined(value.Value))
+      {
+        throw new ArgumentOutOfRangeException(nameof(Skill));
+      }
+      else if (_skill != value)
       {
         _skill = value;
         _updated.Skill = new Change<GameSkill?>(value);
