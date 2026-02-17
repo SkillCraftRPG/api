@@ -6,12 +6,12 @@ namespace SkillCraft.Api.Core.Lineages;
 
 public record Speeds : ISpeeds
 {
-  public int Walk { get; set; }
-  public int Climb { get; set; }
-  public int Swim { get; set; }
-  public int Fly { get; set; }
+  public int? Walk { get; set; }
+  public int? Climb { get; set; }
+  public int? Swim { get; set; }
+  public int? Fly { get; set; }
   public bool Hover { get; set; }
-  public int Burrow { get; set; }
+  public int? Burrow { get; set; }
 
   public Speeds()
   {
@@ -22,7 +22,7 @@ public record Speeds : ISpeeds
   }
 
   [JsonConstructor]
-  public Speeds(int walk, int climb, int swim, int fly, bool hover, int burrow)
+  public Speeds(int? walk, int? climb, int? swim, int? fly, bool hover, int? burrow)
   {
     Walk = walk;
     Climb = climb;

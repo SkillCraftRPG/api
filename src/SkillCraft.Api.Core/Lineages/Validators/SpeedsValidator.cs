@@ -7,10 +7,11 @@ internal class SpeedsValidator : AbstractValidator<ISpeeds>
 {
   public SpeedsValidator()
   {
-    RuleFor(x => x.Walk).GreaterThanOrEqualTo(0);
-    RuleFor(x => x.Climb).GreaterThanOrEqualTo(0);
-    RuleFor(x => x.Swim).GreaterThanOrEqualTo(0);
-    When(x => x.Hover, () => RuleFor(x => x.Fly).GreaterThan(0)).Otherwise(() => RuleFor(x => x.Fly).GreaterThanOrEqualTo(0));
-    RuleFor(x => x.Burrow).GreaterThanOrEqualTo(0);
+    When(x => x.Walk.HasValue, () => RuleFor(x => x.Walk!.Value).GreaterThan(0));
+    When(x => x.Climb.HasValue, () => RuleFor(x => x.Climb!.Value).GreaterThan(0));
+    When(x => x.Swim.HasValue, () => RuleFor(x => x.Swim!.Value).GreaterThan(0));
+    When(x => x.Fly.HasValue, () => RuleFor(x => x.Fly!.Value).GreaterThan(0));
+    When(x => x.Hover, () => RuleFor(x => x.Fly).NotNull());
+    When(x => x.Burrow.HasValue, () => RuleFor(x => x.Burrow!.Value).GreaterThan(0));
   }
 }
