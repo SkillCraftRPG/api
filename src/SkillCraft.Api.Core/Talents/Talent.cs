@@ -106,6 +106,7 @@ public class Talent : AggregateRoot, IEntityProvider
   protected virtual void Handle(TalentCreated @event)
   {
     _tier = @event.Tier;
+
     _name = @event.Name;
   }
 
