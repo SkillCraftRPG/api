@@ -8,7 +8,7 @@ using SkillCraft.Api.Infrastructure.Actors;
 
 namespace SkillCraft.Api;
 
-internal class TestContext : IContext
+internal class IntegrationTestContext : IContext
 {
   public User? User { get; set; }
   public WorldModel? World { get; set; }
