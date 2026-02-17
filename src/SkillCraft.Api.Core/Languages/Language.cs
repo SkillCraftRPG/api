@@ -104,7 +104,11 @@ public class Language : AggregateRoot, IEntityProvider
 
   public void SetScript(Script? script)
   {
-    if (ScriptId != script?.Id)
+    if (script is not null && script.WorldId != WorldId)
+    {
+      throw new ArgumentException($"The script (WorldId={script.WorldId}) and language (WorldId={WorldId}) should be in the same world.", nameof(script));
+    }
+    else if (ScriptId != script?.Id)
     {
       ScriptId = script?.Id;
       _updated.ScriptId = new Change<ScriptId?>(script?.Id);

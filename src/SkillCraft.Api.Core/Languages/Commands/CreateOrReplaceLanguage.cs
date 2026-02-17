@@ -11,13 +11,12 @@ namespace SkillCraft.Api.Core.Languages.Commands;
 
 internal record CreateOrReplaceLanguageCommand(CreateOrReplaceLanguagePayload Payload, Guid? Id) : ICommand<CreateOrReplaceLanguageResult>;
 
-internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrReplaceLanguageCommand, CreateOrReplaceLanguageResult>
+internal class CreateOrReplaceLanguageCommandHandler : SaveLanguage, ICommandHandler<CreateOrReplaceLanguageCommand, CreateOrReplaceLanguageResult>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly ILanguageQuerier _languageQuerier;
   private readonly ILanguageRepository _languageRepository;
-  private readonly IScriptRepository _scriptRepository;
   private readonly IStorageService _storageService;
 
   public CreateOrReplaceLanguageCommandHandler(
@@ -26,13 +25,12 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     ILanguageQuerier languageQuerier,
     ILanguageRepository languageRepository,
     IScriptRepository scriptRepository,
-    IStorageService storageService)
+    IStorageService storageService) : base(scriptRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _languageQuerier = languageQuerier;
     _languageRepository = languageRepository;
-    _scriptRepository = scriptRepository;
     _storageService = storageService;
   }
 
@@ -72,7 +70,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     language.Summary = Summary.TryCreate(payload.Summary);
     language.Description = Description.TryCreate(payload.Description);
 
-    await SetScriptAsync(language, payload, worldId, cancellationToken);
+    await SetScriptAsync(language, payload.ScriptId, worldId, cancellationToken);
     language.TypicalSpeakers = TypicalSpeakers.TryCreate(payload.TypicalSpeakers);
 
     language.Update(userId);
@@ -84,17 +82,5 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
 
     LanguageModel model = await _languageQuerier.ReadAsync(language, cancellationToken);
     return new CreateOrReplaceLanguageResult(model, created);
-  }
-
-  private async Task SetScriptAsync(Language language, CreateOrReplaceLanguagePayload payload, WorldId worldId, CancellationToken cancellationToken)
-  {
-    Script? script = null;
-    if (payload.ScriptId.HasValue)
-    {
-      ScriptId scriptId = new(payload.ScriptId.Value, worldId);
-      script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
-        ?? throw new EntityNotFoundException(new Entity(Script.EntityKind, payload.ScriptId.Value), nameof(payload.ScriptId));
-    }
-    language.SetScript(script);
   }
 }
