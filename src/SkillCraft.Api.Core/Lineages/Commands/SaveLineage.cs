@@ -24,7 +24,7 @@ internal abstract class SaveLineage
       HashSet<LanguageId> missingIds = languageIds.Except(languages.Select(language => language.Id)).ToHashSet();
       if (missingIds.Count > 0)
       {
-        throw new NotImplementedException(); // TODO(fpion): 404 Not Found
+        throw new LanguagesNotFoundException(worldId, missingIds, propertyName: "Languages.Ids");
       }
     }
     lineage.Languages = new LineageLanguages(languages, payload.Extra, Description.TryCreate(payload.Text));
