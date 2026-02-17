@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Languages;
 using SkillCraft.Api.Core.Languages.Validators;
@@ -11,13 +11,12 @@ namespace SkillCraft.Api.Core.Languages.Commands;
 
 internal record UpdateLanguageCommand(Guid Id, UpdateLanguagePayload Payload) : ICommand<LanguageModel?>;
 
-internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageCommand, LanguageModel?>
+internal class UpdateLanguageCommandHandler : SaveLanguage, ICommandHandler<UpdateLanguageCommand, LanguageModel?>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly ILanguageQuerier _languageQuerier;
   private readonly ILanguageRepository _languageRepository;
-  private readonly IScriptRepository _scriptRepository;
   private readonly IStorageService _storageService;
 
   public UpdateLanguageCommandHandler(
@@ -26,13 +25,12 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     ILanguageQuerier languageQuerier,
     ILanguageRepository languageRepository,
     IScriptRepository scriptRepository,
-    IStorageService storageService)
+    IStorageService storageService) : base(scriptRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _languageQuerier = languageQuerier;
     _languageRepository = languageRepository;
-    _scriptRepository = scriptRepository;
     _storageService = storageService;
   }
 
@@ -64,7 +62,10 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
       language.Description = Description.TryCreate(payload.Description.Value);
     }
 
-    await SetScriptAsync(language, payload, worldId, cancellationToken);
+    if (payload.ScriptId is not null)
+    {
+      await SetScriptAsync(language, payload.ScriptId.Value, worldId, cancellationToken);
+    }
     if (payload.TypicalSpeakers is not null)
     {
       language.TypicalSpeakers = TypicalSpeakers.TryCreate(payload.TypicalSpeakers.Value);
@@ -78,20 +79,5 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
       cancellationToken);
 
     return await _languageQuerier.ReadAsync(language, cancellationToken);
-  }
-
-  private async Task SetScriptAsync(Language language, UpdateLanguagePayload payload, WorldId worldId, CancellationToken cancellationToken)
-  {
-    if (payload.ScriptId is not null)
-    {
-      Script? script = null;
-      if (payload.ScriptId.Value.HasValue)
-      {
-        ScriptId scriptId = new(payload.ScriptId.Value.Value, worldId);
-        script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
-          ?? throw new EntityNotFoundException(new Entity(Script.EntityKind, payload.ScriptId.Value.Value), nameof(payload.ScriptId));
-      }
-      language.SetScript(script);
-    }
   }
 }
