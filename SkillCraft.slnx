@@ -11,6 +11,7 @@
   <Folder Name="/Tests/">
     <Project Path="tests/SkillCraft.Api.IntegrationTests/SkillCraft.Api.IntegrationTests.csproj" Id="2ad1a078-24a0-4ff2-8f79-b949a35c7e64" />
     <Project Path="tests/SkillCraft.Api.Tests/SkillCraft.Api.Tests.csproj" Id="4f691ea9-0951-4811-aaec-f51619334572" />
+    <Project Path="tests/SkillCraft.Api.UnitTests/SkillCraft.Api.UnitTests.csproj" Id="cb05856f-cfe9-4283-aec5-21530a69f704" />
   </Folder>
   <Project Path="src/SkillCraft.Api.Client/SkillCraft.Api.Client.csproj" Id="c023e717-3c10-44fb-abcc-6e3157acfdf7" />
   <Project Path="src/SkillCraft.Api.Contracts/SkillCraft.Api.Contracts.csproj" />

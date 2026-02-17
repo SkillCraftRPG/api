@@ -26,7 +26,7 @@ public abstract class IntegrationTests : IAsyncLifetime
 {
   protected Faker Faker { get; } = new();
 
-  private readonly TestContext _context = new();
+  private readonly IntegrationTestContext _context = new();
   private readonly Mock<IUserService> _userService = new();
 
   protected Actor Actor => _context.User is null ? new() : new(_context.User);
