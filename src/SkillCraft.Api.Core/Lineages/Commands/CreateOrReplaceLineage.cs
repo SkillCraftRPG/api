@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Core.Languages;
@@ -66,21 +65,17 @@ internal class CreateOrReplaceLineageCommandHandler : SaveLineage, ICommandHandl
           ?? throw new EntityNotFoundException(new Entity(Lineage.EntityKind, payload.ParentId.Value, worldId), nameof(payload.ParentId));
       }
 
-      lineage = new Lineage(worldId, name, parent, userId, lineageId);
+      lineage = new Lineage(worldId, name, userId, parent, lineageId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, lineage, cancellationToken);
 
-      if (payload.ParentId != lineage.ParentId?.EntityId)
+      LineageId? parentId = payload.ParentId.HasValue ? new(payload.ParentId.Value, worldId) : null;
+      if (lineage.ParentId != parentId)
       {
-        ValidationFailure failure = new(nameof(payload.ParentId), "The lineage parent cannot be changed.", payload.ParentId)
-        {
-          CustomState = new { ParentId = lineage.ParentId?.EntityId },
-          ErrorCode = "LineageParentCannotBeChanged"
-        };
-        throw new ValidationException([failure]); // TODO(fpion): custom exception
+        throw new LineageParentCannotBeChangedException(lineage, parentId, nameof(payload.ParentId));
       }
 
       lineage.Name = name;

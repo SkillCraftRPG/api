@@ -9,7 +9,7 @@ internal class AgeValidator : AbstractValidator<IAge>
   {
     RuleFor(x => x).Must(HaveValidThresholds)
       .WithErrorCode(nameof(AgeValidator))
-      .WithMessage("'{PropertyName}' must be either all null or strictly increasing and greater than 0.");
+      .WithMessage("Age thresholds must be either all null or strictly increasing and greater than 0.");
   }
 
   private static bool HaveValidThresholds(IAge age)

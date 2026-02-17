@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
@@ -70,7 +68,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     get => _names;
     set
     {
-      if (_names != value) // TODO(fpion): probably won't work
+      if (_names != value)
       {
         _names = value;
         _updated.Names = value;
@@ -135,11 +133,11 @@ public class Lineage : AggregateRoot, IEntityProvider
   {
   }
 
-  public Lineage(World world, Name name, Lineage? parent, UserId userId, LineageId? lineageId = null)
-    : this(world.Id, name, parent, userId, lineageId)
+  public Lineage(World world, Name name, Lineage? parent = null, UserId? userId = null, LineageId? lineageId = null)
+    : this(world.Id, name, userId ?? world.OwnerId, parent, lineageId)
   {
   }
-  public Lineage(WorldId worldId, Name name, Lineage? parent, UserId userId, LineageId? lineageId = null)
+  public Lineage(WorldId worldId, Name name, UserId userId, Lineage? parent = null, LineageId? lineageId = null)
     : base((lineageId ?? LineageId.NewId(worldId)).StreamId)
   {
     if (parent is not null)
@@ -150,15 +148,7 @@ public class Lineage : AggregateRoot, IEntityProvider
       }
       else if (parent.ParentId.HasValue)
       {
-        ValidationFailure failure = new(nameof(ParentId), "The parent lineage should not have a parent.", parent.EntityId)
-        {
-          CustomState = new
-          {
-            ParentId = parent.ParentId.Value.EntityId
-          },
-          ErrorCode = "InvalidLineageParent"
-        };
-        throw new ValidationException([failure]); // TODO(fpion): custom exception
+        throw new InvalidParentLineageException(this, parent, nameof(ParentId));
       }
     }
 
@@ -188,8 +178,8 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   public void SetFeatures(IEnumerable<Feature> features)
   {
-    features = features.GroupBy(x => x.Name).Select(x => x.Last());
-    if (!Features.SequenceEqual(features)) // TODO(fpion): will it work
+    features = features.GroupBy(x => x.Name).Select(x => x.Last()).OrderBy(x => x.Name.Value);
+    if (!Features.SequenceEqual(features))
     {
       Features = features.ToList().AsReadOnly();
       _updated.Features = Features;
@@ -198,16 +188,16 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   public void SetLanguages(IEnumerable<Language> languages, int extra = 0, Description? text = null)
   {
-    LanguageProficiencies proficiencies = new(languages.Select(language => language.Id).ToArray(), extra, text);
-    if (Languages != proficiencies) // TODO(fpion): will it work?
+    if (languages.Any(language => language.WorldId != WorldId))
     {
-      if (languages.Any(language => language.WorldId != WorldId))
-      {
-        throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(languages));
-      }
+      throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(languages));
+    }
 
-      Languages = proficiencies;
-      _updated.Languages = proficiencies;
+    IEnumerable<LanguageId> languageIds = languages.Select(language => language.Id);
+    if (!Languages.Ids.SequenceEqual(languageIds) || Languages.Extra != extra || Languages.Text != text)
+    {
+      Languages = new LanguageProficiencies(languages, extra, text);
+      _updated.Languages = Languages;
     }
   }
 

@@ -7,6 +7,6 @@ internal class NameCategoryValidator : AbstractValidator<NameCategory>
 {
   public NameCategoryValidator()
   {
-    RuleFor(x => x.Category).NotEmpty();
+    RuleFor(x => x.Category).NotEmpty(); // TODO(fpion): maximum length
   }
 }

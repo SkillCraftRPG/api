@@ -64,7 +64,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
 
       if (payload.Kind != customization.Kind)
       {
-        throw new CannotChangeCustomizationKindException(customization, payload.Kind, nameof(payload.Kind));
+        throw new CustomizationKindCannotBeChangedException(customization, payload.Kind, nameof(payload.Kind));
       }
 
       customization.Name = name;
