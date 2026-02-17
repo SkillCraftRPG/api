@@ -57,6 +57,16 @@ internal class LineageQuerier : ILineageQuerier
       .ApplyIdFilter(GameDb.Lineages.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Lineages.Name, GameDb.Lineages.Summary);
 
+    if (payload.LanguageId.HasValue)
+    {
+      OperatorCondition condition = new(GameDb.LineageLanguages.LanguageUid, Operators.IsEqualTo(payload.LanguageId.Value));
+      builder.LeftJoin(GameDb.LineageLanguages.LineageId, GameDb.Lineages.LineageId, condition);
+    }
+    if (payload.SizeCategory.HasValue)
+    {
+      builder.Where(GameDb.Lineages.SizeCategory, Operators.IsEqualTo(payload.SizeCategory.Value.ToString()));
+    }
+
     IQueryable<LineageEntity> query = _lineages.FromQuery(builder).AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Include(x => x.Parent);
