@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -22,6 +22,10 @@ internal class SpecializationConfiguration : AggregateConfiguration<Specializati
 
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
+
+    // TODO(fpion): Requirements { Talent, Other }
+    // TODO(fpion): Options { Talents, Other }
+    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     builder.HasOne(x => x.World).WithMany(x => x.Specializations).OnDelete(DeleteBehavior.Restrict);
   }

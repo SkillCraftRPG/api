@@ -1,6 +1,4 @@
-using Logitar;
-using Logitar.EventSourcing;
-using SkillCraft.Api.Core.Specializations;
+﻿using SkillCraft.Api.Core.Specializations;
 using SkillCraft.Api.Core.Specializations.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -20,6 +18,10 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
+
+  // TODO(fpion): Requirements { Talent, Other }
+  // TODO(fpion): Options { Talents, Other }
+  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
   public SpecializationEntity(WorldEntity world, SpecializationCreated @event) : base(@event)
   {

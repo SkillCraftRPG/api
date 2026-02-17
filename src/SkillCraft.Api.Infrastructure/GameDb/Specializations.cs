@@ -1,4 +1,4 @@
-using Logitar.Data;
+﻿using Logitar.Data;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.GameDb;
@@ -22,4 +22,8 @@ internal static class Specializations
   public static readonly ColumnId Tier = new(nameof(SpecializationEntity.Tier), Table);
   public static readonly ColumnId WorldId = new(nameof(SpecializationEntity.WorldId), Table);
   public static readonly ColumnId WorldUid = new(nameof(SpecializationEntity.WorldUid), Table);
+
+  // TODO(fpion): Requirements { Talent, Other }
+  // TODO(fpion): Options { Talents, Other }
+  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 }

@@ -9,7 +9,7 @@ public class Specialization : AggregateRoot, IEntityProvider
   public const string EntityKind = "Specialization";
 
   private SpecializationUpdated _updated = new();
-  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null;
+  private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null; // TODO(fpion): other properties
 
   public new SpecializationId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -58,6 +58,10 @@ public class Specialization : AggregateRoot, IEntityProvider
     }
   }
 
+  // TODO(fpion): Requirements { Talent, Other }
+  // TODO(fpion): Options { Talents, Other }
+  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+
   public Specialization() : base()
   {
   }
@@ -80,7 +84,7 @@ public class Specialization : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0);
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0); // TODO(fpion): other properties
 
   public void Delete(UserId userId)
   {
@@ -114,6 +118,8 @@ public class Specialization : AggregateRoot, IEntityProvider
     {
       _description = @event.Description.Value;
     }
+
+    // TODO(fpion): other properties
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

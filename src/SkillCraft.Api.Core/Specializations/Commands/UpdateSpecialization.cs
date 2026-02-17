@@ -1,10 +1,9 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Specializations.Validators;
 using SkillCraft.Api.Core.Storages;
-using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Specializations.Commands;
 
@@ -57,6 +56,10 @@ internal class UpdateSpecializationCommandHandler : ICommandHandler<UpdateSpecia
     {
       specialization.Description = Description.TryCreate(payload.Description.Value);
     }
+
+    // TODO(fpion): Requirements { Talent, Other }
+    // TODO(fpion): Options { Talents, Other }
+    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     specialization.Update(_context.UserId);
 

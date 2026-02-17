@@ -12,5 +12,9 @@ internal class CreateOrReplaceSpecializationValidator : AbstractValidator<Create
     RuleFor(x => x.Name).Name();
     When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
     When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
+
+    // TODO(fpion): Requirements { Talent, Other }
+    // TODO(fpion): Options { Talents, Other }
+    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
   }
 }

@@ -220,6 +220,10 @@ internal class GameMapper
       Description = source.Description
     };
 
+    // TODO(fpion): Requirements { Talent, Other }
+    // TODO(fpion): Options { Talents, Other }
+    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+
     MapAggregate(source, destination);
 
     return destination;

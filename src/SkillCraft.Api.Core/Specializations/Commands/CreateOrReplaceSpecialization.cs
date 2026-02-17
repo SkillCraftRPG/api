@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core.Permissions;
@@ -68,6 +68,10 @@ internal class CreateOrReplaceSpecializationCommandHandler : ICommandHandler<Cre
 
     specialization.Summary = Summary.TryCreate(payload.Summary);
     specialization.Description = Description.TryCreate(payload.Description);
+
+    // TODO(fpion): Requirements { Talent, Other }
+    // TODO(fpion): Options { Talents, Other }
+    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     specialization.Update(userId);
 
