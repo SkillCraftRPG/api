@@ -11,10 +11,9 @@ namespace SkillCraft.Api.Core.Lineages.Commands;
 
 internal record UpdateLineageCommand(Guid Id, UpdateLineagePayload Payload) : ICommand<LineageModel?>;
 
-internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageCommand, LineageModel?>
+internal class UpdateLineageCommandHandler : SaveLineage, ICommandHandler<UpdateLineageCommand, LineageModel?>
 {
   private readonly IContext _context;
-  private readonly ILanguageRepository _languageRepository;
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
@@ -26,10 +25,9 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService,
-    IStorageService storageService)
+    IStorageService storageService) : base(languageRepository)
   {
     _context = context;
-    _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
@@ -64,7 +62,14 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
       lineage.Description = Description.TryCreate(payload.Description.Value);
     }
 
-    await SetLanguagesAsync(lineage, payload, worldId, cancellationToken);
+    if (payload.Languages is not null)
+    {
+      await SetLanguagesAsync(lineage, payload.Languages, worldId, cancellationToken);
+    }
+    if (payload.Names is not null)
+    {
+      SetNames(lineage, payload.Names);
+    }
 
     if (payload.Speeds is not null)
     {
@@ -72,16 +77,11 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     }
     if (payload.Size is not null)
     {
-      lineage.Size = new Size(payload.Size.Category, Roll.TryCreate(payload.Size.Height));
+      lineage.Size = Size.Create(payload.Size.Category, payload.Size.Height);
     }
     if (payload.Weight is not null)
     {
-      lineage.Weight = new Weight(
-        Roll.TryCreate(payload.Weight.Malnutrition),
-        Roll.TryCreate(payload.Weight.Skinny),
-        Roll.TryCreate(payload.Weight.Normal),
-        Roll.TryCreate(payload.Weight.Overweight),
-        Roll.TryCreate(payload.Weight.Obese));
+      lineage.Weight = Weight.Create(payload.Weight.Malnutrition, payload.Weight.Skinny, payload.Weight.Normal, payload.Weight.Overweight, payload.Weight.Obese);
     }
     if (payload.Age is not null)
     {
@@ -96,25 +96,5 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
       cancellationToken);
 
     return await _lineageQuerier.ReadAsync(lineage, cancellationToken);
-  }
-
-  private async Task SetLanguagesAsync(Lineage lineage, UpdateLineagePayload payload, WorldId worldId, CancellationToken cancellationToken)
-  {
-    if (payload.Languages is not null)
-    {
-      IReadOnlyCollection<Language> languages = [];
-      if (payload.Languages.Ids.Count > 0)
-      {
-        HashSet<LanguageId> languageIds = payload.Languages.Ids.Select(entityId => new LanguageId(entityId, worldId)).ToHashSet();
-        languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
-
-        HashSet<LanguageId> missingIds = languageIds.Except(languages.Select(language => language.Id)).ToHashSet();
-        if (missingIds.Count > 0)
-        {
-          throw new NotImplementedException(); // TODO(fpion): 404 Not Found
-        }
-      }
-      lineage.Languages = new LineageLanguages(languages, payload.Languages.Extra, Description.TryCreate(payload.Languages.Text));
-    }
   }
 }

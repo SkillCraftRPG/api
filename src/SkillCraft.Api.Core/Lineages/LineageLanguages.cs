@@ -3,7 +3,7 @@ using SkillCraft.Api.Core.Languages;
 
 namespace SkillCraft.Api.Core.Lineages;
 
-public record LineageLanguages
+public record LineageLanguages // TODO(fpion): rename
 {
   public IReadOnlyCollection<LanguageId> Ids { get; } = [];
   public int Extra { get; }

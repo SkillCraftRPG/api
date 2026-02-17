@@ -10,6 +10,7 @@ public class LineageModel : Aggregate
 
   public List<FeatureModel> Features { get; set; } = [];
   public LanguagesModel Languages { get; set; } = new();
+  public NamesModel Names { get; set; } = new();
 
   public SpeedsModel Speeds { get; set; } = new();
   public SizeModel Size { get; set; } = new();

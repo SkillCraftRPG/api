@@ -29,6 +29,13 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
   public int ExtraLanguages { get; private set; }
   public string? LanguagesText { get; private set; }
 
+  public string? FamilyNames { get; private set; }
+  public string? FemaleNames { get; private set; }
+  public string? MaleNames { get; private set; }
+  public string? UnisexNames { get; private set; }
+  public string? CustomNames { get; private set; }
+  public string? NamesText { get; private set; }
+
   public int Walk { get; private set; }
   public int Climb { get; private set; }
   public int Swim { get; private set; }
@@ -113,36 +120,104 @@ internal class LineageEntity : AggregateEntity, IWorldScoped
       ExtraLanguages = @event.Languages.Extra;
       LanguagesText = @event.Languages.Text?.Value;
     }
+    if (@event.Names is not null)
+    {
+      SetNames(@event.Names);
+    }
 
     if (@event.Speeds is not null)
     {
-      Walk = @event.Speeds.Walk;
-      Climb = @event.Speeds.Climb;
-      Swim = @event.Speeds.Swim;
-      Fly = @event.Speeds.Fly;
-      Hover = @event.Speeds.Hover;
-      Burrow = @event.Speeds.Burrow;
+      SetSpeeds(@event.Speeds);
     }
     if (@event.Size is not null)
     {
-      SizeCategory = @event.Size.Category;
-      Height = @event.Size.Height?.Value;
+      SetSize(@event.Size);
     }
     if (@event.Weight is not null)
     {
-      Malnutrition = @event.Weight.Malnutrition?.Value;
-      Skinny = @event.Weight.Skinny?.Value;
-      Normal = @event.Weight.Normal?.Value;
-      Overweight = @event.Weight.Overweight?.Value;
-      Obese = @event.Weight.Obese?.Value;
+      SetWeight(@event.Weight);
     }
     if (@event.Age is not null)
     {
-      Teenager = @event.Age.Teenager;
-      Adult = @event.Age.Adult;
-      Mature = @event.Age.Mature;
-      Venerable = @event.Age.Venerable;
+      SetAge(@event.Age);
     }
+  }
+
+  public NamesModel GetNames()
+  {
+    NamesModel names = new();
+    if (FamilyNames is not null)
+    {
+      names.Family.AddRange(JsonSerializer.Deserialize<string[]>(FamilyNames) ?? []);
+    }
+    if (FemaleNames is not null)
+    {
+      names.Female.AddRange(JsonSerializer.Deserialize<string[]>(FemaleNames) ?? []);
+    }
+    if (MaleNames is not null)
+    {
+      names.Male.AddRange(JsonSerializer.Deserialize<string[]>(MaleNames) ?? []);
+    }
+    if (UnisexNames is not null)
+    {
+      names.Unisex.AddRange(JsonSerializer.Deserialize<string[]>(UnisexNames) ?? []);
+    }
+    if (CustomNames is not null)
+    {
+      Dictionary<string, string[]> custom = JsonSerializer.Deserialize<Dictionary<string, string[]>>(CustomNames) ?? [];
+      foreach (KeyValuePair<string, string[]> nameCategory in custom)
+      {
+        names.Custom.Add(new NameCategory(nameCategory.Key, nameCategory.Value));
+      }
+    }
+    names.Text = NamesText;
+    return names;
+  }
+  private void SetNames(Names names)
+  {
+    FamilyNames = names.Family.Count < 1 ? null : JsonSerializer.Serialize(names.Family);
+    FemaleNames = names.Female.Count < 1 ? null : JsonSerializer.Serialize(names.Female);
+    MaleNames = names.Male.Count < 1 ? null : JsonSerializer.Serialize(names.Male);
+    UnisexNames = names.Unisex.Count < 1 ? null : JsonSerializer.Serialize(names.Unisex);
+    CustomNames = names.Custom.Count < 1 ? null : JsonSerializer.Serialize(names.Custom);
+    NamesText = names.Text?.Value;
+  }
+
+  public SpeedsModel GetSpeeds() => new(Walk, Climb, Swim, Fly, Hover, Burrow);
+  private void SetSpeeds(Speeds speeds)
+  {
+    Walk = speeds.Walk;
+    Climb = speeds.Climb;
+    Swim = speeds.Swim;
+    Fly = speeds.Fly;
+    Hover = speeds.Hover;
+    Burrow = speeds.Burrow;
+  }
+
+  public SizeModel GetSize() => new(SizeCategory, Height);
+  private void SetSize(Size size)
+  {
+    SizeCategory = size.Category;
+    Height = size.Height?.Value;
+  }
+
+  public WeightModel GetWeight() => new(MaleNames, Skinny, Normal, Overweight, Obese);
+  private void SetWeight(Weight weight)
+  {
+    Malnutrition = weight.Malnutrition?.Value;
+    Skinny = weight.Skinny?.Value;
+    Normal = weight.Normal?.Value;
+    Overweight = weight.Overweight?.Value;
+    Obese = weight.Obese?.Value;
+  }
+
+  public AgeModel GetAge() => new(Teenager, Adult, Mature, Venerable);
+  private void SetAge(Age age)
+  {
+    Teenager = age.Teenager;
+    Adult = age.Adult;
+    Mature = age.Mature;
+    Venerable = age.Venerable;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

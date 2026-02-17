@@ -11,5 +11,6 @@ internal class AgeValidator : AbstractValidator<IAge>
     RuleFor(x => x.Adult).GreaterThanOrEqualTo(0);
     RuleFor(x => x.Mature).GreaterThanOrEqualTo(0);
     RuleFor(x => x.Venerable).GreaterThanOrEqualTo(0);
+    // TODO(fpion): more validation?
   }
 }

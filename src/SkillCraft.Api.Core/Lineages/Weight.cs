@@ -21,4 +21,7 @@ public record Weight
     Overweight = overweight;
     Obese = obese;
   }
+
+  public static Weight Create(string? malnutrition, string? skinny, string? normal, string? overweight, string? obese)
+    => new(Roll.TryCreate(malnutrition), Roll.TryCreate(skinny), Roll.TryCreate(normal), Roll.TryCreate(overweight), Roll.TryCreate(obese));
 }

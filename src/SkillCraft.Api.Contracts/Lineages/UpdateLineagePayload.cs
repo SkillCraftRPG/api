@@ -8,6 +8,7 @@ public record UpdateLineagePayload
 
   public List<FeatureModel>? Features { get; set; }
   public LanguagesPayload? Languages { get; set; }
+  public NamesModel? Names { get; set; }
 
   public SpeedsModel? Speeds { get; set; }
   public SizeModel? Size { get; set; }

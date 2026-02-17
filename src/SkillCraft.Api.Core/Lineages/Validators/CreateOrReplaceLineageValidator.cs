@@ -11,6 +11,10 @@ internal class CreateOrReplaceLineageValidator : AbstractValidator<CreateOrRepla
     When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
     When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
 
+    // TODO(fpion): Features
+    RuleFor(x => x.Languages).SetValidator(new LanguagesValidator());
+    RuleFor(x => x.Names).SetValidator(new NamesValidator());
+
     RuleFor(x => x.Speeds).SetValidator(new SpeedsValidator());
     RuleFor(x => x.Size).SetValidator(new SizeValidator());
     RuleFor(x => x.Weight).SetValidator(new WeightValidator());

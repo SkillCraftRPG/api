@@ -20,6 +20,8 @@ public record Size
     new Validator().ValidateAndThrow(this);
   }
 
+  public static Size Create(SizeCategory category, string? height = null) => new(category, Roll.TryCreate(height));
+
   private class Validator : AbstractValidator<Size>
   {
     public Validator()

@@ -9,6 +9,7 @@ public record LineageUpdated : DomainEvent
   public Change<Description>? Description { get; set; }
 
   public LineageLanguages? Languages { get; set; }
+  public Names? Names { get; set; }
 
   public Speeds? Speeds { get; set; }
   public Size? Size { get; set; }

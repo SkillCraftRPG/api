@@ -12,7 +12,7 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   private LineageUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Languages is not null
+    || _updated.Languages is not null || _updated.Names is not null
     || _updated.Speeds is not null || _updated.Size is not null || _updated.Weight is not null || _updated.Age is not null;
 
   public new LineageId Id => new(base.Id);
@@ -76,6 +76,19 @@ public class Lineage : AggregateRoot, IEntityProvider
 
         _languages = value;
         _updated.Languages = value;
+      }
+    }
+  }
+  private Names _names = new();
+  public Names Names
+  {
+    get => _names;
+    set
+    {
+      if (_names != value)
+      {
+        _names = value;
+        _updated.Names = value;
       }
     }
   }
@@ -173,7 +186,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0);
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0); // TODO(fpion): Features, Languages, Names, Size, Weight
 
   public void Delete(UserId userId)
   {
@@ -211,6 +224,10 @@ public class Lineage : AggregateRoot, IEntityProvider
     if (@event.Languages is not null)
     {
       _languages = @event.Languages;
+    }
+    if (@event.Names is not null)
+    {
+      _names = @event.Names;
     }
 
     if (@event.Speeds is not null)
