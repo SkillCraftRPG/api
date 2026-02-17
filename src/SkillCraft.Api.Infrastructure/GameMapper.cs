@@ -10,6 +10,7 @@ using SkillCraft.Api.Contracts.Languages;
 using SkillCraft.Api.Contracts.Lineages;
 using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Contracts.Scripts;
+using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Contracts.Talents;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -86,6 +87,31 @@ internal class GameMapper
     if (source.FeatureName is not null)
     {
       destination.Feature = new FeatureModel(source.FeatureName, source.FeatureDescription);
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LanguageModel ToLanguage(LanguageEntity source)
+  {
+    LanguageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Description = source.Description,
+      TypicalSpeakers = source.TypicalSpeakers
+    };
+
+    if (source.Script is not null)
+    {
+      destination.Script = ToScript(source.Script);
+    }
+    else if (source.ScriptId.HasValue)
+    {
+      throw new ArgumentException("The script is required.", nameof(source));
     }
 
     MapAggregate(source, destination);
@@ -183,25 +209,16 @@ internal class GameMapper
     return destination;
   }
 
-  public LanguageModel ToLanguage(LanguageEntity source)
+  public SpecializationModel ToSpecialization(SpecializationEntity source)
   {
-    LanguageModel destination = new()
+    SpecializationModel destination = new()
     {
       Id = source.Id,
+      Tier = source.Tier,
       Name = source.Name,
       Summary = source.Summary,
-      Description = source.Description,
-      TypicalSpeakers = source.TypicalSpeakers
+      Description = source.Description
     };
-
-    if (source.Script is not null)
-    {
-      destination.Script = ToScript(source.Script);
-    }
-    else if (source.ScriptId.HasValue)
-    {
-      throw new ArgumentException("The script is required.", nameof(source));
-    }
 
     MapAggregate(source, destination);
 
