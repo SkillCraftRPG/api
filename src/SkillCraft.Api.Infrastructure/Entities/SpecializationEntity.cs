@@ -1,14 +1,13 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
-using SkillCraft.Api.Contracts;
-using SkillCraft.Api.Core.Talents;
-using SkillCraft.Api.Core.Talents.Events;
+using SkillCraft.Api.Core.Specializations;
+using SkillCraft.Api.Core.Specializations.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
-internal class TalentEntity : AggregateEntity, IWorldScoped
+internal class SpecializationEntity : AggregateEntity, IWorldScoped
 {
-  public int TalentId { get; private set; }
+  public int SpecializationId { get; private set; }
 
   public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
@@ -22,19 +21,18 @@ internal class TalentEntity : AggregateEntity, IWorldScoped
   public string? Summary { get; private set; }
   public string? Description { get; private set; }
 
-  public bool AllowMultiplePurchases { get; private set; }
-  public GameSkill? Skill { get; private set; }
-
   public TalentEntity? RequiredTalent { get; private set; }
   public int? RequiredTalentId { get; private set; }
   public Guid? RequiredTalentUid { get; private set; }
-  public List<TalentEntity> RequiringTalents { get; private set; } = [];
 
-  public List<SpecializationEntity> RequiringSpecializations { get; private set; } = [];
+  public string? OtherRequirements { get; private set; }
 
-  public TalentEntity(WorldEntity world, TalentCreated @event) : base(@event)
+  // TODO(fpion): Options { Talents, Other }
+  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+
+  public SpecializationEntity(WorldEntity world, SpecializationCreated @event) : base(@event)
   {
-    Id = new TalentId(@event.StreamId).EntityId;
+    Id = new SpecializationId(@event.StreamId).EntityId;
 
     World = world;
     WorldId = world.WorldId;
@@ -45,7 +43,7 @@ internal class TalentEntity : AggregateEntity, IWorldScoped
     Name = @event.Name.Value;
   }
 
-  private TalentEntity() : base()
+  private SpecializationEntity() : base()
   {
   }
 
@@ -59,7 +57,7 @@ internal class TalentEntity : AggregateEntity, IWorldScoped
     return actorIds;
   }
 
-  public void Update(TalentEntity? requiredTalent, TalentUpdated @event)
+  public void Update(TalentEntity? requiredTalent, SpecializationUpdated @event)
   {
     base.Update(@event);
 
@@ -76,20 +74,22 @@ internal class TalentEntity : AggregateEntity, IWorldScoped
       Description = @event.Description.Value?.Value;
     }
 
-    if (@event.AllowMultiplePurchases is not null)
-    {
-      AllowMultiplePurchases = @event.AllowMultiplePurchases.Value;
-    }
-    if (@event.Skill is not null)
-    {
-      Skill = @event.Skill.Value;
-    }
-    if (@event.RequiredTalentId is not null)
+    if (@event.Requirements is not null)
     {
       RequiredTalent = requiredTalent;
       RequiredTalentId = requiredTalent?.TalentId;
       RequiredTalentUid = requiredTalent?.Id;
+      SetOtherRequirements(@event.Requirements.Other);
     }
+  }
+
+  public IReadOnlyCollection<string> GetOtherRequirements()
+  {
+    return (OtherRequirements is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(OtherRequirements)) ?? [];
+  }
+  private void SetOtherRequirements(IEnumerable<string> otherRequirements)
+  {
+    OtherRequirements = otherRequirements.Any() ? JsonSerializer.Serialize(otherRequirements) : null;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

@@ -11,6 +11,7 @@ using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Parties;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
+using SkillCraft.Api.Core.Specializations;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Storages;
 using SkillCraft.Api.Core.Worlds;
@@ -28,6 +29,7 @@ public static class DependencyInjectionExtensions
     LineageService.Register(services);
     PartyService.Register(services);
     ScriptService.Register(services);
+    SpecializationService.Register(services);
     TalentService.Register(services);
     WorldService.Register(services);
 

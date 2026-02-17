@@ -21,6 +21,7 @@ internal class WorldEntity : AggregateEntity
   public List<LineageEntity> Lineages { get; private set; } = [];
   public List<PartyEntity> Parties { get; private set; } = [];
   public List<ScriptEntity> Scripts { get; private set; } = [];
+  public List<SpecializationEntity> Specializations { get; private set; } = [];
   public List<TalentEntity> Talents { get; private set; } = [];
   public StorageSummaryEntity? StorageSummary { get; private set; }
 

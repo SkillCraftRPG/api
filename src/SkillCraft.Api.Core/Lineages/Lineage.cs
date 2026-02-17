@@ -70,7 +70,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     get => _names;
     set
     {
-      if (_names != value)
+      if (_names != value) // TODO(fpion): probably won't work
       {
         _names = value;
         _updated.Names = value;
@@ -158,7 +158,7 @@ public class Lineage : AggregateRoot, IEntityProvider
           },
           ErrorCode = "InvalidLineageParent"
         };
-        throw new ValidationException([failure]);
+        throw new ValidationException([failure]); // TODO(fpion): custom exception
       }
     }
 
@@ -189,7 +189,7 @@ public class Lineage : AggregateRoot, IEntityProvider
   public void SetFeatures(IEnumerable<Feature> features)
   {
     features = features.GroupBy(x => x.Name).Select(x => x.Last());
-    if (!Features.SequenceEqual(features))
+    if (!Features.SequenceEqual(features)) // TODO(fpion): will it work
     {
       Features = features.ToList().AsReadOnly();
       _updated.Features = Features;
@@ -198,20 +198,16 @@ public class Lineage : AggregateRoot, IEntityProvider
 
   public void SetLanguages(IEnumerable<Language> languages, int extra = 0, Description? text = null)
   {
-    SetLanguages(languages.Select(language => language.Id), extra, text);
-  }
-  public void SetLanguages(IEnumerable<LanguageId> languageIds, int extra = 0, Description? text = null)
-  {
-    LanguageProficiencies languages = new(languageIds.ToArray(), extra, text);
-    if (Languages != languages)
+    LanguageProficiencies proficiencies = new(languages.Select(language => language.Id).ToArray(), extra, text);
+    if (Languages != proficiencies) // TODO(fpion): will it work?
     {
-      if (languageIds.Any(languageId => languageId.WorldId != WorldId))
+      if (languages.Any(language => language.WorldId != WorldId))
       {
-        throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(languageIds));
+        throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(languages));
       }
 
-      Languages = languages;
-      _updated.Languages = languages;
+      Languages = proficiencies;
+      _updated.Languages = proficiencies;
     }
   }
 

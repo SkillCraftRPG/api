@@ -70,7 +70,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
           CustomState = new { customization.Kind },
           ErrorCode = "CustomizationKindCannotBeChanged"
         };
-        throw new ValidationException([failure]);
+        throw new ValidationException([failure]); // TODO(fpion): custom exception
       }
 
       customization.Name = name;

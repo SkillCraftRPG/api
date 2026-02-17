@@ -106,6 +106,7 @@ public class Talent : AggregateRoot, IEntityProvider
   protected virtual void Handle(TalentCreated @event)
   {
     _tier = @event.Tier;
+
     _name = @event.Name;
   }
 
@@ -142,7 +143,7 @@ public class Talent : AggregateRoot, IEntityProvider
             },
             ErrorCode = "InvalidTalentRequirement"
           };
-          throw new ValidationException([failure]);
+          throw new ValidationException([failure]); // TODO(fpion): custom exception
         }
       }
 

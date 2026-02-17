@@ -80,7 +80,7 @@ internal class CreateOrReplaceLineageCommandHandler : SaveLineage, ICommandHandl
           CustomState = new { ParentId = lineage.ParentId?.EntityId },
           ErrorCode = "LineageParentCannotBeChanged"
         };
-        throw new ValidationException([failure]);
+        throw new ValidationException([failure]); // TODO(fpion): custom exception
       }
 
       lineage.Name = name;
