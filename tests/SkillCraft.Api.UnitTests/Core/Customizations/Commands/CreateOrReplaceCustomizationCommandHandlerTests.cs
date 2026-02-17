@@ -30,8 +30,8 @@ public class CreateOrReplaceCustomizationCommandHandlerTests
       _storageService.Object);
   }
 
-  [Fact(DisplayName = "It should throw CannotChangeCustomizationKindException when changing the customization kind.")]
-  public async Task Given_DifferentKind_When_HandleAsync_Then_CannotChangeCustomizationKindException()
+  [Fact(DisplayName = "It should throw CustomizationKindCannotBeChangedException when changing the customization kind.")]
+  public async Task Given_DifferentKind_When_HandleAsync_Then_CustomizationKindCannotBeChangedException()
   {
     Customization customization = new(_context.World, CustomizationKind.Gift, new Name("Gift"));
     _customizationRepository.Setup(x => x.LoadAsync(customization.Id, _cancellationToken)).ReturnsAsync(customization);
@@ -45,7 +45,7 @@ public class CreateOrReplaceCustomizationCommandHandlerTests
     };
 
     CreateOrReplaceCustomizationCommand command = new(payload, customization.EntityId);
-    var exception = await Assert.ThrowsAsync<CannotChangeCustomizationKindException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    var exception = await Assert.ThrowsAsync<CustomizationKindCannotBeChangedException>(async () => await _handler.HandleAsync(command, _cancellationToken));
 
     Assert.Equal(customization.WorldId.ToGuid(), exception.WorldId);
     Assert.Equal(customization.EntityId, exception.CustomizationId);

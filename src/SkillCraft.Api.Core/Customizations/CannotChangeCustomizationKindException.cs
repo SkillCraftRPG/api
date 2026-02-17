@@ -4,7 +4,7 @@ using SkillCraft.Api.Contracts.Customizations;
 
 namespace SkillCraft.Api.Core.Customizations;
 
-public class CannotChangeCustomizationKindException : DomainException
+public class CustomizationKindCannotBeChangedException : DomainException
 {
   private const string ErrorMessage = "The customization kind cannot be changed.";
 
@@ -48,7 +48,7 @@ public class CannotChangeCustomizationKindException : DomainException
     }
   }
 
-  public CannotChangeCustomizationKindException(Customization customization, CustomizationKind attemptedKind, string propertyName)
+  public CustomizationKindCannotBeChangedException(Customization customization, CustomizationKind attemptedKind, string propertyName)
     : base(BuildMessage(customization, attemptedKind, propertyName))
   {
     WorldId = customization.WorldId.ToGuid();

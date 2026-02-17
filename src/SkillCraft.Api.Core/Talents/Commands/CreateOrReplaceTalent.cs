@@ -60,6 +60,11 @@ internal class CreateOrReplaceTalentCommandHandler : SaveTalent, ICommandHandler
     {
       await _permissionService.CheckAsync(Actions.Update, talent, cancellationToken);
 
+      if (payload.Tier != talent.Tier.Value)
+      {
+        throw new TalentTierCannotBeChangedException(talent, payload.Tier, nameof(payload.Tier));
+      }
+
       talent.Name = name;
     }
 

@@ -51,6 +51,30 @@ public class CreateOrReplaceTalentCommandHandlerTests
     Assert.Equal("RequiredTalentId", exception.PropertyName);
   }
 
+  [Fact(DisplayName = "It should throw TalentTierCannotBeChangedException when replacing and the payload tier differs from the talent tier.")]
+  public async Task Given_DifferentTier_When_Replace_Then_TalentTierCannotBeChangedException()
+  {
+    Talent talent = new(_context.World, new Tier(0), new Name("Mêlée"));
+    _talentRepository.Setup(x => x.LoadAsync(talent.Id, _cancellationToken)).ReturnsAsync(talent);
+
+    _permissionService.Setup(x => x.CheckAsync(Actions.Update, talent, _cancellationToken)).Returns(Task.CompletedTask);
+
+    CreateOrReplaceTalentPayload payload = new()
+    {
+      Tier = talent.Tier.Value + 1,
+      Name = talent.Name.Value
+    };
+
+    CreateOrReplaceTalentCommand command = new(payload, talent.EntityId);
+    var exception = await Assert.ThrowsAsync<TalentTierCannotBeChangedException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+
+    Assert.Equal(_context.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(talent.EntityId, exception.TalentId);
+    Assert.Equal(talent.Tier.Value, exception.TalentTier);
+    Assert.Equal(payload.Tier, exception.AttemptedTier);
+    Assert.Equal("Tier", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
   public async Task Given_InvalidPayload_When_HandleAsync_Then_ValidationException()
   {
