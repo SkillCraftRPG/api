@@ -10,7 +10,26 @@ public record Names
   public Description? Text { get; }
 
   [JsonIgnore]
-  public long Size => Family.Sum(name => name.Length) + Female.Sum(name => name.Length) + Male.Sum(name => name.Length) + Unisex.Sum(name => name.Length) + (Text?.Size ?? 0); // TODO(fpion): Custom
+  public long Size
+  {
+    get
+    {
+      long size = Family.Sum(name => name.Length) + Female.Sum(name => name.Length) + Male.Sum(name => name.Length) + Unisex.Sum(name => name.Length);
+      foreach (KeyValuePair<string, IReadOnlyCollection<string>> nameCategory in Custom)
+      {
+        size += nameCategory.Key.Length;
+        foreach (string name in nameCategory.Value)
+        {
+          size += name.Length;
+        }
+      }
+      if (Text is not null)
+      {
+        size += Text.Size;
+      }
+      return size;
+    }
+  }
 
   public Names() : this([], [], [], [], new Dictionary<string, IReadOnlyCollection<string>>())
   {
