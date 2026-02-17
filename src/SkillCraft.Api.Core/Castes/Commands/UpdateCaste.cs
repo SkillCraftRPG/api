@@ -67,7 +67,7 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     }
     if (payload.Feature is not null)
     {
-      caste.Feature = payload.Feature.Value is null ? null : new Feature(new Name(payload.Feature.Value.Name), Description.TryCreate(payload.Feature.Value.Description));
+      caste.Feature = payload.Feature.Value is null ? null : Feature.Create(payload.Feature.Value.Name, payload.Feature.Value.Description);
     }
 
     caste.Update(_context.UserId);

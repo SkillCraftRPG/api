@@ -89,6 +89,7 @@ internal class CreateOrReplaceLineageCommandHandler : SaveLineage, ICommandHandl
     lineage.Summary = Summary.TryCreate(payload.Summary);
     lineage.Description = Description.TryCreate(payload.Description);
 
+    lineage.SetFeatures(payload.Features.Select(feature => Feature.Create(feature.Name, feature.Description)));
     await SetLanguagesAsync(lineage, payload.Languages, worldId, cancellationToken);
     SetNames(lineage, payload.Names);
 

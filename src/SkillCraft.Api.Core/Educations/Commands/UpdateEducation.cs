@@ -67,7 +67,7 @@ internal class UpdateEducationCommandHandler : ICommandHandler<UpdateEducationCo
     }
     if (payload.Feature is not null)
     {
-      education.Feature = payload.Feature.Value is null ? null : new Feature(new Name(payload.Feature.Value.Name), Description.TryCreate(payload.Feature.Value.Description));
+      education.Feature = payload.Feature.Value is null ? null : Feature.Create(payload.Feature.Value.Name, payload.Feature.Value.Description);
     }
 
     education.Update(_context.UserId);

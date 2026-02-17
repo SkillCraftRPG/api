@@ -62,6 +62,10 @@ internal class UpdateLineageCommandHandler : SaveLineage, ICommandHandler<Update
       lineage.Description = Description.TryCreate(payload.Description.Value);
     }
 
+    if (payload.Features is not null)
+    {
+      lineage.SetFeatures(payload.Features.Select(feature => Feature.Create(feature.Name, feature.Description)));
+    }
     if (payload.Languages is not null)
     {
       await SetLanguagesAsync(lineage, payload.Languages, worldId, cancellationToken);
