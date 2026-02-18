@@ -54,6 +54,33 @@ public class CreateOrReplaceLineageCommandHandlerTests
     Assert.Equal("ParentId", exception.PropertyName);
   }
 
+  [Fact(DisplayName = "It should throw LanguagesNotFoundException when some language IDs are not found.")]
+  public async Task Given_MissingLanguageIds_When_HandleAsync_Then_LanguagesNotFoundException()
+  {
+    Language celfique = new(_context.World, new Name("Celfique"));
+    Language commun = new(_context.World, new Name("Commun"));
+    _languageRepository.Setup(x => x.LoadAsync(It.IsAny<IEnumerable<LanguageId>>(), _cancellationToken)).ReturnsAsync([celfique, commun]);
+
+    _permissionService.Setup(x => x.CheckAsync(Actions.CreateLineage, _cancellationToken)).Returns(Task.CompletedTask);
+
+    Guid missingId1 = Guid.NewGuid();
+    Guid missingId2 = Guid.NewGuid();
+    CreateOrReplaceLineagePayload payload = new()
+    {
+      Name = "Elfe sylvain",
+      Languages = new LanguagesPayload([celfique.EntityId, commun.EntityId, missingId1, missingId2])
+    };
+
+    CreateOrReplaceLineageCommand command = new(payload, Id: null);
+    var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+
+    Assert.Equal(_context.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(2, exception.LanguageIds.Count);
+    Assert.Contains(missingId1, exception.LanguageIds);
+    Assert.Contains(missingId2, exception.LanguageIds);
+    Assert.Equal("Languages.Ids", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw LineageParentCannotBeChangedException when replacing and the payload parent differs from the lineage parent.")]
   public async Task Given_DifferentParentId_When_Replace_Then_LineageParentCannotBeChangedException()
   {
