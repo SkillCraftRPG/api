@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core;
@@ -184,55 +185,36 @@ public class SpecializationIntegrationTests : IntegrationTests
     Assert.Equal(payload.Doctrine.Features, specialization.Doctrine.Features);
   }
 
-  //[Fact(DisplayName = "It should return the correct search results.")]
-  //public async Task Given_Payload_When_Search_Then_Results()
-  //{
-  //  Specialization eclaireur = new(World, new Tier(2), new Name("Éclaireur"), UserId);
-  //  eclaireur.SetRequirements(_requiredTalent, []);
-  //  eclaireur.Update(UserId);
-  //  Talent tier1 = new(World, new Tier(1), new Name("Pistage"), UserId);
-  //  tier1.Update(UserId);
-  //  await _talentRepository.SaveAsync(tier1);
-  //  Specialization pisteur = new(World, new Tier(2), new Name("Pisteur"), UserId);
-  //  pisteur.SetRequirements(tier1, []);
-  //  pisteur.Update(UserId);
-  //  await _specializationRepository.SaveAsync([eclaireur, pisteur]);
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_Search_Then_Results()
+  {
+    Specialization eclaireur = new(World, new Tier(1), new Name("Éclaireur"));
+    Specialization archer = new(World, new Tier(2), new Name("Archer"));
+    Specialization druide = new(World, new Tier(2), new Name("Druide"));
+    druide.Summary = new Summary("Gardien de la nature, maître des formes sauvages et du verbe sacré.");
+    druide.Update(UserId);
+    Specialization mage = new(World, new Tier(2), new Name("Mage"));
+    mage.SetDoctrine(new Name("Magie raffinée"), [], [], []);
+    mage.Update(UserId);
+    await _specializationRepository.SaveAsync([eclaireur, archer, druide, mage]);
 
-  //  SearchSpecializationsPayload payload = new()
-  //  {
-  //    Skip = 1,
-  //    Limit = 1
-  //  };
-  //  payload.Ids.AddRange([_specialization.EntityId, eclaireur.EntityId, pisteur.EntityId, Guid.Empty]);
-  //  payload.Search.Operator = SearchOperator.Or;
-  //  payload.Search.Terms.AddRange([new SearchTerm("chasse%"), new SearchTerm("%eur")]);
-  //  payload.Sort.Add(new SpecializationSortOption(SpecializationSort.Name));
+    SearchSpecializationsPayload payload = new()
+    {
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Tiers.Add(2);
+    payload.Ids.AddRange([eclaireur.EntityId, archer.EntityId, druide.EntityId, mage.EntityId, Guid.Empty]);
+    payload.Search.Operator = SearchOperator.Or;
+    payload.Search.Terms.AddRange([new SearchTerm("Spec%"), new SearchTerm("%reur"), new SearchTerm("%nature%"), new SearchTerm("%ff%")]);
+    payload.Sort.Add(new SpecializationSortOption(SpecializationSort.Name));
 
-  //  SearchResults<SpecializationModel> results = await _specializationService.SearchAsync(payload);
-  //  Assert.Equal(2, results.Total);
+    SearchResults<SpecializationModel> results = await _specializationService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
 
-  //  SpecializationModel result = Assert.Single(results.Items);
-  //  Assert.Equal(pisteur.EntityId, result.Id);
-  //}
-
-  //[Fact(DisplayName = "It should return the correct search results (Tiers).")]
-  //public async Task Given_Tiers_When_Search_Then_Results()
-  //{
-  //  Specialization tier1Spec = new(World, new Tier(1), new Name("Spécialiste"), UserId);
-  //  tier1Spec.Update(UserId);
-  //  await _specializationRepository.SaveAsync(tier1Spec);
-
-  //  SearchSpecializationsPayload payload = new()
-  //  {
-  //    Tiers = [1, 3]
-  //  };
-  //  SearchResults<SpecializationModel> results = await _specializationService.SearchAsync(payload);
-
-  //  Assert.Equal(1, results.Total);
-  //  SpecializationModel result = Assert.Single(results.Items);
-  //  Assert.Equal(tier1Spec.EntityId, result.Id);
-  //  Assert.Equal(1, result.Tier);
-  //}
+    SpecializationModel result = Assert.Single(results.Items);
+    Assert.Equal(mage.EntityId, result.Id);
+  }
 
   [Fact(DisplayName = "It should update an existing specialization.")]
   public async Task Given_Exists_When_Update_ThenUpdated()
