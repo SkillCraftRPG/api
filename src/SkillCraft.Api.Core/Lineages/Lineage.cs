@@ -68,7 +68,7 @@ public class Lineage : AggregateRoot, IEntityProvider
     get => _names;
     set
     {
-      if (_names != value)
+      if (!_names.Equals(value))
       {
         _names = value;
         _updated.Names = value;
@@ -193,11 +193,11 @@ public class Lineage : AggregateRoot, IEntityProvider
       throw new ArgumentException($"All languages should be in the same world (Id={WorldId}) as the lineage.", nameof(languages));
     }
 
-    IEnumerable<LanguageId> languageIds = languages.Select(language => language.Id);
-    if (!Languages.Ids.SequenceEqual(languageIds) || Languages.Extra != extra || Languages.Text != text)
+    LanguageProficiencies proficiencies = new(languages, extra, text);
+    if (!Languages.Equals(proficiencies))
     {
-      Languages = new LanguageProficiencies(languages, extra, text);
-      _updated.Languages = Languages;
+      Languages = proficiencies;
+      _updated.Languages = proficiencies;
     }
   }
 

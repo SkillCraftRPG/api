@@ -3,7 +3,7 @@ using SkillCraft.Api.Core.Languages;
 
 namespace SkillCraft.Api.Core.Lineages;
 
-public record LanguageProficiencies
+public class LanguageProficiencies
 {
   public IReadOnlyCollection<LanguageId> Ids { get; } = [];
   public int Extra { get; }
@@ -24,11 +24,28 @@ public record LanguageProficiencies
   [JsonConstructor]
   public LanguageProficiencies(IReadOnlyCollection<LanguageId> ids, int extra, Description? text)
   {
-    Ids = ids.Distinct().ToList().AsReadOnly();
+    Ids = ids.Distinct().OrderBy(id => id.Value).ToList().AsReadOnly();
     Extra = extra;
     Text = text;
     new Validator().ValidateAndThrow(this);
   }
+
+  public override bool Equals(object? obj) => obj is LanguageProficiencies proficiencies
+    && proficiencies.Ids.SequenceEqual(Ids)
+    && proficiencies.Extra == Extra
+    && proficiencies.Text == Text;
+  public override int GetHashCode()
+  {
+    HashCode hash = new();
+    foreach (LanguageId id in Ids)
+    {
+      hash.Add(id);
+    }
+    hash.Add(Extra);
+    hash.Add(Text);
+    return hash.ToHashCode();
+  }
+  public override string ToString() => string.Join(' ', GetType(), JsonSerializer.Serialize(this));
 
   private class Validator : AbstractValidator<LanguageProficiencies>
   {
