@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core.Permissions;
@@ -64,6 +64,11 @@ internal class CreateOrReplaceSpecializationCommandHandler : SaveSpecialization,
     else
     {
       await _permissionService.CheckAsync(Actions.Update, specialization, cancellationToken);
+
+      if (specialization.Tier.Value != payload.Tier)
+      {
+        throw new SpecializationTierCannotBeChangedException(specialization, payload.Tier, nameof(payload.Tier));
+      }
 
       specialization.Name = name;
     }

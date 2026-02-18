@@ -10,5 +10,5 @@ public record CreateOrReplaceSpecializationPayload
 
   public RequirementsPayload Requirements { get; set; } = new();
   public OptionsPayload Options { get; set; } = new();
-  public DoctrinePayload Doctrine { get; set; } = new();
+  public DoctrinePayload? Doctrine { get; set; }
 }
