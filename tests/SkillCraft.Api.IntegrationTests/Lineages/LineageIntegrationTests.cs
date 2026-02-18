@@ -96,7 +96,7 @@ public class LineageIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing lineage.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _lineage.EntityId;
     LineageModel? lineage = await _lineageService.DeleteAsync(id);

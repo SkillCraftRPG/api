@@ -73,7 +73,7 @@ public class LanguageIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing language.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _language.EntityId;
     LanguageModel? language = await _languageService.DeleteAsync(id);

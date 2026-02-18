@@ -60,7 +60,7 @@ public class WorldIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing world.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _world.Id.ToGuid();
     WorldModel? world = await _worldService.DeleteAsync(id);

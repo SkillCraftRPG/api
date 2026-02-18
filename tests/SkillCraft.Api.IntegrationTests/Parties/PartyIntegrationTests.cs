@@ -60,7 +60,7 @@ public class PartyIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing party.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _party.EntityId;
     PartyModel? party = await _partyService.DeleteAsync(id);

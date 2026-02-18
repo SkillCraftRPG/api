@@ -68,7 +68,7 @@ public class CasteIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing caste.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _caste.EntityId;
     CasteModel? caste = await _casteService.DeleteAsync(id);
