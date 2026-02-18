@@ -62,7 +62,7 @@ public class ScriptIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing script.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _script.EntityId;
     ScriptModel? script = await _scriptService.DeleteAsync(id);

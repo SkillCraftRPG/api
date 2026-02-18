@@ -9,15 +9,9 @@ public record SearchSpecializationsParameters : SearchParameters
   [FromQuery(Name = "tier")]
   public List<int> Tiers { get; set; } = [];
 
-  [FromQuery(Name = "required")]
-  public string? RequiredTalent { get; set; }
-
   public virtual SearchSpecializationsPayload ToPayload()
   {
-    SearchSpecializationsPayload payload = new()
-    {
-      RequiredTalent = RequiredTalent
-    };
+    SearchSpecializationsPayload payload = new();
     payload.Tiers.AddRange(Tiers);
     Fill(payload);
 

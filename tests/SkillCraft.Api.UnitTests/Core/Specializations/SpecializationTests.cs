@@ -8,6 +8,34 @@ public class SpecializationTests
 {
   private readonly UnitTestContext _context = UnitTestContext.Generate();
 
+  [Fact(DisplayName = "It should handle Doctrine changes correctly.")]
+  public void Given_Changes_When_SetDoctrine_Then_HandledCorrectly()
+  {
+    Talent survie = new(_context.World, new Tier(0), new Name("Survie"));
+    Talent survivalisme = new(_context.World, new Tier(1), new Name("Survivalisme"));
+
+    Name name = new("Avant-garde");
+    string[] description = ["Maîtrise des techniques de chasse.", "Connaissance du terrain."];
+    Talent[] discountedTalents = [survie, survivalisme];
+    Feature[] features =
+    [
+      new Feature(new Name("Précision"), null),
+      new Feature(new Name("Vise juste"), new Description("Le personnage peut viser une cible pour améliorer sa précision."))
+    ];
+
+    Specialization specialization = new(_context.World, new Tier(2), new Name("Chasseur"));
+    specialization.SetDoctrine(name, description, discountedTalents, features);
+    specialization.Update(_context.UserId);
+    Assert.True(specialization.HasChanges);
+
+    specialization.ClearChanges();
+    Assert.False(specialization.HasChanges);
+
+    specialization.SetDoctrine(name, description, discountedTalents, features);
+    specialization.Update(_context.UserId);
+    Assert.False(specialization.HasChanges);
+  }
+
   [Fact(DisplayName = "It should handle Options changes correctly.")]
   public void Given_Changes_When_SetOptions_Then_HandledCorrectly()
   {
@@ -57,6 +85,17 @@ public class SpecializationTests
     var exception = Assert.Throws<ArgumentException>(() => specialization.SetOptions([talent], []));
 
     Assert.Equal("talents", exception.ParamName);
+  }
+
+  [Fact(DisplayName = "It should throw ArgumentException when a discounted doctrine talent is from another world.")]
+  public void Given_DiscountedTalentFromAnotherWorld_When_SetDoctrine_Then_ArgumentException()
+  {
+    Specialization specialization = new(_context.World, new Tier(1), new Name("Éclaireur"));
+    Talent talent = new(WorldId.NewId(), new Tier(1), new Name("Survivalisme"), _context.UserId);
+
+    var exception = Assert.Throws<ArgumentException>(() => specialization.SetDoctrine(new Name("Avant-garde"), [], [talent], []));
+
+    Assert.Equal("discountedTalents", exception.ParamName);
   }
 
   [Fact(DisplayName = "It should throw ArgumentException when the required talent is from another world.")]

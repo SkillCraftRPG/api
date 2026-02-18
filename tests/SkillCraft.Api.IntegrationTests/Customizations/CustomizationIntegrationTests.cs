@@ -64,7 +64,7 @@ public class CustomizationIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing customization.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _customization.EntityId;
     CustomizationModel? customization = await _customizationService.DeleteAsync(id);

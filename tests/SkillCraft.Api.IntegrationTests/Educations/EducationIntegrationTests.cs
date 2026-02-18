@@ -68,7 +68,7 @@ public class EducationIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing education.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _education.EntityId;
     EducationModel? education = await _educationService.DeleteAsync(id);

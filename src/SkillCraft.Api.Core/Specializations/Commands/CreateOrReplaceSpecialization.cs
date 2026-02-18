@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Logitar.CQRS;
 using SkillCraft.Api.Contracts.Specializations;
 using SkillCraft.Api.Core.Permissions;
@@ -65,16 +65,21 @@ internal class CreateOrReplaceSpecializationCommandHandler : SaveSpecialization,
     {
       await _permissionService.CheckAsync(Actions.Update, specialization, cancellationToken);
 
+      if (specialization.Tier.Value != payload.Tier)
+      {
+        throw new SpecializationTierCannotBeChangedException(specialization, payload.Tier, nameof(payload.Tier));
+      }
+
       specialization.Name = name;
     }
 
     specialization.Summary = Summary.TryCreate(payload.Summary);
     specialization.Description = Description.TryCreate(payload.Description);
 
-    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, payload.Options, worldId, cancellationToken);
+    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, payload.Options, payload.Doctrine, worldId, cancellationToken);
     SetRequirements(specialization, payload.Requirements, talents);
     SetOptions(specialization, payload.Options, talents);
-    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+    SetDoctrine(specialization, payload.Doctrine, talents);
 
     specialization.Update(userId);
 
