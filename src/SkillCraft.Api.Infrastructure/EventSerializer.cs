@@ -1,4 +1,4 @@
-using SkillCraft.Api.Infrastructure.Converters;
+﻿using SkillCraft.Api.Infrastructure.Converters;
 
 namespace SkillCraft.Api.Infrastructure;
 
@@ -9,6 +9,7 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     base.RegisterConverters();
 
     SerializerOptions.Converters.Add(new CasteIdConverter());
+    SerializerOptions.Converters.Add(new CharacterIdConverter());
     SerializerOptions.Converters.Add(new CustomizationIdConverter());
     SerializerOptions.Converters.Add(new DescriptionConverter());
     SerializerOptions.Converters.Add(new EducationIdConverter());

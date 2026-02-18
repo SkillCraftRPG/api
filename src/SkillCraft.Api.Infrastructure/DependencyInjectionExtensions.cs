@@ -1,8 +1,9 @@
-using Logitar.EventSourcing.EntityFrameworkCore.Relational;
+﻿using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
+using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
@@ -10,8 +11,8 @@ using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Parties;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Specializations;
-using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
 using SkillCraft.Api.Infrastructure.Caching;
@@ -74,6 +75,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddTransient<ICasteRepository, CasteRepository>()
+      .AddTransient<ICharacterRepository, CharacterRepository>()
       .AddTransient<ICustomizationRepository, CustomizationRepository>()
       .AddTransient<IEducationRepository, EducationRepository>()
       .AddTransient<ILanguageRepository, LanguageRepository>()
