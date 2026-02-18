@@ -230,7 +230,13 @@ internal class GameMapper
     }
     destination.Requirements.Other.AddRange(source.GetOtherRequirements());
 
-    // TODO(fpion): Options { Talents, Other }
+    foreach (SpecializationOptionalTalentEntity optional in source.OptionalTalents)
+    {
+      TalentEntity talent = optional.Talent ?? throw new ArgumentException("The optional talent is required.", nameof(source));
+      destination.Options.Talents.Add(ToTalent(talent));
+    }
+    destination.Options.Other.AddRange(source.GetOtherOptions());
+
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     MapAggregate(source, destination);

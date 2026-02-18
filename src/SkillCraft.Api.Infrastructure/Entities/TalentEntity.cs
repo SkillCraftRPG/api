@@ -31,6 +31,7 @@ internal class TalentEntity : AggregateEntity, IWorldScoped
   public List<TalentEntity> RequiringTalents { get; private set; } = [];
 
   public List<SpecializationEntity> RequiringSpecializations { get; private set; } = [];
+  public List<SpecializationOptionalTalentEntity> SpecializationOptions { get; private set; } = [];
 
   public TalentEntity(WorldEntity world, TalentCreated @event) : base(@event)
   {

@@ -2,21 +2,21 @@
 using Logitar;
 using SkillCraft.Api.Core.Worlds;
 
-namespace SkillCraft.Api.Core.Languages;
+namespace SkillCraft.Api.Core.Talents;
 
-public class LanguagesNotFoundException : NotFoundException
+public class TalentsNotFoundException : NotFoundException
 {
-  private const string ErrorMessage = "The specified languages were not found.";
+  private const string ErrorMessage = "The specified talents not found.";
 
   public Guid WorldId
   {
     get => (Guid)Data[nameof(WorldId)]!;
     private set => Data[nameof(WorldId)] = value;
   }
-  public IReadOnlyCollection<Guid> LanguageIds
+  public IReadOnlyCollection<Guid> TalentIds
   {
-    get => (IReadOnlyCollection<Guid>)Data[nameof(LanguageIds)]!;
-    private set => Data[nameof(LanguageIds)] = value;
+    get => (IReadOnlyCollection<Guid>)Data[nameof(TalentIds)]!;
+    private set => Data[nameof(TalentIds)] = value;
   }
   public string PropertyName
   {
@@ -30,30 +30,30 @@ public class LanguagesNotFoundException : NotFoundException
     {
       Error error = new(this.GetErrorCode(), ErrorMessage);
       error.Data[nameof(WorldId)] = WorldId;
-      error.Data[nameof(LanguageIds)] = LanguageIds;
+      error.Data[nameof(TalentIds)] = TalentIds;
       error.Data[nameof(PropertyName)] = PropertyName;
       return error;
     }
   }
 
-  public LanguagesNotFoundException(WorldId worldId, IEnumerable<Guid> languageIds, string propertyName)
-    : base(BuildMessage(worldId, languageIds, propertyName))
+  public TalentsNotFoundException(WorldId worldId, IEnumerable<Guid> talentIds, string propertyName)
+    : base(BuildMessage(worldId, talentIds, propertyName))
   {
     WorldId = worldId.ToGuid();
-    LanguageIds = languageIds.Distinct().ToList().AsReadOnly();
+    TalentIds = talentIds.Distinct().ToList().AsReadOnly();
     PropertyName = propertyName;
   }
 
-  private static string BuildMessage(WorldId worldId, IEnumerable<Guid> languageIds, string propertyName)
+  private static string BuildMessage(WorldId worldId, IEnumerable<Guid> talentIds, string propertyName)
   {
     StringBuilder message = new(ErrorMessage);
     message.AppendLine();
     message.Append("WorldId: ").Append(worldId.ToGuid()).AppendLine();
     message.Append("PropertyName: ").AppendLine(propertyName);
-    message.AppendLine("LanguageIds:");
-    foreach (Guid languageId in languageIds)
+    message.AppendLine("TalentIds:");
+    foreach (Guid talentId in talentIds)
     {
-      message.Append(" - ").Append(languageId).AppendLine();
+      message.Append(" - ").Append(talentId).AppendLine();
     }
     return message.ToString();
   }

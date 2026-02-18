@@ -24,10 +24,11 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   public TalentEntity? RequiredTalent { get; private set; }
   public int? RequiredTalentId { get; private set; }
   public Guid? RequiredTalentUid { get; private set; }
-
   public string? OtherRequirements { get; private set; }
 
-  // TODO(fpion): Options { Talents, Other }
+  public List<SpecializationOptionalTalentEntity> OptionalTalents { get; private set; } = [];
+  public string? OtherOptions { get; private set; }
+
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
   public SpecializationEntity(WorldEntity world, SpecializationCreated @event) : base(@event)
@@ -53,6 +54,13 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
     if (RequiredTalent is not null)
     {
       actorIds.AddRange(RequiredTalent.GetActorIds());
+    }
+    foreach (SpecializationOptionalTalentEntity optional in OptionalTalents)
+    {
+      if (optional.Talent is not null)
+      {
+        actorIds.AddRange(optional.Talent.GetActorIds());
+      }
     }
     return actorIds;
   }
@@ -81,6 +89,10 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
       RequiredTalentUid = requiredTalent?.Id;
       SetOtherRequirements(@event.Requirements.Other);
     }
+    if (@event.Options is not null)
+    {
+      SetOtherOptions(@event.Options.Other);
+    }
   }
 
   public IReadOnlyCollection<string> GetOtherRequirements()
@@ -90,6 +102,15 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   private void SetOtherRequirements(IEnumerable<string> otherRequirements)
   {
     OtherRequirements = otherRequirements.Any() ? JsonSerializer.Serialize(otherRequirements) : null;
+  }
+
+  public IReadOnlyCollection<string> GetOtherOptions()
+  {
+    return (OtherOptions is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(OtherOptions)) ?? [];
+  }
+  private void SetOtherOptions(IEnumerable<string> otherOptions)
+  {
+    OtherOptions = otherOptions.Any() ? JsonSerializer.Serialize(otherOptions) : null;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

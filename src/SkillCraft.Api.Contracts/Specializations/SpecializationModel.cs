@@ -11,7 +11,7 @@ public class SpecializationModel : Aggregate
   public string? Description { get; set; }
 
   public RequirementsModel Requirements { get; set; } = new();
-  // TODO(fpion): Options { Talents, Other }
+  public OptionsModel Options { get; set; } = new();
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

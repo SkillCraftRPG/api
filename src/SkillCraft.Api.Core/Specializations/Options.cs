@@ -2,22 +2,22 @@
 
 namespace SkillCraft.Api.Core.Specializations;
 
-public record Requirements
+public record Options
 {
-  public TalentId? TalentId { get; }
+  public IReadOnlyCollection<TalentId> TalentIds { get; } = [];
   public IReadOnlyCollection<string> Other { get; } = [];
 
   [JsonIgnore]
   public long Size => Other.Sum(other => other.Length);
 
-  public Requirements()
+  public Options()
   {
   }
 
   [JsonConstructor]
-  public Requirements(TalentId? talentId, IReadOnlyCollection<string> other)
+  public Options(IReadOnlyCollection<TalentId> talentIds, IReadOnlyCollection<string> other)
   {
-    TalentId = talentId;
+    TalentIds = talentIds.Distinct().ToList().AsReadOnly();
     Other = other.Where(requirement => !string.IsNullOrWhiteSpace(requirement)).Select(requirement => requirement.Trim()).Distinct().ToList().AsReadOnly();
   }
 }
