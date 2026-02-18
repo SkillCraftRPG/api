@@ -137,7 +137,8 @@ public class Talent : AggregateRoot, IEntityProvider
         throw new InvalidTalentRequirementException(this, requiredTalent, nameof(RequiredTalentId));
       }
     }
-    else if (RequiredTalentId != requiredTalent?.Id)
+
+    if (RequiredTalentId != requiredTalent?.Id)
     {
       RequiredTalentId = requiredTalent?.Id;
       _updated.RequiredTalentId = new Change<TalentId?>(requiredTalent?.Id);

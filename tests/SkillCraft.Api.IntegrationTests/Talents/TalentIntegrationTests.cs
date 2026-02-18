@@ -76,7 +76,7 @@ public class TalentIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should delete an existing talent.")]
-  public async Task Given_Exists_When_Delete_ThenDeleted()
+  public async Task Given_Exists_When_Delete_Then_Deleted()
   {
     Guid id = _talent.EntityId;
     TalentModel? talent = await _talentService.DeleteAsync(id);
