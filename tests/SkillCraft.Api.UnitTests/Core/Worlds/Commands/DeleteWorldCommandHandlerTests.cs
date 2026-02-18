@@ -1,4 +1,3 @@
-using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts.Worlds;
 using SkillCraft.Api.Core.Permissions;
@@ -7,10 +6,9 @@ using SkillCraft.Api.Core.Storages;
 namespace SkillCraft.Api.Core.Worlds.Commands;
 
 [Trait(Traits.Category, Categories.Unit)]
-public class UpdateWorldCommandHandlerTests
+public class DeleteWorldCommandHandlerTests
 {
   private readonly CancellationToken _cancellationToken = default;
-  private readonly Faker _faker = new();
 
   private readonly UnitTestContext _context = UnitTestContext.Generate();
   private readonly Mock<IWorldQuerier> _worldQuerier = new();
@@ -18,11 +16,11 @@ public class UpdateWorldCommandHandlerTests
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IStorageService> _storageService = new();
 
-  private readonly UpdateWorldCommandHandler _handler;
+  private readonly DeleteWorldCommandHandler _handler;
 
-  public UpdateWorldCommandHandlerTests()
+  public DeleteWorldCommandHandlerTests()
   {
-    _handler = new UpdateWorldCommandHandler(
+    _handler = new DeleteWorldCommandHandler(
       _context,
       _worldQuerier.Object,
       _worldRepository.Object,
@@ -33,23 +31,8 @@ public class UpdateWorldCommandHandlerTests
   [Fact(DisplayName = "It should return null when the world is not found.")]
   public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
   {
-    UpdateWorldCommand command = new(Guid.Empty, new UpdateWorldPayload());
+    DeleteWorldCommand command = new(Guid.Empty);
     WorldModel? result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Null(result);
-  }
-
-  [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
-  public async Task Given_InvalidPayload_When_HandleAsync_Then_ValidationException()
-  {
-    UpdateWorldPayload payload = new()
-    {
-      Name = _faker.Random.String(length: 999)
-    };
-
-    UpdateWorldCommand command = new(Guid.Empty, payload);
-    var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-
-    Assert.Single(exception.Errors);
-    Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name");
   }
 }

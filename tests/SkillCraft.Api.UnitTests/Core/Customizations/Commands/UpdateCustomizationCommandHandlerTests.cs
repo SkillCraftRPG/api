@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Customizations;
@@ -29,6 +29,14 @@ public class UpdateCustomizationCommandHandlerTests
       _customizationRepository.Object,
       _permissionService.Object,
       _storageService.Object);
+  }
+
+  [Fact(DisplayName = "It should return null when the customization is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateCustomizationCommand command = new(Guid.Empty, new UpdateCustomizationPayload());
+    CustomizationModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]

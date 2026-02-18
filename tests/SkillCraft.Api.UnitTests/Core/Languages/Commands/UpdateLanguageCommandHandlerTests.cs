@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Languages;
@@ -32,6 +32,14 @@ public class UpdateLanguageCommandHandlerTests
       _languageRepository.Object,
       _scriptRepository.Object,
       _storageService.Object);
+  }
+
+  [Fact(DisplayName = "It should return null when the language is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateLanguageCommand command = new(Guid.Empty, new UpdateLanguagePayload());
+    LanguageModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the script does not exist.")]

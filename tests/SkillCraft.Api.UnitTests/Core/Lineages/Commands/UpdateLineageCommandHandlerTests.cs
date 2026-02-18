@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Lineages;
@@ -32,6 +32,14 @@ public class UpdateLineageCommandHandlerTests
       _lineageRepository.Object,
       _permissionService.Object,
       _storageService.Object);
+  }
+
+  [Fact(DisplayName = "It should return null when the lineage is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateLineageCommand command = new(Guid.Empty, new UpdateLineagePayload());
+    LineageModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
   }
 
   [Fact(DisplayName = "It should throw LanguagesNotFoundException when some language IDs are not found.")]

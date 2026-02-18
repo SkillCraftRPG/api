@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Talents;
@@ -29,6 +29,14 @@ public class UpdateTalentCommandHandlerTests
       _talentQuerier.Object,
       _talentRepository.Object,
       _storageService.Object);
+  }
+
+  [Fact(DisplayName = "It should return null when the talent is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateTalentCommand command = new(Guid.Empty, new UpdateTalentPayload());
+    TalentModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the required talent does not exist.")]

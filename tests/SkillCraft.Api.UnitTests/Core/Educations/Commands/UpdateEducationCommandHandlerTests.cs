@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Educations;
@@ -29,6 +29,14 @@ public class UpdateEducationCommandHandlerTests
       _educationRepository.Object,
       _permissionService.Object,
       _storageService.Object);
+  }
+
+  [Fact(DisplayName = "It should return null when the education is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateEducationCommand command = new(Guid.Empty, new UpdateEducationPayload());
+    EducationModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]

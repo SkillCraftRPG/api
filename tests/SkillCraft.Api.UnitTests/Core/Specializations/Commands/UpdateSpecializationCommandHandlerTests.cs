@@ -34,6 +34,14 @@ public class UpdateSpecializationCommandHandlerTests
       _talentRepository.Object);
   }
 
+  [Fact(DisplayName = "It should return null when the specialization is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateSpecializationCommand command = new(Guid.Empty, new UpdateSpecializationPayload());
+    SpecializationModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
+  }
+
   [Fact(DisplayName = "It should throw EntityNotFoundException when the required talent does not exist.")]
   public async Task Given_NonExistentRequiredTalentId_When_HandleAsync_Then_EntityNotFoundException()
   {

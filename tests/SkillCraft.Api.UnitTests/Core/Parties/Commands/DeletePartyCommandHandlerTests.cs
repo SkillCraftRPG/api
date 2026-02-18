@@ -1,4 +1,3 @@
-using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts.Parties;
 using SkillCraft.Api.Core.Permissions;
@@ -7,10 +6,9 @@ using SkillCraft.Api.Core.Storages;
 namespace SkillCraft.Api.Core.Parties.Commands;
 
 [Trait(Traits.Category, Categories.Unit)]
-public class UpdatePartyCommandHandlerTests
+public class DeletePartyCommandHandlerTests
 {
   private readonly CancellationToken _cancellationToken = default;
-  private readonly Faker _faker = new();
 
   private readonly UnitTestContext _context = UnitTestContext.Generate();
   private readonly Mock<IPartyQuerier> _partyQuerier = new();
@@ -18,11 +16,11 @@ public class UpdatePartyCommandHandlerTests
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IStorageService> _storageService = new();
 
-  private readonly UpdatePartyCommandHandler _handler;
+  private readonly DeletePartyCommandHandler _handler;
 
-  public UpdatePartyCommandHandlerTests()
+  public DeletePartyCommandHandlerTests()
   {
-    _handler = new UpdatePartyCommandHandler(
+    _handler = new DeletePartyCommandHandler(
       _context,
       _partyQuerier.Object,
       _partyRepository.Object,
@@ -33,23 +31,8 @@ public class UpdatePartyCommandHandlerTests
   [Fact(DisplayName = "It should return null when the party is not found.")]
   public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
   {
-    UpdatePartyCommand command = new(Guid.Empty, new UpdatePartyPayload());
+    DeletePartyCommand command = new(Guid.Empty);
     PartyModel? result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Null(result);
-  }
-
-  [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
-  public async Task Given_InvalidPayload_When_HandleAsync_Then_ValidationException()
-  {
-    UpdatePartyPayload payload = new()
-    {
-      Name = _faker.Random.String(length: 999)
-    };
-
-    UpdatePartyCommand command = new(Guid.Empty, payload);
-    var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-
-    Assert.Single(exception.Errors);
-    Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name");
   }
 }
