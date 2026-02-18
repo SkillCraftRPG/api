@@ -71,10 +71,10 @@ internal class CreateOrReplaceSpecializationCommandHandler : SaveSpecialization,
     specialization.Summary = Summary.TryCreate(payload.Summary);
     specialization.Description = Description.TryCreate(payload.Description);
 
-    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, payload.Options, worldId, cancellationToken);
+    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, payload.Options, payload.Doctrine, worldId, cancellationToken);
     SetRequirements(specialization, payload.Requirements, talents);
     SetOptions(specialization, payload.Options, talents);
-    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+    SetDoctrine(specialization, payload.Doctrine, talents);
 
     specialization.Update(userId);
 

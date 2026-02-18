@@ -11,7 +11,7 @@ public class Specialization : AggregateRoot, IEntityProvider
 
   private SpecializationUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Requirements is not null || _updated.Options is not null; // TODO(fpion): Doctrine
+    || _updated.Requirements is not null || _updated.Options is not null || _updated.Doctrine is not null;
 
   public new SpecializationId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -62,7 +62,7 @@ public class Specialization : AggregateRoot, IEntityProvider
 
   public Requirements Requirements { get; private set; } = new();
   public Options Options { get; private set; } = new();
-  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+  public Doctrine? Doctrine { get; private set; }
 
   public Specialization() : base()
   {
@@ -86,7 +86,7 @@ public class Specialization : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Requirements.Size + Options.Size; // TODO(fpion): Doctrine
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Requirements.Size + Options.Size + (Doctrine?.Size ?? 0);
 
   public void Delete(UserId userId)
   {
@@ -97,6 +97,30 @@ public class Specialization : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
+
+  public void RemoveDoctrine()
+  {
+    if (Doctrine is not null)
+    {
+      Doctrine = null;
+      _updated.Doctrine = new Change<Doctrine>(null);
+    }
+  }
+
+  public void SetDoctrine(Name name, IEnumerable<string> description, IEnumerable<Talent> discountedTalents, IEnumerable<Feature> features)
+  {
+    if (discountedTalents.Any(talent => talent.WorldId != WorldId))
+    {
+      throw new ArgumentException($"All talents should be in the same world (Id={WorldId}) as the specialization.", nameof(discountedTalents));
+    }
+
+    Doctrine doctrine = new(name, description, discountedTalents, features);
+    if (Doctrine is null || !Doctrine.Equals(doctrine))
+    {
+      Doctrine = doctrine;
+      _updated.Doctrine = new Change<Doctrine>(doctrine);
+    }
+  }
 
   public void SetOptions(IEnumerable<Talent> talents, IEnumerable<string> other)
   {
@@ -174,7 +198,10 @@ public class Specialization : AggregateRoot, IEntityProvider
     {
       Options = @event.Options;
     }
-    // TODO(fpion): Doctrine
+    if (@event.Doctrine is not null)
+    {
+      Doctrine = @event.Doctrine.Value;
+    }
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

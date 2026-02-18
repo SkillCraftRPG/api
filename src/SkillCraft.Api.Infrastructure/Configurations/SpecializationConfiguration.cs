@@ -21,11 +21,11 @@ internal class SpecializationConfiguration : AggregateConfiguration<Specializati
     builder.HasIndex(x => x.Summary);
     builder.HasIndex(x => x.RequiredTalentId);
     builder.HasIndex(x => x.RequiredTalentUid);
+    builder.HasIndex(x => x.DoctrineName);
 
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
-
-    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+    builder.Property(x => x.DoctrineName).HasMaxLength(Name.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Specializations).OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.RequiredTalent).WithMany(x => x.RequiringSpecializations)

@@ -4,7 +4,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class SpecializationTalentConfiguration : IEntityTypeConfiguration<SpecializationOptionalTalentEntity>
+internal class SpecializationOptionalTalentConfiguration : IEntityTypeConfiguration<SpecializationOptionalTalentEntity>
 {
   public void Configure(EntityTypeBuilder<SpecializationOptionalTalentEntity> builder)
   {

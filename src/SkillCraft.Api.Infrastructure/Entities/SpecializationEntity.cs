@@ -1,5 +1,7 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Specializations;
 using SkillCraft.Api.Core.Specializations.Events;
 
@@ -29,7 +31,10 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   public List<SpecializationOptionalTalentEntity> OptionalTalents { get; private set; } = [];
   public string? OtherOptions { get; private set; }
 
-  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+  public string? DoctrineName { get; private set; }
+  public string? DoctrineDescription { get; private set; }
+  public List<SpecializationDiscountedTalentEntity> DiscountedTalents { get; private set; } = [];
+  public string? DoctrineFeatures { get; private set; }
 
   public SpecializationEntity(WorldEntity world, SpecializationCreated @event) : base(@event)
   {
@@ -46,6 +51,11 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
 
   private SpecializationEntity() : base()
   {
+  }
+
+  public void AddDiscountedTalent(TalentEntity talent)
+  {
+    DiscountedTalents.Add(new SpecializationDiscountedTalentEntity(this, talent));
   }
 
   public void AddOptionalTalent(TalentEntity talent)
@@ -67,7 +77,13 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
         actorIds.AddRange(optional.Talent.GetActorIds());
       }
     }
-    // TODO(fpion): Doctrine
+    foreach (SpecializationDiscountedTalentEntity discounted in DiscountedTalents)
+    {
+      if (discounted.Talent is not null)
+      {
+        actorIds.AddRange(discounted.Talent.GetActorIds());
+      }
+    }
     return actorIds;
   }
 
@@ -99,6 +115,41 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
     {
       SetOtherOptions(@event.Options.Other);
     }
+    if (@event.Doctrine is not null)
+    {
+      Doctrine? doctrine = @event.Doctrine.Value;
+      if (doctrine is null)
+      {
+        DoctrineName = null;
+        DoctrineDescription = null;
+        DoctrineFeatures = null;
+      }
+      else
+      {
+        DoctrineName = doctrine.Name.Value;
+        SetDoctrineDescription(doctrine.Description);
+        SetDoctrineFeatures(doctrine.Features);
+      }
+    }
+  }
+
+  public IReadOnlyCollection<string> GetDoctrineDescription()
+  {
+    return (DoctrineDescription is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(DoctrineDescription)) ?? [];
+  }
+  private void SetDoctrineDescription(IEnumerable<string> description)
+  {
+    DoctrineDescription = description.Any() ? JsonSerializer.Serialize(description) : null;
+  }
+
+  public IReadOnlyCollection<FeatureModel> GetDoctrineFeatures()
+  {
+    Dictionary<string, string?> features = (DoctrineFeatures is null ? null : JsonSerializer.Deserialize<Dictionary<string, string?>>(DoctrineFeatures)) ?? [];
+    return features.Select(feature => new FeatureModel(feature.Key, feature.Value)).ToList().AsReadOnly();
+  }
+  private void SetDoctrineFeatures(IEnumerable<Feature> features)
+  {
+    DoctrineFeatures = features.Any() ? JsonSerializer.Serialize(features.GroupBy(x => x.Name.Value).ToDictionary(x => x.Key, x => x.Last().Description?.Value)) : null;
   }
 
   public IReadOnlyCollection<string> GetOtherRequirements()

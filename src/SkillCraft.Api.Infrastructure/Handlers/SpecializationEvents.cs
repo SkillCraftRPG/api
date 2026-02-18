@@ -82,6 +82,7 @@ internal class SpecializationEvents : IEventHandler<SpecializationCreated>, IEve
     {
       long expectedVersion = @event.Version - 1;
       SpecializationEntity? specialization = await _game.Specializations
+        .Include(x => x.DiscountedTalents)
         .Include(x => x.OptionalTalents)
         .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
       if (specialization is null)
@@ -100,7 +101,7 @@ internal class SpecializationEvents : IEventHandler<SpecializationCreated>, IEve
 
       specialization.Update(requiredTalent, @event);
       SetOptionalTalents(specialization, @event, talents);
-      // TODO(fpion): Doctrine
+      SetDiscountedTalents(specialization, @event, talents);
       await _game.SaveChangesAsync(cancellationToken);
     }
     catch (Exception exception)
@@ -108,9 +109,10 @@ internal class SpecializationEvents : IEventHandler<SpecializationCreated>, IEve
       _logger.LogError(exception, @event);
     }
   }
+
   private async Task<IReadOnlyDictionary<TalentId, TalentEntity>> GetTalentsAsync(SpecializationUpdated @event, CancellationToken cancellationToken)
   {
-    HashSet<string> streamIds = new(capacity: 1 + (@event.Options?.TalentIds.Count ?? 0)); // TODO(fpion): Doctrine
+    HashSet<string> streamIds = new(capacity: 1 + (@event.Options?.TalentIds.Count ?? 0) + (@event.Doctrine?.Value?.DiscountedTalentIds.Count ?? 0));
     if (@event.Requirements is not null && @event.Requirements.TalentId.HasValue)
     {
       streamIds.Add(@event.Requirements.TalentId.Value.Value);
@@ -119,7 +121,10 @@ internal class SpecializationEvents : IEventHandler<SpecializationCreated>, IEve
     {
       streamIds.AddRange(@event.Options.TalentIds.Select(id => id.Value));
     }
-    // TODO(fpion): Doctrine
+    if (@event.Doctrine is not null && @event.Doctrine.Value is not null)
+    {
+      streamIds.AddRange(@event.Doctrine.Value.DiscountedTalentIds.Select(id => id.Value));
+    }
     if (streamIds.Count < 1)
     {
       return new Dictionary<TalentId, TalentEntity>().AsReadOnly();
@@ -142,6 +147,33 @@ internal class SpecializationEvents : IEventHandler<SpecializationCreated>, IEve
 
     return talents.AsReadOnly();
   }
+
+  private void SetDiscountedTalents(SpecializationEntity specialization, SpecializationUpdated @event, IReadOnlyDictionary<TalentId, TalentEntity> talents)
+  {
+    if (@event.Doctrine is not null && @event.Doctrine.Value is not null)
+    {
+      HashSet<Guid> talentIds = @event.Doctrine.Value.DiscountedTalentIds.Select(x => x.EntityId).ToHashSet();
+      foreach (SpecializationDiscountedTalentEntity discounted in specialization.DiscountedTalents)
+      {
+        if (!talentIds.Contains(discounted.TalentUid))
+        {
+          _game.SpecializationDiscountedTalents.Remove(discounted);
+        }
+      }
+
+      HashSet<TalentId> missingIds = new(capacity: @event.Doctrine.Value.DiscountedTalentIds.Count);
+      talentIds = specialization.DiscountedTalents.Select(discounted => discounted.TalentUid).ToHashSet();
+      foreach (TalentId talentId in @event.Doctrine.Value.DiscountedTalentIds)
+      {
+        if (!talentIds.Contains(talentId.EntityId))
+        {
+          TalentEntity discountedTalent = talents[talentId];
+          specialization.AddDiscountedTalent(discountedTalent);
+        }
+      }
+    }
+  }
+
   private void SetOptionalTalents(SpecializationEntity specialization, SpecializationUpdated @event, IReadOnlyDictionary<TalentId, TalentEntity> talents)
   {
     if (@event.Options is not null)

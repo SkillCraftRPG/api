@@ -35,6 +35,7 @@ internal class SpecializationQuerier : ISpecializationQuerier
     SpecializationEntity? specialization = await _specializations.AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Where(x => x.StreamId == id.Value)
+      .Include(x => x.DiscountedTalents).ThenInclude(x => x.Talent)
       .Include(x => x.OptionalTalents).ThenInclude(x => x.Talent)
       .Include(x => x.RequiredTalent)
       .SingleOrDefaultAsync(cancellationToken);
@@ -45,6 +46,7 @@ internal class SpecializationQuerier : ISpecializationQuerier
     SpecializationEntity? specialization = await _specializations.AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Where(x => x.Id == id)
+      .Include(x => x.DiscountedTalents).ThenInclude(x => x.Talent)
       .Include(x => x.OptionalTalents).ThenInclude(x => x.Talent)
       .Include(x => x.RequiredTalent)
       .SingleOrDefaultAsync(cancellationToken);
@@ -55,7 +57,7 @@ internal class SpecializationQuerier : ISpecializationQuerier
   {
     IQueryBuilder builder = _sqlHelper.Query(GameDb.Specializations.Table).SelectAll(GameDb.Specializations.Table)
       .ApplyIdFilter(GameDb.Specializations.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Specializations.Name, GameDb.Specializations.Summary);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, GameDb.Specializations.Name, GameDb.Specializations.Summary, GameDb.Specializations.DoctrineName);
 
     if (payload.Tiers.Count > 0)
     {

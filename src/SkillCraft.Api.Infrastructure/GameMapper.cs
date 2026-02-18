@@ -237,7 +237,18 @@ internal class GameMapper
     }
     destination.Options.Other.AddRange(source.GetOtherOptions());
 
-    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+    if (source.DoctrineName is not null)
+    {
+      destination.Doctrine = new DoctrineModel(source.DoctrineName);
+      destination.Doctrine.Description.AddRange(source.GetDoctrineDescription());
+      destination.Doctrine.Features.AddRange(source.GetDoctrineFeatures());
+
+      foreach (SpecializationDiscountedTalentEntity discounted in source.DiscountedTalents)
+      {
+        TalentEntity talent = discounted.Talent ?? throw new ArgumentException("The discounted talent is required.", nameof(source));
+        destination.Doctrine.DiscountedTalents.Add(ToTalent(talent));
+      }
+    }
 
     MapAggregate(source, destination);
 

@@ -10,4 +10,5 @@ public record SpecializationUpdated : DomainEvent
 
   public Requirements? Requirements { get; set; }
   public Options? Options { get; set; }
+  public Change<Doctrine>? Doctrine { get; set; }
 }

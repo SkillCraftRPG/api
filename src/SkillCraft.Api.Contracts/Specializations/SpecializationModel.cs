@@ -12,7 +12,7 @@ public class SpecializationModel : Aggregate
 
   public RequirementsModel Requirements { get; set; } = new();
   public OptionsModel Options { get; set; } = new();
-  // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+  public DoctrineModel? Doctrine { get; set; }
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

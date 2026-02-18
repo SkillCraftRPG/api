@@ -11,6 +11,6 @@ internal class UpdateSpecializationValidator : AbstractValidator<UpdateSpecializ
     When(x => !string.IsNullOrWhiteSpace(x.Summary?.Value), () => RuleFor(x => x.Summary!.Value!).Summary());
     When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 
-    // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
+    When(x => x.Doctrine?.Value is not null, () => RuleFor(x => x.Doctrine!.Value!).SetValidator(new DoctrineValidator()));
   }
 }

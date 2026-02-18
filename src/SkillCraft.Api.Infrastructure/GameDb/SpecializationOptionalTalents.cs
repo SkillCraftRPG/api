@@ -3,7 +3,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.GameDb;
 
-internal static class SpecializationTalents
+internal static class SpecializationOptionalTalents
 {
   public static readonly TableId Table = new(GameContext.Schema, nameof(GameContext.SpecializationOptionalTalents), alias: null);
 
