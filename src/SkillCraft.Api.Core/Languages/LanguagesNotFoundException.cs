@@ -48,9 +48,9 @@ public class LanguagesNotFoundException : NotFoundException
   {
     StringBuilder message = new(ErrorMessage);
     message.AppendLine();
-    message.Append("WorldId: ").Append(worldId.ToGuid()).AppendLine();
-    message.Append("PropertyName: ").AppendLine(propertyName);
-    message.AppendLine("LanguageIds:");
+    message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
+    message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
+    message.Append(nameof(LanguageIds)).AppendLine(":");
     foreach (Guid languageId in languageIds)
     {
       message.Append(" - ").Append(languageId).AppendLine();

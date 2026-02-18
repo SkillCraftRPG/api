@@ -48,6 +48,11 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
   {
   }
 
+  public void AddOptionalTalent(TalentEntity talent)
+  {
+    OptionalTalents.Add(new SpecializationOptionalTalentEntity(this, talent));
+  }
+
   public override IReadOnlyCollection<ActorId> GetActorIds()
   {
     HashSet<ActorId> actorIds = new(base.GetActorIds());
@@ -62,6 +67,7 @@ internal class SpecializationEntity : AggregateEntity, IWorldScoped
         actorIds.AddRange(optional.Talent.GetActorIds());
       }
     }
+    // TODO(fpion): Doctrine
     return actorIds;
   }
 

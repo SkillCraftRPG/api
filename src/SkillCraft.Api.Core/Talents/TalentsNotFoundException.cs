@@ -48,9 +48,9 @@ public class TalentsNotFoundException : NotFoundException
   {
     StringBuilder message = new(ErrorMessage);
     message.AppendLine();
-    message.Append("WorldId: ").Append(worldId.ToGuid()).AppendLine();
-    message.Append("PropertyName: ").AppendLine(propertyName);
-    message.AppendLine("TalentIds:");
+    message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
+    message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
+    message.Append(nameof(TalentIds)).AppendLine(":");
     foreach (Guid talentId in talentIds)
     {
       message.Append(" - ").Append(talentId).AppendLine();

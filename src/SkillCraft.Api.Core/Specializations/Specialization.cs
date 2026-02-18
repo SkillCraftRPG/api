@@ -104,9 +104,12 @@ public class Specialization : AggregateRoot, IEntityProvider
     {
       throw new ArgumentException($"All talents should be in the same world (Id={WorldId}) as the specialization.", nameof(talents));
     }
-    else if (talents.Any(talent => talent.Tier.Value >= Tier.Value))
+
+    IEnumerable<Talent> invalidTalents = talents.Where(talent => talent.Tier.Value >= Tier.Value);
+    if (invalidTalents.Any())
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      string propertyName = string.Join('.', nameof(Options), nameof(Options.TalentIds));
+      throw new InvalidSpecializationOptionsException(this, invalidTalents, propertyName);
     }
 
     Options options = new(talents.Select(talent => talent.Id).ToArray(), other.ToArray());
@@ -127,7 +130,8 @@ public class Specialization : AggregateRoot, IEntityProvider
       }
       else if (talent.Tier.Value >= Tier.Value)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        string propertyName = string.Join('.', nameof(Requirements), nameof(Requirements.TalentId));
+        throw new InvalidSpecializationRequirementException(this, talent, propertyName);
       }
     }
 

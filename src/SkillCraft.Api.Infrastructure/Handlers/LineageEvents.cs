@@ -87,7 +87,7 @@ internal class LineageEvents : IEventHandler<LineageCreated>, IEventHandler<Line
     {
       long expectedVersion = @event.Version - 1;
       LineageEntity? lineage = await _game.Lineages
-        .Include(x => x.Languages).ThenInclude(x => x.Language)
+        .Include(x => x.Languages)
         .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
       if (lineage is null)
       {
@@ -100,31 +100,18 @@ internal class LineageEvents : IEventHandler<LineageCreated>, IEventHandler<Line
 
       if (@event.Languages is not null)
       {
-        HashSet<string> streamIds = @event.Languages.Ids.Select(id => id.Value).ToHashSet();
-        LanguageEntity[] languages = await _game.Languages.Where(x => streamIds.Contains(x.StreamId)).ToArrayAsync(cancellationToken);
+        IReadOnlyCollection<LanguageEntity> languages = await GetLanguagesAsync(@event.Languages, cancellationToken);
 
-        HashSet<string> missingIds = streamIds.Except(languages.Select(language => language.StreamId)).ToHashSet();
-        if (missingIds.Count > 0)
-        {
-          StringBuilder message = new();
-          message.AppendLine("The language entities (StreamId) were not found.");
-          foreach (string missingId in missingIds)
-          {
-            message.Append(" - ").AppendLine(missingId);
-          }
-          throw new InvalidOperationException(message.ToString());
-        }
-
+        HashSet<Guid> languageIds = @event.Languages.Ids.Select(id => id.EntityId).ToHashSet();
         foreach (LineageLanguageEntity entity in lineage.Languages)
         {
-          LanguageEntity language = entity.Language ?? throw new InvalidOperationException("The language should not be null.");
-          if (!streamIds.Contains(language.StreamId))
+          if (!languageIds.Contains(entity.LanguageUid))
           {
             _game.LineageLanguages.Remove(entity);
           }
         }
 
-        HashSet<Guid> languageIds = lineage.Languages.Select(entity => entity.LanguageUid).ToHashSet();
+        languageIds = lineage.Languages.Select(entity => entity.LanguageUid).ToHashSet();
         foreach (LanguageEntity language in languages)
         {
           if (!languageIds.Contains(language.Id))
@@ -141,5 +128,28 @@ internal class LineageEvents : IEventHandler<LineageCreated>, IEventHandler<Line
     {
       _logger.LogError(exception, @event);
     }
+  }
+  private async Task<IReadOnlyCollection<LanguageEntity>> GetLanguagesAsync(LanguageProficiencies proficiencies, CancellationToken cancellationToken)
+  {
+    HashSet<string> streamIds = proficiencies.Ids.Select(id => id.Value).ToHashSet();
+    if (streamIds.Count < 1)
+    {
+      return [];
+    }
+
+    LanguageEntity[] languages = await _game.Languages.Where(x => streamIds.Contains(x.StreamId)).ToArrayAsync(cancellationToken);
+    IEnumerable<string> missingIds = streamIds.Except(languages.Select(language => language.StreamId));
+    if (missingIds.Any())
+    {
+      StringBuilder message = new("The language entities were not found.");
+      message.AppendLine().AppendLine("StreamIds:");
+      foreach (string missingId in missingIds)
+      {
+        message.Append(" - ").AppendLine(missingId);
+      }
+      throw new InvalidOperationException(message.ToString());
+    }
+
+    return languages.AsReadOnly();
   }
 }

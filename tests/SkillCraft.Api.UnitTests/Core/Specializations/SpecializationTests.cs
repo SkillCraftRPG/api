@@ -77,24 +77,39 @@ public class SpecializationTests
     Assert.Equal("tier", exception.ParamName);
   }
 
-  [Fact(DisplayName = "It should throw NotImplementedException when an optional talent has tier greater than or equal to the specialization tier.")]
-  public void Given_OptionTalentWithTierGreaterOrEqual_When_SetOptions_Then_NotImplementedException()
+  [Fact(DisplayName = "It should throw InvalidSpecializationOptionsException when an optional talent has tier greater than or equal to the specialization tier.")]
+  public void Given_OptionTalentWithTierGreaterOrEqual_When_SetOptions_Then_InvalidSpecializationOptionsException()
   {
     Specialization specialization = new(_context.World, new Tier(1), new Name("Éclaireur"));
     Talent armesDeTir = new(_context.World, new Tier(1), new Name("Armes de tir"));
     Talent tirPrecis = new(_context.World, new Tier(2), new Name("Tir précis"));
 
-    Assert.Throws<NotImplementedException>(() => specialization.SetOptions([armesDeTir, tirPrecis], []));
+    var exception = Assert.Throws<InvalidSpecializationOptionsException>(() => specialization.SetOptions([armesDeTir, tirPrecis], []));
+
+    Assert.Equal(specialization.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(specialization.EntityId, exception.SpecializationId);
+    Assert.Equal(specialization.Tier.Value, exception.SpecializationTier);
+    Assert.Equal(2, exception.Talents.Count);
+    Assert.Contains(exception.Talents, x => x.Key == armesDeTir.EntityId && x.Value == armesDeTir.Tier.Value);
+    Assert.Contains(exception.Talents, x => x.Key == tirPrecis.EntityId && x.Value == tirPrecis.Tier.Value);
+    Assert.Equal("Options.TalentIds", exception.PropertyName);
   }
 
-  [Theory(DisplayName = "It should throw NotImplementedException when the required talent has tier greater than or equal to the specialization tier.")]
+  [Theory(DisplayName = "It should throw InvalidSpecializationRequirementException when the required talent has tier greater than or equal to the specialization tier.")]
   [InlineData(1, "Armes de tir")]
   [InlineData(2, "Tir précis")]
-  public void Given_RequiredTalentWithTierGreaterOrEqual_When_SetRequirements_Then_NotImplementedException(int tier, string name)
+  public void Given_RequiredTalentWithTierGreaterOrEqual_When_SetRequirements_Then_InvalidSpecializationRequirementException(int tier, string name)
   {
     Specialization specialization = new(_context.World, new Tier(1), new Name("Éclaireur"));
     Talent talent = new(_context.World, new Tier(tier), new Name(name));
 
-    Assert.Throws<NotImplementedException>(() => specialization.SetRequirements(talent, []));
+    var exception = Assert.Throws<InvalidSpecializationRequirementException>(() => specialization.SetRequirements(talent, []));
+
+    Assert.Equal(specialization.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(specialization.EntityId, exception.SpecializationId);
+    Assert.Equal(specialization.Tier.Value, exception.SpecializationTier);
+    Assert.Equal(talent.EntityId, exception.TalentId);
+    Assert.Equal(talent.Tier.Value, exception.TalentTier);
+    Assert.Equal("Requirements.TalentId", exception.PropertyName);
   }
 }
