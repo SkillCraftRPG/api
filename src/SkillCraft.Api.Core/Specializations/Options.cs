@@ -2,35 +2,38 @@
 
 namespace SkillCraft.Api.Core.Specializations;
 
-public class Requirements
+public class Options
 {
-  public TalentId? TalentId { get; }
+  public IReadOnlyCollection<TalentId> TalentIds { get; } = [];
   public IReadOnlyCollection<string> Other { get; } = [];
 
   [JsonIgnore]
   public long Size => Other.Sum(other => other.Length);
 
-  public Requirements()
+  public Options()
   {
   }
 
   [JsonConstructor]
-  public Requirements(TalentId? talentId, IReadOnlyCollection<string> other)
+  public Options(IReadOnlyCollection<TalentId> talentIds, IReadOnlyCollection<string> other)
   {
-    TalentId = talentId;
+    TalentIds = talentIds.Distinct().OrderBy(id => id.Value).ToList().AsReadOnly();
     Other = other.Where(requirement => !string.IsNullOrWhiteSpace(requirement)).Select(requirement => requirement.Trim()).Distinct().ToList().AsReadOnly();
   }
 
-  public override bool Equals(object? obj) => obj is Requirements requirements
-    && requirements.TalentId == TalentId
-    && requirements.Other.SequenceEqual(Other);
+  public override bool Equals(object? obj) => obj is Options options
+    && options.TalentIds.SequenceEqual(TalentIds)
+    && options.Other.SequenceEqual(Other);
   public override int GetHashCode()
   {
     HashCode hash = new();
-    hash.Add(TalentId);
+    foreach (TalentId talentId in TalentIds)
+    {
+      hash.Add(talentId);
+    }
     foreach (string other in Other)
     {
-      hash.Add(other.GetHashCode());
+      hash.Add(other);
     }
     return hash.ToHashCode();
   }

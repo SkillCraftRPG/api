@@ -9,4 +9,5 @@ public record SpecializationUpdated : DomainEvent
   public Change<Description>? Description { get; set; }
 
   public Requirements? Requirements { get; set; }
+  public Options? Options { get; set; }
 }

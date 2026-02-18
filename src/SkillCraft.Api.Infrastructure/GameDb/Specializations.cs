@@ -17,6 +17,7 @@ internal static class Specializations
   public static readonly ColumnId Description = new(nameof(SpecializationEntity.Description), Table);
   public static readonly ColumnId Id = new(nameof(SpecializationEntity.Id), Table);
   public static readonly ColumnId Name = new(nameof(SpecializationEntity.Name), Table);
+  public static readonly ColumnId OtherOptions = new(nameof(SpecializationEntity.OtherOptions), Table);
   public static readonly ColumnId OtherRequirements = new(nameof(SpecializationEntity.OtherRequirements), Table);
   public static readonly ColumnId RequiredTalentId = new(nameof(SpecializationEntity.RequiredTalentId), Table);
   public static readonly ColumnId RequiredTalentUid = new(nameof(SpecializationEntity.RequiredTalentUid), Table);
@@ -26,6 +27,5 @@ internal static class Specializations
   public static readonly ColumnId WorldId = new(nameof(SpecializationEntity.WorldId), Table);
   public static readonly ColumnId WorldUid = new(nameof(SpecializationEntity.WorldUid), Table);
 
-  // TODO(fpion): Options { Talents, Other }
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 }

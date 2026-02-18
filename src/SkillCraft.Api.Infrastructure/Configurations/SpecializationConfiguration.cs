@@ -25,7 +25,6 @@ internal class SpecializationConfiguration : AggregateConfiguration<Specializati
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
 
-    // TODO(fpion): Options { Talents, Other }
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     builder.HasOne(x => x.World).WithMany(x => x.Specializations).OnDelete(DeleteBehavior.Restrict);

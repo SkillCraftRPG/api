@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Specializations.Events;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
@@ -13,7 +11,7 @@ public class Specialization : AggregateRoot, IEntityProvider
 
   private SpecializationUpdated _updated = new();
   private bool HasUpdates => _updated.Name is not null || _updated.Summary is not null || _updated.Description is not null
-    || _updated.Requirements is not null; // TODO(fpion): other properties
+    || _updated.Requirements is not null || _updated.Options is not null; // TODO(fpion): Doctrine
 
   public new SpecializationId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -63,7 +61,7 @@ public class Specialization : AggregateRoot, IEntityProvider
   }
 
   public Requirements Requirements { get; private set; } = new();
-  // TODO(fpion): Options { Talents, Other }
+  public Options Options { get; private set; } = new();
   // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
   public Specialization() : base()
@@ -88,7 +86,7 @@ public class Specialization : AggregateRoot, IEntityProvider
     _name = @event.Name;
   }
 
-  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Requirements.Size; // TODO(fpion): other properties
+  public long CalculateSize() => Name.Size + (Summary?.Size ?? 0) + (Description?.Size ?? 0) + Requirements.Size + Options.Size; // TODO(fpion): Doctrine
 
   public void Delete(UserId userId)
   {
@@ -100,32 +98,46 @@ public class Specialization : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, CalculateSize());
 
-  public void SetRequirements(Talent? talent = null, IEnumerable<string>? other = null)
+  public void SetOptions(IEnumerable<Talent> talents, IEnumerable<string> other)
   {
-    Requirements requirements = new(talent?.Id, other?.ToArray() ?? []);
-    if (Requirements != requirements) // TODO(fpion): probably won't work
+    if (talents.Any(talent => talent.WorldId != WorldId))
     {
-      if (talent is not null)
-      {
-        if (talent.WorldId != WorldId)
-        {
-          throw new ArgumentException($"The required talent (WorldId={talent.WorldId}) and specialization (WorldId={WorldId}) should be in the same world.", nameof(talent));
-        }
-        else if (talent.Tier.Value > Tier.Value)
-        {
-          ValidationFailure failure = new("Requirements.TalentId", "The required talent tier should be lower than or equal to the specialization tier.", talent.EntityId)
-          {
-            CustomState = new
-            {
-              Tier = Tier.Value,
-              RequiredTalentTier = talent.Tier.Value
-            },
-            ErrorCode = "InvalidTalentRequirement"
-          };
-          throw new ValidationException([failure]); // TODO(fpion): custom exception
-        }
-      }
+      throw new ArgumentException($"All talents should be in the same world (Id={WorldId}) as the specialization.", nameof(talents));
+    }
 
+    IEnumerable<Talent> invalidTalents = talents.Where(talent => talent.Tier.Value >= Tier.Value);
+    if (invalidTalents.Any())
+    {
+      string propertyName = string.Join('.', nameof(Options), nameof(Options.TalentIds));
+      throw new InvalidSpecializationOptionsException(this, invalidTalents, propertyName);
+    }
+
+    Options options = new(talents.Select(talent => talent.Id).ToArray(), other.ToArray());
+    if (!Options.Equals(options))
+    {
+      Options = options;
+      _updated.Options = options;
+    }
+  }
+
+  public void SetRequirements(Talent? talent, IEnumerable<string> other)
+  {
+    if (talent is not null)
+    {
+      if (talent.WorldId != WorldId)
+      {
+        throw new ArgumentException($"The required talent (WorldId={talent.WorldId}) and specialization (WorldId={WorldId}) should be in the same world.", nameof(talent));
+      }
+      else if (talent.Tier.Value >= Tier.Value)
+      {
+        string propertyName = string.Join('.', nameof(Requirements), nameof(Requirements.TalentId));
+        throw new InvalidSpecializationRequirementException(this, talent, propertyName);
+      }
+    }
+
+    Requirements requirements = new(talent?.Id, other?.ToArray() ?? []);
+    if (!Requirements.Equals(requirements))
+    {
       Requirements = requirements;
       _updated.Requirements = requirements;
     }
@@ -158,7 +170,11 @@ public class Specialization : AggregateRoot, IEntityProvider
     {
       Requirements = @event.Requirements;
     }
-    // TODO(fpion): other properties
+    if (@event.Options is not null)
+    {
+      Options = @event.Options;
+    }
+    // TODO(fpion): Doctrine
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

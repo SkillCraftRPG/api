@@ -62,12 +62,15 @@ internal class UpdateSpecializationCommandHandler : SaveSpecialization, ICommand
       specialization.Description = Description.TryCreate(payload.Description.Value);
     }
 
-    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, worldId, cancellationToken);
+    IReadOnlyDictionary<Guid, Talent> talents = await LoadTalentsAsync(payload.Requirements, payload.Options, worldId, cancellationToken);
     if (payload.Requirements is not null)
     {
       SetRequirements(specialization, payload.Requirements, talents);
     }
-    // TODO(fpion): Options { Talents, Other }
+    if (payload.Options is not null)
+    {
+      SetOptions(specialization, payload.Options, talents);
+    }
     // TODO(fpion): Doctrine { Name, Description, DiscountedTalents, Features }
 
     specialization.Update(_context.UserId);

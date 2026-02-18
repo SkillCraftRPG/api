@@ -34,6 +34,35 @@ public class UpdateLineageCommandHandlerTests
       _storageService.Object);
   }
 
+  [Fact(DisplayName = "It should throw LanguagesNotFoundException when some language IDs are not found.")]
+  public async Task Given_MissingLanguageIds_When_HandleAsync_Then_LanguagesNotFoundException()
+  {
+    Lineage lineage = new(_context.WorldId, new Name("Elfe sylvain"), _context.UserId, parent: null);
+    _lineageRepository.Setup(x => x.LoadAsync(lineage.Id, _cancellationToken)).ReturnsAsync(lineage);
+
+    Language celfique = new(_context.World, new Name("Celfique"));
+    Language commun = new(_context.World, new Name("Commun"));
+    _languageRepository.Setup(x => x.LoadAsync(It.IsAny<IEnumerable<LanguageId>>(), _cancellationToken)).ReturnsAsync([celfique, commun]);
+
+    _permissionService.Setup(x => x.CheckAsync(Actions.Update, lineage, _cancellationToken)).Returns(Task.CompletedTask);
+
+    Guid missingId1 = Guid.NewGuid();
+    Guid missingId2 = Guid.NewGuid();
+    UpdateLineagePayload payload = new()
+    {
+      Languages = new LanguagesPayload([celfique.EntityId, commun.EntityId, missingId1, missingId2])
+    };
+
+    UpdateLineageCommand command = new(lineage.EntityId, payload);
+    var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+
+    Assert.Equal(_context.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(2, exception.LanguageIds.Count);
+    Assert.Contains(missingId1, exception.LanguageIds);
+    Assert.Contains(missingId2, exception.LanguageIds);
+    Assert.Equal("Languages.Ids", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
   public async Task Given_InvalidPayload_When_HandleAsync_Then_ValidationException()
   {

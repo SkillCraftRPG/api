@@ -35,6 +35,7 @@ internal class SpecializationQuerier : ISpecializationQuerier
     SpecializationEntity? specialization = await _specializations.AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Where(x => x.StreamId == id.Value)
+      .Include(x => x.OptionalTalents).ThenInclude(x => x.Talent)
       .Include(x => x.RequiredTalent)
       .SingleOrDefaultAsync(cancellationToken);
     return specialization is null ? null : await MapAsync(specialization, cancellationToken);
@@ -44,6 +45,7 @@ internal class SpecializationQuerier : ISpecializationQuerier
     SpecializationEntity? specialization = await _specializations.AsNoTracking()
       .WhereWorld(_context.WorldId)
       .Where(x => x.Id == id)
+      .Include(x => x.OptionalTalents).ThenInclude(x => x.Talent)
       .Include(x => x.RequiredTalent)
       .SingleOrDefaultAsync(cancellationToken);
     return specialization is null ? null : await MapAsync(specialization, cancellationToken);
