@@ -64,22 +64,6 @@ internal class SpecializationQuerier : ISpecializationQuerier
       object[] tiers = payload.Tiers.Distinct().Select(tier => (object)tier).ToArray();
       builder.Where(GameDb.Specializations.Tier, Operators.IsIn(tiers));
     }
-    if (payload.RequiredTalent is not null)
-    {
-      string requiredTalent = payload.RequiredTalent.Trim();
-      if (Guid.TryParse(requiredTalent, out Guid id))
-      {
-        builder.Where(GameDb.Specializations.RequiredTalentUid, Operators.IsEqualTo(id));
-      }
-      else if (requiredTalent.Equals("any", StringComparison.InvariantCultureIgnoreCase))
-      {
-        builder.Where(GameDb.Specializations.RequiredTalentId, Operators.IsNotNull());
-      }
-      else if (requiredTalent.Equals("none", StringComparison.InvariantCultureIgnoreCase))
-      {
-        builder.Where(GameDb.Specializations.RequiredTalentId, Operators.IsNull());
-      }
-    }
 
     IQueryable<SpecializationEntity> query = _specializations.FromQuery(builder).AsNoTracking()
       .WhereWorld(_context.WorldId)
