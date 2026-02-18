@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Castes;
@@ -29,6 +29,14 @@ public class UpdateCasteCommandHandlerTests
       _casteRepository.Object,
       _permissionService.Object,
       _storageService.Object);
+  }
+
+  [Fact(DisplayName = "It should return null when the caste is not found.")]
+  public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
+  {
+    UpdateCasteCommand command = new(Guid.Empty, new UpdateCastePayload());
+    CasteModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.Null(result);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
