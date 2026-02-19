@@ -14,11 +14,10 @@ public record CreateCharacterPayload
   public List<Guid> CustomizationIds { get; set; } = [];
   public List<Guid> LanguageIds { get; set; } = [];
 
+  // TODO(fpion): Talents & Spells
   // TODO(fpion): Skill Ranks
+  // TODO(fpion): Starting Wealth & Inventory (Attacks, Weapons, Shields, Armor, etc.)
   // TODO(fpion): Bonuses
-  // TODO(fpion): Starting Wealth
-  // TODO(fpion): Inventory (Attacks, Weapons, Shields, Armor, etc.)
-  // TODO(fpion): Talents
 
   public CreateCharacterPayload() : this(string.Empty)
   {
