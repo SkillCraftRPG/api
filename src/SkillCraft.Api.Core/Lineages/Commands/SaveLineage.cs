@@ -20,8 +20,8 @@ internal abstract class SaveLineage
     {
       HashSet<LanguageId> languageIds = payload.Ids.Select(entityId => new LanguageId(entityId, worldId)).ToHashSet();
       languages = await LanguageRepository.LoadAsync(languageIds, cancellationToken);
-      Guid[] missingIds = languageIds.Except(languages.Select(language => language.Id)).Select(id => id.EntityId).Distinct().ToArray();
-      if (missingIds.Length > 0)
+      HashSet<Guid> missingIds = languageIds.Except(languages.Select(language => language.Id)).Select(id => id.EntityId).ToHashSet();
+      if (missingIds.Count > 0)
       {
         string propertyName = string.Join('.', nameof(Lineage.Languages), nameof(payload.Ids));
         throw new LanguagesNotFoundException(worldId, missingIds, propertyName);

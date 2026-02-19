@@ -1,9 +1,15 @@
 ﻿using FluentValidation;
+using SkillCraft.Api.Core.Characters;
 
 namespace SkillCraft.Api.Core;
 
 internal static class ValidationExtensions
 {
+  public static IRuleBuilderOptions<T, string> Characteristic<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Characteristics.MaximumLength);
+  }
+
   public static IRuleBuilderOptions<T, string> Description<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty();
