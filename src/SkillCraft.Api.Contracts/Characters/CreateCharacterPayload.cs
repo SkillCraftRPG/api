@@ -9,11 +9,11 @@ public record CreateCharacterPayload
   public Guid EducationId { get; set; }
 
   public CharacteristicsModel Characteristics { get; set; } = new();
+  public StartingAttributesPayload StartingAttributes { get; set; } = new();
 
   public List<Guid> CustomizationIds { get; set; } = [];
   public List<Guid> LanguageIds { get; set; } = [];
 
-  // TODO(fpion): Starting Attributes
   // TODO(fpion): Skill Ranks
   // TODO(fpion): Bonuses
   // TODO(fpion): Starting Wealth

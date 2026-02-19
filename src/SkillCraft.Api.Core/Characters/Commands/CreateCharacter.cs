@@ -61,6 +61,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
     Name name = new(payload.Name);
     Characteristics characteristics = new(payload.Characteristics);
+    StartingAttributes startingAttributes = new(payload.StartingAttributes);
 
     Lineage lineage = await FindLineageAsync(payload, worldId, cancellationToken);
     Caste caste = await FindCasteAsync(payload, worldId, cancellationToken);
@@ -69,7 +70,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     IReadOnlyCollection<Language> languages = await FindLanguagesAsync(payload, lineage, cancellationToken);
     IReadOnlyCollection<Customization> customizations = await FindCustomizationsAsync(payload, worldId, cancellationToken);
 
-    Character character = new(worldId, name, lineage, caste, education, userId, characteristics, languages, customizations);
+    Character character = new(worldId, name, lineage, caste, education, userId, characteristics, startingAttributes, languages, customizations);
 
     await _storageService.ExecuteWithQuotaAsync(
       character,

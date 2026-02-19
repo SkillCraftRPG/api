@@ -21,6 +21,7 @@ public class Character : AggregateRoot, IEntityProvider
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The caste has not been initialized.");
   public Characteristics Characteristics { get; private set; } = new();
+  public StartingAttributes StartingAttributes { get; private set; } = new();
 
   public LineageId LineageId { get; private set; }
   public CasteId CasteId { get; private set; }
@@ -44,6 +45,7 @@ public class Character : AggregateRoot, IEntityProvider
     Education education,
     UserId userId,
     Characteristics? characteristics = null,
+    StartingAttributes? startingAttributes = null,
     IEnumerable<Language>? languages = null,
     IEnumerable<Customization>? customizations = null,
     CharacterId? characterId = null) : base((characterId ?? CharacterId.NewId(worldId)).StreamId)
@@ -78,12 +80,14 @@ public class Character : AggregateRoot, IEntityProvider
     HashSet<CustomizationId> customizationIds = customizations.Select(customization => customization.Id).ToHashSet();
 
     characteristics ??= new();
-    Raise(new CharacterCreated(name, characteristics, lineage.Id, caste.Id, education.Id, languageIds, customizationIds), userId.ActorId);
+    startingAttributes ??= new();
+    Raise(new CharacterCreated(name, characteristics, startingAttributes, lineage.Id, caste.Id, education.Id, languageIds, customizationIds), userId.ActorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
     _name = @event.Name;
     Characteristics = @event.Characteristics;
+    StartingAttributes = @event.StartingAttributes;
 
     LineageId = @event.LineageId;
     CasteId = @event.CasteId;

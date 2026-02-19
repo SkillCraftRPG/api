@@ -10,5 +10,6 @@ internal class CreateCharacterValidator : AbstractValidator<CreateCharacterPaylo
     RuleFor(x => x.Name).Name();
 
     RuleFor(x => x.Characteristics).SetValidator(new CharacteristicsValidator());
+    RuleFor(x => x.StartingAttributes).SetValidator(new StartingAttributesValidator());
   }
 }
