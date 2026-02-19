@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Events;
 using SkillCraft.Api.Core.Customizations;
@@ -64,20 +65,47 @@ public class Character : AggregateRoot, IEntityProvider
     }
 
     languages ??= [];
-    if (languages.Any(languageId => languageId.WorldId != worldId))
+    if (languages.Any(language => language.WorldId != worldId))
     {
       throw new ArgumentException($"All languages should be in the same world (Id={worldId}) as the character.", nameof(languages));
     }
-    // TODO(fpion): check that languages do not intersect with lineage.Languages.Ids
     HashSet<LanguageId> languageIds = languages.Select(language => language.Id).ToHashSet();
+    IEnumerable<LanguageId> invalidLanguageIds = languageIds.Intersect(lineage.Languages.Ids);
+    if (invalidLanguageIds.Any())
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
 
     customizations ??= [];
-    if (customizations.Any(customizationId => customizationId.WorldId != worldId))
+    HashSet<CustomizationId> customizationIds = new(capacity: customizations.Count());
+    int gifts = 0;
+    int disabilities = 0;
+    foreach (Customization customization in customizations)
     {
-      throw new ArgumentException($"All customizations should be in the same world (Id={worldId}) as the character.", nameof(customizations));
+      if (!customizationIds.Contains(customization.Id))
+      {
+        if (customization.WorldId != worldId)
+        {
+          throw new ArgumentException($"All customizations should be in the same world (Id={worldId}) as the character.", nameof(customizations));
+        }
+        switch (customization.Kind)
+        {
+          case CustomizationKind.Disability:
+            disabilities++;
+            break;
+          case CustomizationKind.Gift:
+            gifts++;
+            break;
+          default:
+            throw new NotSupportedException($"The customization kind '{customization.Kind}' is not supported.");
+        }
+        customizationIds.Add(customization.Id);
+      }
     }
-    // TODO(fpion): check that number of Gifts == number of Disabilities
-    HashSet<CustomizationId> customizationIds = customizations.Select(customization => customization.Id).ToHashSet();
+    if (gifts != disabilities)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
 
     characteristics ??= new();
     startingAttributes ??= new();
