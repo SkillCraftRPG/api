@@ -69,11 +69,10 @@ public class Character : AggregateRoot, IEntityProvider
     {
       throw new ArgumentException($"All languages should be in the same world (Id={worldId}) as the character.", nameof(languages));
     }
-    HashSet<LanguageId> languageIds = languages.Select(language => language.Id).ToHashSet();
-    IEnumerable<LanguageId> invalidLanguageIds = languageIds.Intersect(lineage.Languages.Ids);
-    if (invalidLanguageIds.Any())
+    HashSet<LanguageId> languageIds = languages.Select(language => language.Id).Except(lineage.Languages.Ids).ToHashSet();
+    if (languageIds.Count > lineage.Languages.Extra)
     {
-      throw new NotImplementedException(); // TODO(fpion): DomainException
+      throw new TooManyExtraLanguagesException(lineage, languageIds, nameof(LanguageIds));
     }
 
     customizations ??= [];
