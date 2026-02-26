@@ -62,8 +62,8 @@ public class InvalidSpecializationOptionsException : DomainException
   {
     IReadOnlyDictionary<Guid, int> talentTiers = GetTalentTiers(talents);
 
-    StringBuilder message = new(ErrorMessage);
-    message.AppendLine().Append(nameof(WorldId)).Append(": ").Append(specialization.WorldId.ToGuid()).AppendLine();
+    StringBuilder message = new();
+    message.AppendLine(ErrorMessage).Append(nameof(WorldId)).Append(": ").Append(specialization.WorldId.ToGuid()).AppendLine();
     message.Append(nameof(SpecializationId)).Append(": ").Append(specialization.EntityId).AppendLine();
     message.Append(nameof(SpecializationTier)).Append(": ").Append(specialization.Tier).AppendLine();
     message.Append(nameof(PropertyName)).Append(": ").Append(propertyName).AppendLine();

@@ -32,7 +32,7 @@ public class Character : AggregateRoot, IEntityProvider
   public IReadOnlyCollection<LanguageId> LanguageIds => _languageIds.ToList().AsReadOnly();
 
   private readonly HashSet<CustomizationId> _customizationIds = [];
-  public IReadOnlyCollection<CustomizationId> CustomizationIdIds => _customizationIds.ToList().AsReadOnly();
+  public IReadOnlyCollection<CustomizationId> CustomizationIds => _customizationIds.ToList().AsReadOnly();
 
   public Character() : base()
   {
@@ -103,7 +103,7 @@ public class Character : AggregateRoot, IEntityProvider
     }
     if (gifts != disabilities)
     {
-      throw new NotImplementedException(); // TODO(fpion): DomainException
+      throw new InvalidCustomizationSelectionException(worldId, customizationIds, gifts, disabilities, nameof(CustomizationIds));
     }
 
     characteristics ??= new();

@@ -62,8 +62,8 @@ public class TooManyExtraLanguagesException : DomainException
   {
     IReadOnlyCollection<Guid> extraLanguageIds = GetExtraLanguageIds(lineage, languageIds);
 
-    StringBuilder message = new(ErrorMessage);
-    message.AppendLine();
+    StringBuilder message = new();
+    message.AppendLine(ErrorMessage);
     message.Append(nameof(WorldId)).Append(": ").Append(lineage.WorldId.ToGuid()).AppendLine();
     message.Append(nameof(Count)).Append(": ").Append(extraLanguageIds.Count).AppendLine();
     message.Append(nameof(Extra)).Append(": ").Append(lineage.Languages.Extra).AppendLine();

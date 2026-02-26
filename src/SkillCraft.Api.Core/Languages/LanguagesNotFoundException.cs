@@ -48,8 +48,8 @@ public class LanguagesNotFoundException : NotFoundException
   {
     languageIds = Sanitize(languageIds);
 
-    StringBuilder message = new(ErrorMessage);
-    message.AppendLine();
+    StringBuilder message = new();
+    message.AppendLine(ErrorMessage);
     message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
     message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
     message.Append(nameof(LanguageIds)).AppendLine(":");
