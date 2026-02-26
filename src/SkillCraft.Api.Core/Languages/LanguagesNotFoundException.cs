@@ -40,12 +40,14 @@ public class LanguagesNotFoundException : NotFoundException
     : base(BuildMessage(worldId, languageIds, propertyName))
   {
     WorldId = worldId.ToGuid();
-    LanguageIds = languageIds.Distinct().ToList().AsReadOnly();
+    LanguageIds = Sanitize(languageIds);
     PropertyName = propertyName;
   }
 
   private static string BuildMessage(WorldId worldId, IEnumerable<Guid> languageIds, string propertyName)
   {
+    languageIds = Sanitize(languageIds);
+
     StringBuilder message = new(ErrorMessage);
     message.AppendLine();
     message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
@@ -57,4 +59,6 @@ public class LanguagesNotFoundException : NotFoundException
     }
     return message.ToString();
   }
+
+  private static IReadOnlyCollection<Guid> Sanitize(IEnumerable<Guid> languageIds) => languageIds.Distinct().ToList().AsReadOnly();
 }

@@ -40,12 +40,14 @@ public class CustomizationsNotFoundException : NotFoundException
     : base(BuildMessage(worldId, customizationIds, propertyName))
   {
     WorldId = worldId.ToGuid();
-    CustomizationIds = customizationIds.Distinct().ToList().AsReadOnly();
+    CustomizationIds = Sanitize(customizationIds);
     PropertyName = propertyName;
   }
 
   private static string BuildMessage(WorldId worldId, IEnumerable<Guid> customizationIds, string propertyName)
   {
+    customizationIds = Sanitize(customizationIds);
+
     StringBuilder message = new(ErrorMessage);
     message.AppendLine();
     message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
@@ -57,4 +59,6 @@ public class CustomizationsNotFoundException : NotFoundException
     }
     return message.ToString();
   }
+
+  private static IReadOnlyCollection<Guid> Sanitize(IEnumerable<Guid> customizationIds) => customizationIds.Distinct().ToList().AsReadOnly();
 }
