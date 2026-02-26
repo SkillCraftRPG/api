@@ -16,6 +16,7 @@ namespace SkillCraft.Api.Core.Characters;
 public class Character : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Character";
+  private const int MinimumTrainedSkills = 6;
 
   public new CharacterId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -77,6 +78,7 @@ public class Character : AggregateRoot, IEntityProvider
     int capacity = talents.Count();
     HashSet<TalentId> talentIds = new(capacity);
     HashSet<GameSkill> skills = new(capacity);
+    List<Talent> invalidTalents = new(capacity);
     foreach (Talent talent in talents)
     {
       if (talent.WorldId != worldId)
@@ -85,21 +87,28 @@ public class Character : AggregateRoot, IEntityProvider
       }
       else if (talent.Tier.Value > Tier)
       {
-        // TODO(fpion): add to invalidTalents1
+        invalidTalents.Add(talent);
       }
-      talentIds.Add(talent.Id);
-      if (talent.Skill.HasValue)
+      else
       {
-        skills.Add(talent.Skill.Value);
+        talentIds.Add(talent.Id);
+        if (talent.Skill.HasValue)
+        {
+          skills.Add(talent.Skill.Value);
+        }
       }
     }
-    // TODO(fpion): throw if invalidTalents1.Count > 0
-    IEnumerable<Guid> invalidTalents2 = talents.Where(x => x.RequiredTalentId.HasValue && !talentIds.Contains(x.RequiredTalentId.Value)).Select(x => x.EntityId).Distinct(); // TODO(fpion): rename
-    if (invalidTalents2.Any())
+    if (invalidTalents.Count > 0)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new NotImplementedException(); // TODO(fpion): Domain Exception
     }
-    if (skills.Count < 6) // TODO(fpion): constant
+    invalidTalents.Clear();
+    invalidTalents.AddRange(talents.Where(x => x.RequiredTalentId.HasValue && !talentIds.Contains(x.RequiredTalentId.Value)));
+    if (invalidTalents.Count > 0)
+    {
+      throw new NotImplementedException(); // TODO(fpion): Domain Exception
+    }
+    if (skills.Count < MinimumTrainedSkills)
     {
       throw new NotImplementedException(); // TODO(fpion): Domain Exception
     }
