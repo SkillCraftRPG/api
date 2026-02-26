@@ -17,9 +17,6 @@ public record CreateCharacterPayload
 
   // TODO(fpion): Skill Ranks
   // TODO(fpion): Starting Wealth & Inventory (Attacks, Weapons, Shields, Armor, etc.)
-  // TODO(fpion): Bonuses
-  // TODO(fpion): Picture URL
-  // TODO(fpion): Token URL
 
   public CreateCharacterPayload() : this(string.Empty)
   {
