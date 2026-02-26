@@ -69,6 +69,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
     IReadOnlyCollection<Language> languages = await FindLanguagesAsync(payload, lineage, cancellationToken);
     IReadOnlyCollection<Customization> customizations = await FindCustomizationsAsync(payload, worldId, cancellationToken);
+    // TODO(fpion): talents
 
     Character character = new(worldId, name, lineage, caste, education, userId, characteristics, startingAttributes, languages, customizations);
 
