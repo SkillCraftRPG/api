@@ -9,6 +9,7 @@ using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Storages;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Characters.Commands;
@@ -26,6 +27,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
   private readonly IStorageService _storageService;
+  private readonly ITalentRepository _talentRepository;
 
   public CreateCharacterCommandHandler(
     ICasteRepository casteRepository,
@@ -36,7 +38,8 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     ILanguageRepository languageRepository,
     ILineageRepository lineageRepository,
     IPermissionService permissionService,
-    IStorageService storageService)
+    IStorageService storageService,
+    ITalentRepository talentRepository)
   {
     _casteRepository = casteRepository;
     _characterRepository = characterRepository;
@@ -47,6 +50,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
     _storageService = storageService;
+    _talentRepository = talentRepository;
   }
 
   public async Task<Unit> HandleAsync(CreateCharacterCommand command, CancellationToken cancellationToken)
@@ -69,9 +73,9 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
     IReadOnlyCollection<Language> languages = await FindLanguagesAsync(payload, lineage, cancellationToken);
     IReadOnlyCollection<Customization> customizations = await FindCustomizationsAsync(payload, worldId, cancellationToken);
-    // TODO(fpion): talents
+    IReadOnlyCollection<Talent> talents = await FindTalentsAsync(payload, worldId, cancellationToken);
 
-    Character character = new(worldId, name, lineage, caste, education, userId, characteristics, startingAttributes, languages, customizations);
+    Character character = new(worldId, name, lineage, caste, education, talents, userId, characteristics, startingAttributes, languages, customizations);
 
     await _storageService.ExecuteWithQuotaAsync(
       character,
@@ -125,5 +129,17 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     LineageId lineageId = new(payload.LineageId, worldId);
     return await _lineageRepository.LoadAsync(lineageId, cancellationToken)
       ?? throw new EntityNotFoundException(new Entity(Lineage.EntityKind, payload.LineageId, worldId), nameof(payload.LineageId));
+  }
+
+  private async Task<IReadOnlyCollection<Talent>> FindTalentsAsync(CreateCharacterPayload payload, WorldId worldId, CancellationToken cancellationToken)
+  {
+    HashSet<TalentId> talentIds = payload.TalentIds.Select(talentId => new TalentId(talentId, worldId)).ToHashSet();
+    IReadOnlyCollection<Talent> talents = await _talentRepository.LoadAsync(talentIds, cancellationToken);
+    HashSet<Guid> missingIds = talentIds.Except(talents.Select(talent => talent.Id)).Select(id => id.EntityId).ToHashSet();
+    if (missingIds.Count > 0)
+    {
+      throw new TalentsNotFoundException(worldId, missingIds, nameof(payload.TalentIds));
+    }
+    return talents;
   }
 }

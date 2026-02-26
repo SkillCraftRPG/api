@@ -4,6 +4,7 @@ using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
+using SkillCraft.Api.Core.Talents;
 
 namespace SkillCraft.Api.Core.Characters.Events;
 
@@ -14,5 +15,6 @@ public record CharacterCreated(
   LineageId LineageId,
   CasteId CasteId,
   EducationId EducationId,
+  IReadOnlyCollection<CustomizationId> CustomizationIds,
   IReadOnlyCollection<LanguageId> LanguageIds,
-  IReadOnlyCollection<CustomizationId> CustomizationIds) : DomainEvent;
+  IReadOnlyCollection<TalentId> TalentIds) : DomainEvent;

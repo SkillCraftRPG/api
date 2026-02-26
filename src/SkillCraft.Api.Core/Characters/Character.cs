@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Contracts;
 using SkillCraft.Api.Contracts.Customizations;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Events;
@@ -7,6 +8,7 @@ using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Characters;
@@ -28,11 +30,18 @@ public class Character : AggregateRoot, IEntityProvider
   public CasteId CasteId { get; private set; }
   public EducationId EducationId { get; private set; }
 
-  private readonly HashSet<LanguageId> _languageIds = [];
-  public IReadOnlyCollection<LanguageId> LanguageIds => _languageIds.ToList().AsReadOnly();
+  public int Experience { get; private set; }
+  public int Level { get; private set; }
+  public int Tier { get; private set; }
 
   private readonly HashSet<CustomizationId> _customizationIds = [];
   public IReadOnlyCollection<CustomizationId> CustomizationIds => _customizationIds.ToList().AsReadOnly();
+
+  private readonly HashSet<LanguageId> _languageIds = [];
+  public IReadOnlyCollection<LanguageId> LanguageIds => _languageIds.ToList().AsReadOnly();
+
+  private readonly HashSet<TalentId> _talentIds = [];
+  public IReadOnlyCollection<TalentId> TalentIds => _talentIds.ToList().AsReadOnly();
 
   public Character() : base()
   {
@@ -44,6 +53,7 @@ public class Character : AggregateRoot, IEntityProvider
     Lineage lineage,
     Caste caste,
     Education education,
+    IEnumerable<Talent> talents,
     UserId userId,
     Characteristics? characteristics = null,
     StartingAttributes? startingAttributes = null,
@@ -62,6 +72,36 @@ public class Character : AggregateRoot, IEntityProvider
     if (education.WorldId != worldId)
     {
       throw new ArgumentException($"The education (WorldId={education.WorldId}) and character (WorldId={worldId}) should be in the same world.", nameof(education));
+    }
+
+    int capacity = talents.Count();
+    HashSet<TalentId> talentIds = new(capacity);
+    HashSet<GameSkill> skills = new(capacity);
+    foreach (Talent talent in talents)
+    {
+      if (talent.WorldId != worldId)
+      {
+        throw new ArgumentException($"All talents should be in the same world (Id={worldId}) as the character.", nameof(talents));
+      }
+      else if (talent.Tier.Value > Tier)
+      {
+        // TODO(fpion): add to invalidTalents1
+      }
+      talentIds.Add(talent.Id);
+      if (talent.Skill.HasValue)
+      {
+        skills.Add(talent.Skill.Value);
+      }
+    }
+    // TODO(fpion): throw if invalidTalents1.Count > 0
+    IEnumerable<Guid> invalidTalents2 = talents.Where(x => x.RequiredTalentId.HasValue && !talentIds.Contains(x.RequiredTalentId.Value)).Select(x => x.EntityId).Distinct(); // TODO(fpion): rename
+    if (invalidTalents2.Any())
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
+    if (skills.Count < 6) // TODO(fpion): constant
+    {
+      throw new NotImplementedException(); // TODO(fpion): Domain Exception
     }
 
     languages ??= [];
@@ -108,7 +148,8 @@ public class Character : AggregateRoot, IEntityProvider
 
     characteristics ??= new();
     startingAttributes ??= new();
-    Raise(new CharacterCreated(name, characteristics, startingAttributes, lineage.Id, caste.Id, education.Id, languageIds, customizationIds), userId.ActorId);
+    // TODO(fpion): skill rank automation
+    Raise(new CharacterCreated(name, characteristics, startingAttributes, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, talentIds), userId.ActorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
@@ -120,11 +161,14 @@ public class Character : AggregateRoot, IEntityProvider
     CasteId = @event.CasteId;
     EducationId = @event.EducationId;
 
+    _customizationIds.Clear();
+    _customizationIds.AddRange(@event.CustomizationIds);
+
     _languageIds.Clear();
     _languageIds.AddRange(@event.LanguageIds);
 
-    _customizationIds.Clear();
-    _customizationIds.AddRange(@event.CustomizationIds);
+    _talentIds.Clear();
+    _talentIds.AddRange(@event.TalentIds);
   }
 
   public long CalculateSize() => Name.Size + Characteristics.Size;
@@ -144,6 +188,9 @@ public class Character : AggregateRoot, IEntityProvider
 
   public bool HasLanguage(Language language) => HasLanguage(language.Id);
   public bool HasLanguage(LanguageId languageId) => _languageIds.Contains(languageId);
+
+  public bool HasTalent(Talent talent) => HasTalent(talent.Id);
+  public bool HasTalent(TalentId talentId) => _talentIds.Contains(talentId);
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }
