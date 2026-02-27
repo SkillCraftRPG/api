@@ -14,11 +14,12 @@ using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Characters.Commands;
 
-internal record CreateCharacterCommand(CreateCharacterPayload Payload) : ICommand;
+internal record CreateCharacterCommand(CreateCharacterPayload Payload) : ICommand<CharacterModel>;
 
-internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCommand, Unit>
+internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCommand, CharacterModel>
 {
   private readonly ICasteRepository _casteRepository;
+  private readonly ICharacterQuerier _characterQuerier;
   private readonly ICharacterRepository _characterRepository;
   private readonly IContext _context;
   private readonly ICustomizationRepository _customizationRepository;
@@ -31,6 +32,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
   public CreateCharacterCommandHandler(
     ICasteRepository casteRepository,
+    ICharacterQuerier characterQuerier,
     ICharacterRepository characterRepository,
     IContext context,
     ICustomizationRepository customizationRepository,
@@ -42,6 +44,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     ITalentRepository talentRepository)
   {
     _casteRepository = casteRepository;
+    _characterQuerier = characterQuerier;
     _characterRepository = characterRepository;
     _context = context;
     _customizationRepository = customizationRepository;
@@ -53,7 +56,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     _talentRepository = talentRepository;
   }
 
-  public async Task<Unit> HandleAsync(CreateCharacterCommand command, CancellationToken cancellationToken)
+  public async Task<CharacterModel> HandleAsync(CreateCharacterCommand command, CancellationToken cancellationToken)
   {
     CreateCharacterPayload payload = command.Payload;
     new CreateCharacterValidator().ValidateAndThrow(payload);
@@ -82,7 +85,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       async () => await _characterRepository.SaveAsync(character, cancellationToken),
       cancellationToken);
 
-    return Unit.Value;
+    return await _characterQuerier.ReadAsync(character, cancellationToken);
   }
 
   private async Task<Caste> FindCasteAsync(CreateCharacterPayload payload, WorldId worldId, CancellationToken cancellationToken)
