@@ -54,22 +54,29 @@ public class InvalidSpecializationOptionsException : DomainException
     WorldId = specialization.WorldId.ToGuid();
     SpecializationId = specialization.EntityId;
     SpecializationTier = specialization.Tier.Value;
-    Talents = talents.ToDictionary(x => x.Id.EntityId, x => x.Tier.Value);
+    Talents = GetTalentTiers(talents);
     PropertyName = propertyName;
   }
 
   private static string BuildMessage(Specialization specialization, IEnumerable<Talent> talents, string propertyName)
   {
-    StringBuilder message = new(ErrorMessage);
-    message.AppendLine().Append(nameof(WorldId)).Append(": ").Append(specialization.WorldId.ToGuid()).AppendLine();
+    IReadOnlyDictionary<Guid, int> talentTiers = GetTalentTiers(talents);
+
+    StringBuilder message = new();
+    message.AppendLine(ErrorMessage).Append(nameof(WorldId)).Append(": ").Append(specialization.WorldId.ToGuid()).AppendLine();
     message.Append(nameof(SpecializationId)).Append(": ").Append(specialization.EntityId).AppendLine();
     message.Append(nameof(SpecializationTier)).Append(": ").Append(specialization.Tier).AppendLine();
     message.Append(nameof(PropertyName)).Append(": ").Append(propertyName).AppendLine();
     message.Append(nameof(Talents)).AppendLine(":");
-    foreach (Talent talent in talents)
+    foreach (KeyValuePair<Guid, int> talentTier in talentTiers)
     {
-      message.Append(" - ").Append(talent.EntityId).Append('=').Append(talent.Tier).AppendLine();
+      message.Append(" - ").Append(talentTier.Key).Append('=').Append(talentTier.Value).AppendLine();
     }
     return message.ToString();
   }
+
+  private static IReadOnlyDictionary<Guid, int> GetTalentTiers(IEnumerable<Talent> talents) => talents
+    .GroupBy(talent => talent.EntityId)
+    .ToDictionary(x => x.Key, x => x.Last().Tier.Value)
+    .AsReadOnly();
 }

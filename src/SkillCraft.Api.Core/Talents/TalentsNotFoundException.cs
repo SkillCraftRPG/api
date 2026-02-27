@@ -40,14 +40,16 @@ public class TalentsNotFoundException : NotFoundException
     : base(BuildMessage(worldId, talentIds, propertyName))
   {
     WorldId = worldId.ToGuid();
-    TalentIds = talentIds.Distinct().ToList().AsReadOnly();
+    TalentIds = Sanitize(talentIds);
     PropertyName = propertyName;
   }
 
   private static string BuildMessage(WorldId worldId, IEnumerable<Guid> talentIds, string propertyName)
   {
-    StringBuilder message = new(ErrorMessage);
-    message.AppendLine();
+    talentIds = Sanitize(talentIds);
+
+    StringBuilder message = new();
+    message.AppendLine(ErrorMessage);
     message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
     message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
     message.Append(nameof(TalentIds)).AppendLine(":");
@@ -57,4 +59,6 @@ public class TalentsNotFoundException : NotFoundException
     }
     return message.ToString();
   }
+
+  private static IReadOnlyCollection<Guid> Sanitize(IEnumerable<Guid> talentIds) => talentIds.Distinct().ToList().AsReadOnly();
 }

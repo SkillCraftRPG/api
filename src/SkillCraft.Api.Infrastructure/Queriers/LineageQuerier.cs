@@ -26,6 +26,14 @@ internal class LineageQuerier : ILineageQuerier
     _sqlHelper = sqlHelper;
   }
 
+  public async Task<bool> HasChildrenAsync(Lineage lineage, CancellationToken cancellationToken)
+  {
+    return await _lineages.AsNoTracking()
+      .WhereWorld(_context.WorldId)
+      .Where(x => x.Parent!.StreamId == lineage.Id.Value)
+      .AnyAsync(cancellationToken);
+  }
+
   public async Task<LineageModel> ReadAsync(Lineage lineage, CancellationToken cancellationToken)
   {
     return await ReadAsync(lineage.Id, cancellationToken) ?? throw new InvalidOperationException($"The lineage entity 'StreamId={lineage.Id}' was not found.");
