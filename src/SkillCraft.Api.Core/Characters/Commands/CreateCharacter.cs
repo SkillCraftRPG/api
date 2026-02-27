@@ -129,6 +129,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     LineageId lineageId = new(payload.LineageId, worldId);
     return await _lineageRepository.LoadAsync(lineageId, cancellationToken)
       ?? throw new EntityNotFoundException(new Entity(Lineage.EntityKind, payload.LineageId, worldId), nameof(payload.LineageId));
+    // TODO(fpion): lineage should not have children.
   }
 
   private async Task<IReadOnlyCollection<Talent>> FindTalentsAsync(CreateCharacterPayload payload, WorldId worldId, CancellationToken cancellationToken)

@@ -112,6 +112,14 @@ public class Character : AggregateRoot, IEntityProvider
     {
       throw new NotImplementedException(); // TODO(fpion): Domain Exception
     }
+    if (caste.Skill.HasValue && !skills.Contains(caste.Skill.Value))
+    {
+      throw new NotImplementedException(); // TODO(fpion): Domain Exception
+    }
+    if (education.Skill.HasValue && !skills.Contains(education.Skill.Value))
+    {
+      throw new NotImplementedException(); // TODO(fpion): Domain Exception
+    }
 
     languages ??= [];
     if (languages.Any(language => language.WorldId != worldId))
