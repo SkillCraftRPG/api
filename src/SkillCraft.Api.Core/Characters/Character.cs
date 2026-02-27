@@ -120,6 +120,7 @@ public class Character : AggregateRoot, IEntityProvider
     {
       throw new NotImplementedException(); // TODO(fpion): Domain Exception
     }
+    // TODO(fpion): talent point count
 
     languages ??= [];
     if (languages.Any(language => language.WorldId != worldId))

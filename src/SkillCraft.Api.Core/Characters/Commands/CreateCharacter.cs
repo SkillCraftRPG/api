@@ -25,6 +25,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
   private readonly ICustomizationRepository _customizationRepository;
   private readonly IEducationRepository _educationRepository;
   private readonly ILanguageRepository _languageRepository;
+  private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
   private readonly IStorageService _storageService;
@@ -38,6 +39,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     ICustomizationRepository customizationRepository,
     IEducationRepository educationRepository,
     ILanguageRepository languageRepository,
+    ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService,
     IStorageService storageService,
@@ -50,6 +52,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     _customizationRepository = customizationRepository;
     _educationRepository = educationRepository;
     _languageRepository = languageRepository;
+    _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
     _storageService = storageService;
@@ -130,9 +133,13 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
   private async Task<Lineage> FindLineageAsync(CreateCharacterPayload payload, WorldId worldId, CancellationToken cancellationToken)
   {
     LineageId lineageId = new(payload.LineageId, worldId);
-    return await _lineageRepository.LoadAsync(lineageId, cancellationToken)
+    Lineage lineage = await _lineageRepository.LoadAsync(lineageId, cancellationToken)
       ?? throw new EntityNotFoundException(new Entity(Lineage.EntityKind, payload.LineageId, worldId), nameof(payload.LineageId));
-    // TODO(fpion): lineage should not have children.
+    if (await _lineageQuerier.HasChildrenAsync(lineage, cancellationToken))
+    {
+      throw new InvalidLineageException(lineage, nameof(payload.LineageId));
+    }
+    return lineage;
   }
 
   private async Task<IReadOnlyCollection<Talent>> FindTalentsAsync(CreateCharacterPayload payload, WorldId worldId, CancellationToken cancellationToken)
