@@ -15,4 +15,3 @@ internal class PlainTextProblemDetailsWriter : IProblemDetailsWriter
     await httpContext.Response.WriteAsJsonAsync(context.ProblemDetails);
   }
 }
-
