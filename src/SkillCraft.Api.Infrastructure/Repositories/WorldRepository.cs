@@ -82,6 +82,7 @@ internal class WorldRepository : IWorldRepository
   public virtual async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Worlds.Table).SelectAll(Db.Worlds.Table)
+      .Where(Db.Worlds.OwnerId, Operators.IsEqualTo(_context.UserId))
       .ApplyIdFilter(Db.Worlds.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Worlds.Key, Db.Worlds.Name);
 
