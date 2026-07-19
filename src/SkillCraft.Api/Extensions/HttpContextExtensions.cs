@@ -16,6 +16,9 @@ internal static class HttpContextExtensions
   private const string SessionKey = "Session";
   private const string UserKey = "User";
 
+  public static Uri GetBaseUri(this HttpContext context) => new(context.GetBaseUrl(), UriKind.Absolute);
+  public static string GetBaseUrl(this HttpContext context) => $"{context.Request.Scheme}://{context.Request.Host}";
+
   public static IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes(this HttpContext context)
   {
     List<CustomAttribute> customAttributes = new(capacity: 2)
