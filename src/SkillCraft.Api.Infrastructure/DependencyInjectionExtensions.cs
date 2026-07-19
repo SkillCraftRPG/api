@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Identity;
+using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
 using SkillCraft.Api.Infrastructure.Caching;
 using SkillCraft.Api.Infrastructure.Identity;
+using SkillCraft.Api.Infrastructure.Repositories;
 
 namespace SkillCraft.Api.Infrastructure;
 
@@ -19,6 +21,7 @@ public static class DependencyInjectionExtensions
       .AddSingleton(serviceProvider => ClientAppSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => TokensSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddIdentityGateways()
+      .AddRepositories()
       .AddTransient<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>();
   }
 
@@ -32,5 +35,10 @@ public static class DependencyInjectionExtensions
       .AddSingleton<ISessionGateway, SessionGateway>()
       .AddSingleton<ITokenGateway, TokenGateway>()
       .AddSingleton<IUserGateway, UserGateway>();
+  }
+
+  private static IServiceCollection AddRepositories(this IServiceCollection services)
+  {
+    return services.AddScoped<IWorldRepository, WorldRepository>();
   }
 }

@@ -16,4 +16,7 @@ internal class Program
 
     application.Run();
   }
+
+  // TODO(fpion): migrate DB
+  // TODO(fpion): cache realm ID
 }

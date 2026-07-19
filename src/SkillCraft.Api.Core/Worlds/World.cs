@@ -41,6 +41,8 @@ public class World : IAuditable, IResource, IVersioned
   {
   }
 
+  public IReadOnlyCollection<Guid> GetUserIds() => [OwnerId, CreatedBy, UpdatedBy];
+
   public void Update(string key, string? name, string? description, Guid userId, DateTime? updatedOn = null)
   {
     Key = SlugHelper.Format(key);
