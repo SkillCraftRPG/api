@@ -1,4 +1,4 @@
-name: Build SkillCraftRPG Platform
+name: Build SkillCraftRPG API
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: Build SkillCraftRPG Platform
+    name: Build SkillCraftRPG API
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository

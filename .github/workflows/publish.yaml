@@ -1,4 +1,4 @@
-name: Publish SkillCraftRPG Platform
+name: Publish SkillCraftRPG API
 
 on:
   release:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    name: Publish SkillCraftRPG Platform
+    name: Publish SkillCraftRPG API
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -23,12 +23,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: skillcraftrpg/cms
+          images: skillcraftrpg/api
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          file: src/SkillCraft.Cms/Dockerfile
+          file: src/SkillCraft.Api/Dockerfile
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
