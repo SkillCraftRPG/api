@@ -4,47 +4,49 @@ using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Worlds;
+using SkillCraft.Api.Core.Worlds.Events;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Infrastructure.Actors;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class WorldRepository : IWorldRepository
+internal class WorldRepository : Repository, IWorldRepository
 {
   private readonly IActorService _actorService;
   private readonly IContext _context;
-  private readonly GameContext _game;
   private readonly ISqlHelper _sqlHelper;
 
-  public WorldRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper)
+  public WorldRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper) : base(game)
   {
     _actorService = actorService;
     _context = context;
-    _game = game;
     _sqlHelper = sqlHelper;
   }
 
   public void Add(World world)
   {
-    _game.Worlds.Add(world);
+    Database.Worlds.Add(world);
+    base.RecordChange(new WorldCreated(world));
   }
   public void Remove(World world)
   {
-    _game.Worlds.Remove(world);
+    Database.Worlds.Remove(world);
+    base.RecordChange(new WorldDeleted(world, _context.UserId));
   }
-  public void Update(World world)
+  public void Update(World world, WorldUpdated record)
   {
-    _game.Worlds.Update(world);
+    Database.Worlds.Update(world);
+    base.RecordChange(record);
   }
 
   public async Task<int> CountAsync(CancellationToken cancellationToken)
   {
-    return await _game.Worlds.CountAsync(x => x.OwnerId == _context.UserId, cancellationToken);
+    return await Database.Worlds.CountAsync(x => x.OwnerId == _context.UserId, cancellationToken);
   }
 
   public async Task EnsureUnicityAsync(World world, CancellationToken cancellationToken)
   {
-    Guid? worldId = await _game.Worlds.Where(x => x.Key == world.Key)
+    Guid? worldId = await Database.Worlds.Where(x => x.Key == world.Key)
       .Select(x => (Guid?)x.Id)
       .SingleOrDefaultAsync(cancellationToken);
     if (worldId.HasValue && !worldId.Value.Equals(world.Id))
@@ -55,7 +57,7 @@ internal class WorldRepository : IWorldRepository
 
   public async Task<World?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await _game.Worlds.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    return await Database.Worlds.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
   }
 
   public async Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken)
@@ -64,7 +66,7 @@ internal class WorldRepository : IWorldRepository
   }
   public async Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    World? world = await _game.Worlds.AsNoTracking()
+    World? world = await Database.Worlds.AsNoTracking()
       .Where(x => x.Id == id && x.OwnerId == _context.UserId)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -72,7 +74,7 @@ internal class WorldRepository : IWorldRepository
   }
   public async Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
-    World? world = await _game.Worlds.AsNoTracking()
+    World? world = await Database.Worlds.AsNoTracking()
       .Where(x => x.Key == SlugHelper.Format(key) && x.OwnerId == _context.UserId)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -86,7 +88,7 @@ internal class WorldRepository : IWorldRepository
       .ApplyIdFilter(Db.Worlds.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Worlds.Key, Db.Worlds.Name);
 
-    IQueryable<World> query = _game.Worlds.FromQuery(builder).AsNoTracking();
+    IQueryable<World> query = Database.Worlds.FromQuery(builder).AsNoTracking();
 
     long total = await query.LongCountAsync(cancellationToken);
 

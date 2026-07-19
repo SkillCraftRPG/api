@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts.Search;
+using SkillCraft.Api.Core.Worlds.Events;
 using SkillCraft.Api.Core.Worlds.Models;
 
 namespace SkillCraft.Api.Core.Worlds;
@@ -7,7 +8,7 @@ public interface IWorldRepository
 {
   void Add(World world);
   void Remove(World world);
-  void Update(World world);
+  void Update(World world, WorldUpdated record);
 
   Task<int> CountAsync(CancellationToken cancellationToken = default);
 

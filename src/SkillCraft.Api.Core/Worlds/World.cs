@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using SkillCraft.Api.Core.Worlds.Events;
 
 namespace SkillCraft.Api.Core.Worlds;
 
@@ -43,15 +44,36 @@ public class World : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [OwnerId, CreatedBy, UpdatedBy];
 
-  public void Update(string key, string? name, string? description, Guid userId, DateTime? updatedOn = null)
+  public WorldUpdated Update(string key, string? name, string? description, Guid userId, DateTime? updatedOn = null)
   {
-    Key = SlugHelper.Format(key);
-    Name = name?.CleanTrim();
-    Description = description?.CleanTrim();
-
     Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
+
+    WorldUpdated record = new(this);
+
+    key = SlugHelper.Format(key);
+    if (!Equals(Key, key))
+    {
+      record.Key = new Change<string>(Key, key);
+      Key = key;
+    }
+
+    name = name?.CleanTrim();
+    if (!Equals(Name, name))
+    {
+      record.Name = new Change<string>(Name, name);
+      Name = name;
+    }
+
+    description = description?.CleanTrim();
+    if (!Equals(Description, description))
+    {
+      record.Description = new Change<string>(Description, description);
+      Description = description;
+    }
+
+    return record;
   }
 
   public override bool Equals(object? obj) => obj is World world && world.WorldId == WorldId;

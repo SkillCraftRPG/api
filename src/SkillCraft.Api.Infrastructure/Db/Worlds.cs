@@ -3,7 +3,7 @@ using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Infrastructure.Db;
 
-internal static class Worlds
+public static class Worlds
 {
   public static readonly TableId Table = new(Schemas.Game, nameof(GameContext.Worlds), alias: null);
 

@@ -1,5 +1,6 @@
 ﻿using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Worlds.Events;
 using SkillCraft.Api.Core.Worlds.Models;
 
 namespace SkillCraft.Api.Core.Worlds.Commands;
@@ -43,7 +44,8 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     {
       await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-      world.Update(payload.Key, payload.Name, payload.Description, _context.UserId);
+      WorldUpdated record = world.Update(payload.Key, payload.Name, payload.Description, _context.UserId);
+      _worldRepository.Update(world, record);
     }
 
     await _worldRepository.EnsureUnicityAsync(world, cancellationToken);

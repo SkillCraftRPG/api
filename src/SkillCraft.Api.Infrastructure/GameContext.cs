@@ -9,6 +9,7 @@ public class GameContext : DbContext
   {
   }
 
+  internal DbSet<HistoryRecord> History => Set<HistoryRecord>();
   internal DbSet<World> Worlds => Set<World>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
