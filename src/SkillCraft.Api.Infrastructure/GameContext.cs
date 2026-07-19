@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Infrastructure;
 
@@ -7,6 +8,9 @@ public class GameContext : DbContext
   public GameContext(DbContextOptions<GameContext> options) : base(options)
   {
   }
+
+  internal DbSet<HistoryRecord> History => Set<HistoryRecord>();
+  internal DbSet<World> Worlds => Set<World>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

@@ -19,6 +19,8 @@ public static class DependencyInjectionExtensions
   }
   public static IServiceCollection AddSkillCraftApiPostgreSQL(this IServiceCollection services, string connectionString)
   {
-    return services.AddDbContext<GameContext>(options => options.UseNpgsql(connectionString, options => options.MigrationsAssembly("SkillCraft.Api.PostgreSQL")));
+    return services
+      .AddDbContext<GameContext>(options => options.UseNpgsql(connectionString, options => options.MigrationsAssembly("SkillCraft.Api.PostgreSQL")))
+      .AddSingleton<ISqlHelper, PostgresHelper>();
   }
 }

@@ -4,6 +4,7 @@ using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Users;
 using Microsoft.Extensions.Primitives;
 using SkillCraft.Api.Constants;
+using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Settings;
 using KrakenarHeaders = Krakenar.Contracts.Constants.Headers;
 
@@ -15,6 +16,10 @@ internal static class HttpContextExtensions
   private const string SessionIdKey = "SessionId";
   private const string SessionKey = "Session";
   private const string UserKey = "User";
+  private const string WorldKey = "World";
+
+  public static Uri GetBaseUri(this HttpContext context) => new(context.GetBaseUrl(), UriKind.Absolute);
+  public static string GetBaseUrl(this HttpContext context) => $"{context.Request.Scheme}://{context.Request.Host}";
 
   public static IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes(this HttpContext context)
   {
@@ -87,6 +92,7 @@ internal static class HttpContextExtensions
   public static ApiKey? GetApiKey(this HttpContext context) => context.GetItem<ApiKey>(ApiKeyKey);
   public static Session? GetSession(this HttpContext context) => context.GetItem<Session>(SessionKey);
   public static User? GetUser(this HttpContext context) => context.GetItem<User>(UserKey);
+  public static WorldModel? GetWorld(this HttpContext context) => context.GetItem<WorldModel>(WorldKey);
   public static T? GetItem<T>(this HttpContext context, object key) => context.Items.TryGetValue(key, out object? value) ? (T?)value : default;
 
   public static void SetApiKey(this HttpContext context, ApiKey? apiKey)
@@ -100,6 +106,10 @@ internal static class HttpContextExtensions
   public static void SetUser(this HttpContext context, User? user)
   {
     context.SetItem(UserKey, user);
+  }
+  public static void SetWorld(this HttpContext context, WorldModel? world)
+  {
+    context.SetItem(WorldKey, world);
   }
   public static void SetItem<T>(this HttpContext context, object key, T? value)
   {

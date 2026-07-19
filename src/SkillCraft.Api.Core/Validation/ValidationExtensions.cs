@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Krakenar.Contracts.Settings;
-using Microsoft.VisualBasic;
 
 namespace SkillCraft.Api.Core.Validation;
 
@@ -10,6 +9,11 @@ internal static class ValidationExtensions
   {
     moment ??= DateTime.Now;
     return ruleBuilder.InclusiveBetween(moment.Value.AddYears(-maximumAge), moment.Value.AddYears(-minimumAge));
+  }
+
+  public static IRuleBuilderOptions<T, string> Description<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty();
   }
 
   public static IRuleBuilderOptions<T, string> EmailAddressValue<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -25,6 +29,11 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> Locale<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(LocaleValidator<T>.MaximumLength).SetValidator(new LocaleValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Constants.NameMaximumLength);
   }
 
   public static IRuleBuilderOptions<T, string> Password<T>(this IRuleBuilder<T, string> ruleBuilder, IPasswordSettings settings)

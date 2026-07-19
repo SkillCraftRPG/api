@@ -4,7 +4,7 @@ namespace SkillCraft.Api.Settings;
 
 public record ApiSettings
 {
-  public const string SectionKey = "Api";
+  private const string SectionKey = "Api";
 
   public bool EnableBasicAuthentication { get; set; }
   public bool EnableSwagger { get; set; }

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Logitar.CQRS;
+using SkillCraft.Api.Core.Permissions;
 
 namespace SkillCraft.Api.Core;
 
@@ -9,5 +10,8 @@ internal class CommandBus : Logitar.CQRS.CommandBus
   {
   }
 
-  protected override bool ShouldRetry<TResult>(ICommand<TResult> command, Exception exception) => exception is not ValidationException;
+  protected override bool ShouldRetry<TResult>(ICommand<TResult> command, Exception exception)
+    => exception is not ConflictException
+    && exception is not PermissionDeniedException
+    && exception is not ValidationException;
 }

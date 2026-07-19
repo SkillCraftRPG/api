@@ -8,6 +8,10 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/SkillCraft.Api.IntegrationTests/SkillCraft.Api.IntegrationTests.csproj" Id="eed1884e-96f8-441d-9e5b-8726c7cb0869" />
+    <Project Path="tests/SkillCraft.Api.Tests/SkillCraft.Api.Tests.csproj" Id="a5e045cf-ce1d-46f9-b457-088a87088bb5" />
+  </Folder>
   <Project Path="src/SkillCraft.Api.Core/SkillCraft.Api.Core.csproj" Id="012643de-dc99-4736-abaa-5ccae030777b" />
   <Project Path="src/SkillCraft.Api.Infrastructure/SkillCraft.Api.Infrastructure.csproj" Id="78c9629e-8ca7-4efe-8c3f-be41fd9eff00" />
   <Project Path="src/SkillCraft.Api.PostgreSQL/SkillCraft.Api.PostgreSQL.csproj" Id="7d06a545-16bd-467d-a96e-abb7831414f9" />

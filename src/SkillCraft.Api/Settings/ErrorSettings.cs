@@ -2,9 +2,9 @@
 
 namespace SkillCraft.Api.Settings;
 
-internal record ErrorSettings
+public record ErrorSettings
 {
-  public const string SectionKey = "Error";
+  private const string SectionKey = "Error";
 
   public bool ExposeDetail { get; set; }
 

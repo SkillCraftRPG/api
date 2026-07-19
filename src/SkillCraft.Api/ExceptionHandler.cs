@@ -4,6 +4,8 @@ using Logitar;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Extensions;
 using SkillCraft.Api.Settings;
 
@@ -28,6 +30,14 @@ internal class ExceptionHandler : IExceptionHandler
     if (IsBadRequest(exception))
     {
       statusCode = StatusCodes.Status400BadRequest;
+    }
+    else if (exception is PermissionDeniedException)
+    {
+      statusCode = StatusCodes.Status403Forbidden;
+    }
+    else if (exception is ConflictException)
+    {
+      statusCode = StatusCodes.Status409Conflict;
     }
     else if (_errorSettings.ExposeDetail)
     {
