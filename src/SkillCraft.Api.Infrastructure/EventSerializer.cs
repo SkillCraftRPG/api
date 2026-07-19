@@ -1,6 +1,4 @@
 ﻿using SkillCraft.Api.Core;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SkillCraft.Api.Infrastructure;
 
