@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds.Models;
 
 namespace SkillCraft.Api.Core.Worlds.Commands;
@@ -8,11 +9,13 @@ internal record UpdateWorldCommand(Guid Id, UpdateWorldPayload Payload) : IComma
 internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, WorldModel?>
 {
   private readonly IContext _context;
+  private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
 
-  public UpdateWorldCommandHandler(IContext context, IWorldRepository worldRepository)
+  public UpdateWorldCommandHandler(IContext context, IPermissionService permissionService, IWorldRepository worldRepository)
   {
     _context = context;
+    _permissionService = permissionService;
     _worldRepository = worldRepository;
   }
 
@@ -26,6 +29,7 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     {
       return null;
     }
+    await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
     world.Update(
       string.IsNullOrWhiteSpace(payload.Key) ? world.Key : payload.Key,

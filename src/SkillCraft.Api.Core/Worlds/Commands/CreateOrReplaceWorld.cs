@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds.Models;
 
 namespace SkillCraft.Api.Core.Worlds.Commands;
@@ -8,11 +9,13 @@ internal record CreateOrReplaceWorldCommand(CreateOrReplaceWorldPayload Payload,
 internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrReplaceWorldCommand, CreateOrReplaceWorldResult>
 {
   private readonly IContext _context;
+  private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
 
-  public CreateOrReplaceWorldCommandHandler(IContext context, IWorldRepository worldRepository)
+  public CreateOrReplaceWorldCommandHandler(IContext context, IPermissionService permissionService, IWorldRepository worldRepository)
   {
     _context = context;
+    _permissionService = permissionService;
     _worldRepository = worldRepository;
   }
 
@@ -30,12 +33,16 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     bool created = false;
     if (world is null)
     {
+      await _permissionService.CheckAsync(Actions.CreateWorld, cancellationToken);
+
       world = new World(_context.UserId, payload.Key, command.Id, payload.Name, payload.Description);
       _worldRepository.Add(world);
       created = true;
     }
     else
     {
+      await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
+
       world.Update(payload.Key, payload.Name, payload.Description, _context.UserId);
     }
 
