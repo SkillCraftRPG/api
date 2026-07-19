@@ -6,7 +6,7 @@ namespace SkillCraft.Api.Core.Worlds;
 
 public interface IWorldRepository
 {
-  void Add(World world);
+  void Add(params World[] worlds);
   void Remove(World world);
   void Update(World world, WorldUpdated record);
 

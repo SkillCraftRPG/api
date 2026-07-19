@@ -23,10 +23,13 @@ internal class WorldRepository : Repository, IWorldRepository
     _sqlHelper = sqlHelper;
   }
 
-  public void Add(World world)
+  public void Add(params World[] worlds)
   {
-    Database.Worlds.Add(world);
-    base.RecordChange(new WorldCreated(world));
+    foreach (World world in worlds)
+    {
+      Database.Worlds.Add(world);
+      base.RecordChange(new WorldCreated(world));
+    }
   }
   public void Remove(World world)
   {
