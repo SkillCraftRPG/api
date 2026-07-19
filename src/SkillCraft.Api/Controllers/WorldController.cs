@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Extensions;
+using SkillCraft.Api.Models.World;
 
 namespace SkillCraft.Api.Controllers;
 
@@ -44,6 +46,14 @@ public class WorldController : ControllerBase
   {
     CreateOrReplaceWorldResult result = await _worldService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<WorldModel>>> SearchAsync([FromQuery] SearchWorldsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchWorldsPayload payload = parameters.ToPayload();
+    SearchResults<WorldModel> worlds = await _worldService.SearchAsync(payload, cancellationToken);
+    return Ok(worlds);
   }
 
   [HttpPatch("{id}")]
