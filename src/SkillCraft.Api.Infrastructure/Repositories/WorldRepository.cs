@@ -33,8 +33,20 @@ internal class WorldRepository : IWorldRepository
     _game.Worlds.Update(world);
   }
 
+  public async Task<int> CountAsync(CancellationToken cancellationToken)
+  {
+    return await _game.Worlds.CountAsync(x => x.OwnerId == _context.UserId, cancellationToken);
+  }
+
   public async Task EnsureUnicityAsync(World world, CancellationToken cancellationToken)
   {
+    Guid? worldId = await _game.Worlds.Where(x => x.Key == world.Key)
+      .Select(x => (Guid?)x.Id)
+      .SingleOrDefaultAsync(cancellationToken);
+    if (worldId.HasValue && !worldId.Value.Equals(world.Id))
+    {
+      throw new KeyAlreadyUsedException(world, worldId.Value, world.Key, nameof(World.Key));
+    }
   }
 
   public async Task<World?> LoadAsync(Guid id, CancellationToken cancellationToken)

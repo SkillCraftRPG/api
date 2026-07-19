@@ -1,4 +1,7 @@
-﻿namespace SkillCraft.Api;
+﻿using Logitar.CQRS;
+using SkillCraft.Api.Infrastructure;
+
+namespace SkillCraft.Api;
 
 internal class Program
 {
@@ -14,9 +17,15 @@ internal class Program
 
     startup.Configure(application);
 
+    await MigrateDatabaseAsync(application);
+
     application.Run();
   }
 
-  // TODO(fpion): migrate DB
-  // TODO(fpion): cache realm ID
+  private static async Task MigrateDatabaseAsync(WebApplication application, CancellationToken cancellationToken = default)
+  {
+    using IServiceScope scope = application.Services.CreateScope();
+    ICommandBus commandBus = scope.ServiceProvider.GetRequiredService<ICommandBus>();
+    await commandBus.ExecuteAsync(new MigrateDatabaseCommand(), cancellationToken);
+  }
 }

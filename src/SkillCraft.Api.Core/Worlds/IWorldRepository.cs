@@ -8,6 +8,8 @@ public interface IWorldRepository
   void Remove(World world);
   void Update(World world);
 
+  Task<int> CountAsync(CancellationToken cancellationToken = default);
+
   Task EnsureUnicityAsync(World world, CancellationToken cancellationToken = default);
 
   Task<World?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
