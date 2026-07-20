@@ -75,6 +75,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateEducation:
       case Actions.CreateLanguage:
       case Actions.CreateScript:
+      case Actions.CreateTalent:
       case Actions.Update:
         return _context.IsWorldOwner();
       default:

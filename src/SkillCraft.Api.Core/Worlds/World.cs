@@ -4,6 +4,7 @@ using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds.Events;
 
 namespace SkillCraft.Api.Core.Worlds;
@@ -34,6 +35,7 @@ public class World : IAuditable, IResource, IVersioned
   public List<Education> Educations { get; private set; } = [];
   public List<Language> Languages { get; private set; } = [];
   public List<Script> Scripts { get; private set; } = [];
+  public List<Talent> Talents { get; private set; } = [];
 
   public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? htmlContent = null, DateTime? createdOn = null)
   {
