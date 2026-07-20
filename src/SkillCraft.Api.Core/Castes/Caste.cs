@@ -101,7 +101,7 @@ public class Caste : IAuditable, IResource, IVersioned
       Skill = skill;
     }
 
-    wealthRoll = wealthRoll?.CleanTrim();
+    wealthRoll = wealthRoll?.CleanTrim()?.ToLowerInvariant();
     if (!Equals(WealthRoll, wealthRoll))
     {
       record.WealthRoll = new Change<string>(WealthRoll, wealthRoll);
