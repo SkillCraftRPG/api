@@ -1,6 +1,7 @@
 ﻿using Logitar.CQRS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Languages;
@@ -14,6 +15,7 @@ public static class DependencyInjectionExtensions
 {
   public static IServiceCollection AddSkillCraftApiCore(this IServiceCollection services)
   {
+    CasteService.Register(services);
     CustomizationService.Register(services);
     IdentityService.Register(services);
     LanguageService.Register(services);

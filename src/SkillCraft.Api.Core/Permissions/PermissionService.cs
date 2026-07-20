@@ -70,6 +70,7 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.CreateCaste:
       case Actions.CreateCustomization:
       case Actions.CreateLanguage:
       case Actions.CreateScript:

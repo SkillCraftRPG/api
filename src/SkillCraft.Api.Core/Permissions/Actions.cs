@@ -2,6 +2,7 @@
 
 public static class Actions
 {
+  public const string CreateCaste = "CreateCaste";
   public const string CreateCustomization = "CreateCustomization";
   public const string CreateLanguage = "CreateLanguage";
   public const string CreateScript = "CreateScript";
