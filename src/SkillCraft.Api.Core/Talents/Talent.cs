@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -132,6 +132,15 @@ public class Talent : IAuditable, IResource, IVersioned
       record.RequiredTalentId = new Change<Guid?>(RequiredTalent?.Id, requiredTalent?.Id);
       RequiredTalent = requiredTalent;
       RequiredTalentId = requiredTalent?.TalentId;
+    }
+
+    if (AllowMultiplePurchases && Skill.HasValue)
+    {
+      throw new InvalidTalentSkillException(this);
+    }
+    if (RequiredTalent is not null && RequiredTalent.Tier > Tier)
+    {
+      throw new InvalidRequiredTalentException(this);
     }
 
     return record;

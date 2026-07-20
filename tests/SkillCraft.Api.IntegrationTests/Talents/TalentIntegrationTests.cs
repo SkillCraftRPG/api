@@ -221,6 +221,46 @@ public class TalentIntegrationTests : IntegrationTests
     Assert.Equal(charge.Id, talent.Id);
   }
 
+  [Fact(DisplayName = "It should throw InvalidTalentSkillException when updating a talent.")]
+  public async Task Given_AllowMultiplePurchasesAndSkill_When_Update_Then_InvalidTalentSkillException()
+  {
+    Talent talent = TalentBuilder.Competence(Faker, Context.World);
+    _talentRepository.Add(talent);
+    await Context.SaveChangesAsync();
+
+    UpdateTalentPayload payload = new()
+    {
+      Skill = new Optional<Skill?>(Skill.Melee)
+    };
+
+    var exception = await Assert.ThrowsAsync<InvalidTalentSkillException>(async () => await _talentService.UpdateAsync(talent.Id, payload));
+    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(talent.Id, exception.TalentId);
+    Assert.Equal(Skill.Melee, exception.AttemptedSkill);
+    Assert.Equal("Skill", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidRequiredTalentException when updating a talent.")]
+  public async Task Given_RequiredTalentTierGreater_When_Update_Then_InvalidRequiredTalentException()
+  {
+    Talent charge = TalentBuilder.Charge(Faker, Context.World, _melee);
+    _talentRepository.Add(charge);
+    await Context.SaveChangesAsync();
+
+    UpdateTalentPayload payload = new()
+    {
+      RequiredTalentId = new Optional<Guid?>(charge.Id)
+    };
+
+    var exception = await Assert.ThrowsAsync<InvalidRequiredTalentException>(async () => await _talentService.UpdateAsync(_melee.Id, payload));
+    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(_melee.Id, exception.RequiringTalentId);
+    Assert.Equal(charge.Id, exception.RequiredTalentId);
+    Assert.Equal(_melee.Tier, exception.RequiringTalentTier);
+    Assert.Equal(charge.Tier, exception.RequiredTalentTier);
+    Assert.Equal("RequiredTalentId", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the tier is changing.")]
   public async Task Given_DifferentTier_When_Replace_Then_ImmutablePropertyException()
   {
