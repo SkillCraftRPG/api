@@ -53,6 +53,11 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
     {
       await _permissionService.CheckAsync(Actions.Update, customization, cancellationToken);
 
+      if (payload.Kind != customization.Kind)
+      {
+        throw new ImmutablePropertyException<CustomizationKind>(customization, customization.Kind, payload.Kind, nameof(Customization.Kind));
+      }
+
       CustomizationUpdated record = customization.Update(payload.Name, payload.Description, _context.UserId);
       _customizationRepository.Update(customization, record);
     }

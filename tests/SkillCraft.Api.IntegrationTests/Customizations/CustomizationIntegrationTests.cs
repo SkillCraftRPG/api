@@ -160,6 +160,25 @@ public class CustomizationIntegrationTests : IntegrationTests
     Assert.Equal(baraque.Id, customization.Id);
   }
 
+  [Fact(DisplayName = "It should throw ImmutablePropertyException when the kind is changing.")]
+  public async Task Given_DifferentKind_When_Replace_Then_ImmutablePropertyException()
+  {
+    CreateOrReplaceCustomizationPayload payload = new()
+    {
+      Kind = CustomizationKind.Disability,
+      Name = " Abruti ",
+      Description = "  Limité, maladroit et désavantagé dans l’usage de son intellect.  "
+    };
+
+    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<CustomizationKind>>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.Id));
+    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Customization.ResourceKind, exception.ResourceKind);
+    Assert.Equal(_customization.Id, exception.ResourceId);
+    Assert.Equal(_customization.Kind, exception.ExpectedValue);
+    Assert.Equal(payload.Kind, exception.AttemptedValue);
+    Assert.Equal("Kind", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a customization.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
