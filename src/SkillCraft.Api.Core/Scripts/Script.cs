@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts.Events;
 using SkillCraft.Api.Core.Worlds;
 
@@ -24,6 +25,8 @@ public class Script : IAuditable, IResource, IVersioned
   public DateTime UpdatedOn { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
+
+  public List<Language> Languages { get; private set; } = [];
 
   public Script(World world, string name, Guid? id = null, string? description = null, Guid? userId = null, DateTime? createdOn = null)
   {

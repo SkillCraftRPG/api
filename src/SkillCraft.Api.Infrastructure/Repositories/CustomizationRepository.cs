@@ -44,7 +44,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
 
   public async Task<Customization?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Customizations.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    return await Database.Customizations.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
   }
 
   public async Task<CustomizationModel> ReadAsync(Customization customization, CancellationToken cancellationToken)

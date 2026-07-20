@@ -200,7 +200,7 @@ public class CustomizationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a customization.")]
   public async Task Given_NotAllowed_When_Replace_Then_PermissionDeniedException()
   {
-    Context.World = new WorldBuilder(Faker).Build();
+    Context.User = new UserBuilder(Faker).Build();
 
     CreateOrReplaceCustomizationPayload payload = new()
     {
@@ -218,7 +218,7 @@ public class CustomizationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a customization.")]
   public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
   {
-    Context.World = new WorldBuilder(Faker).Build();
+    Context.User = new UserBuilder(Faker).Build();
 
     UpdateCustomizationPayload payload = new();
 

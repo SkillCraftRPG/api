@@ -4,6 +4,8 @@ using Logitar;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Languages;
+using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Worlds;
@@ -37,6 +39,30 @@ internal class Mapper
       Name = source.Name,
       Description = source.Description
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LanguageModel ToLanguage(Language source)
+  {
+    LanguageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Description = source.Description,
+      TypicalSpeakers = source.TypicalSpeakers
+    };
+
+    if (source.ScriptId.HasValue)
+    {
+      if (source.Script is null)
+      {
+        throw new ArgumentException("The script is required.", nameof(source));
+      }
+      destination.Script = ToScript(source.Script);
+    }
 
     MapAggregate(source, destination);
 
