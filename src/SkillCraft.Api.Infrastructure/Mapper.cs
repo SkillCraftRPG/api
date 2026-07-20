@@ -13,6 +13,8 @@ using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
+using SkillCraft.Api.Core.Talents;
+using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Models;
 
@@ -129,6 +131,29 @@ internal class Mapper
       Summary = source.Summary,
       HtmlContent = source.HtmlContent
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public TalentModel ToTalent(Talent source)
+  {
+    TalentModel destination = new()
+    {
+      Id = source.Id,
+      Tier = source.Tier,
+      Name = source.Name,
+      Summary = source.Summary,
+      HtmlContent = source.HtmlContent,
+      AllowMultiplePurchases = source.AllowMultiplePurchases,
+      Skill = source.Skill
+    };
+
+    if (source.RequiredTalent is not null)
+    {
+      destination.RequiredTalent = ToTalent(source.RequiredTalent);
+    }
 
     MapAggregate(source, destination);
 

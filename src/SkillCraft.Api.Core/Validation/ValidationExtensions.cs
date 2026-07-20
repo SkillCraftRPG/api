@@ -98,6 +98,11 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Constants.SummaryMaximumLength);
   }
 
+  public static IRuleBuilderOptions<T, int> TalentTier<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(0, 3);
+  }
+
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(32).SetValidator(new TimeZoneValidator<T>());
