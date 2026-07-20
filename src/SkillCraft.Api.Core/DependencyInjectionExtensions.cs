@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core;
@@ -15,6 +16,7 @@ public static class DependencyInjectionExtensions
     CustomizationService.Register(services);
     IdentityService.Register(services);
     PermissionService.Register(services);
+    ScriptService.Register(services);
     WorldService.Register(services);
 
     return services
