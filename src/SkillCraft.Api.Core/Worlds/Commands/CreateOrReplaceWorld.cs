@@ -36,7 +36,7 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     {
       await _permissionService.CheckAsync(Actions.CreateWorld, cancellationToken);
 
-      world = new World(_context.UserId, payload.Key, command.Id, payload.Name, payload.Description);
+      world = new World(_context.UserId, payload.Key, command.Id, payload.Name, payload.HtmlContent);
       _worldRepository.Add(world);
       created = true;
     }
@@ -44,7 +44,7 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     {
       await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-      WorldUpdated record = world.Update(payload.Key, payload.Name, payload.Description, _context.UserId);
+      WorldUpdated record = world.Update(payload.Key, payload.Name, payload.HtmlContent, _context.UserId);
       _worldRepository.Update(world, record);
     }
 

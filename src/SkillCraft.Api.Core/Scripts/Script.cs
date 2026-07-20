@@ -16,7 +16,8 @@ public class Script : IAuditable, IResource, IVersioned
   public Guid Id { get; private set; }
 
   public string Name { get; private set; } = string.Empty;
-  public string? Description { get; private set; }
+  public string? Summary { get; private set; }
+  public string? HtmlContent { get; private set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -28,7 +29,14 @@ public class Script : IAuditable, IResource, IVersioned
 
   public List<Language> Languages { get; private set; } = [];
 
-  public Script(World world, string name, Guid? id = null, string? description = null, Guid? userId = null, DateTime? createdOn = null)
+  public Script(
+    World world,
+    string name,
+    Guid? id = null,
+    string? summary = null,
+    string? htmlContent = null,
+    Guid? userId = null,
+    DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
     userId ??= world.OwnerId;
@@ -40,7 +48,7 @@ public class Script : IAuditable, IResource, IVersioned
     CreatedBy = userId.Value;
     CreatedOn = createdOn.Value;
 
-    Update(name, description, userId.Value, createdOn);
+    Update(name, summary, htmlContent, userId.Value, createdOn);
   }
 
   private Script()
@@ -49,7 +57,7 @@ public class Script : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
 
-  public ScriptUpdated Update(string name, string? description, Guid userId, DateTime? updatedOn = null)
+  public ScriptUpdated Update(string name, string? summary, string? htmlContent, Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
@@ -64,11 +72,18 @@ public class Script : IAuditable, IResource, IVersioned
       Name = name;
     }
 
-    description = description?.CleanTrim();
-    if (!Equals(Description, description))
+    summary = summary?.CleanTrim();
+    if (!Equals(Summary, summary))
     {
-      record.Description = new Change<string>(Description, description);
-      Description = description;
+      record.Summary = new Change<string>(Summary, summary);
+      Summary = summary;
+    }
+
+    htmlContent = htmlContent?.CleanTrim();
+    if (!Equals(HtmlContent, htmlContent))
+    {
+      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
+      HtmlContent = htmlContent;
     }
 
     return record;

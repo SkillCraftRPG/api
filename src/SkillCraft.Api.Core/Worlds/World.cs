@@ -17,7 +17,7 @@ public class World : IAuditable, IResource, IVersioned
 
   public string Key { get; private set; } = string.Empty;
   public string? Name { get; private set; }
-  public string? Description { get; private set; }
+  public string? HtmlContent { get; private set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -31,7 +31,7 @@ public class World : IAuditable, IResource, IVersioned
   public List<Language> Languages { get; private set; } = [];
   public List<Script> Scripts { get; private set; } = [];
 
-  public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
+  public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? htmlContent = null, DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
 
@@ -42,7 +42,7 @@ public class World : IAuditable, IResource, IVersioned
     CreatedBy = ownerId;
     CreatedOn = createdOn.Value;
 
-    Update(key, name, description, ownerId, createdOn);
+    Update(key, name, htmlContent, ownerId, createdOn);
   }
 
   private World()
@@ -51,7 +51,7 @@ public class World : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [OwnerId, CreatedBy, UpdatedBy];
 
-  public WorldUpdated Update(string key, string? name, string? description, Guid userId, DateTime? updatedOn = null)
+  public WorldUpdated Update(string key, string? name, string? htmlContent, Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
@@ -73,11 +73,11 @@ public class World : IAuditable, IResource, IVersioned
       Name = name;
     }
 
-    description = description?.CleanTrim();
-    if (!Equals(Description, description))
+    htmlContent = htmlContent?.CleanTrim();
+    if (!Equals(HtmlContent, htmlContent))
     {
-      record.Description = new Change<string>(Description, description);
-      Description = description;
+      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
+      HtmlContent = htmlContent;
     }
 
     return record;

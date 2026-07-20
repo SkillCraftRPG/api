@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
 using SkillCraft.Api.Core.Scripts.Models;
@@ -45,7 +45,7 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
         ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateScript, world, cancellationToken);
 
-      script = new Script(world, payload.Name, command.Id, payload.Description, _context.UserId);
+      script = new Script(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, _context.UserId);
       _scriptRepository.Add(script);
       created = true;
     }
@@ -53,7 +53,7 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
     {
       await _permissionService.CheckAsync(Actions.Update, script, cancellationToken);
 
-      ScriptUpdated record = script.Update(payload.Name, payload.Description, _context.UserId);
+      ScriptUpdated record = script.Update(payload.Name, payload.Summary, payload.HtmlContent, _context.UserId);
       _scriptRepository.Update(script, record);
     }
 

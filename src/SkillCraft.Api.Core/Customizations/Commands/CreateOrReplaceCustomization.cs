@@ -45,7 +45,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
         ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateCustomization, world, cancellationToken);
 
-      customization = new Customization(world, payload.Kind, payload.Name, command.Id, payload.Description, _context.UserId);
+      customization = new Customization(world, payload.Kind, payload.Name, command.Id, payload.Summary, payload.HtmlContent, _context.UserId);
       _customizationRepository.Add(customization);
       created = true;
     }
@@ -58,7 +58,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
         throw new ImmutablePropertyException<CustomizationKind>(customization, customization.Kind, payload.Kind, nameof(Customization.Kind));
       }
 
-      CustomizationUpdated record = customization.Update(payload.Name, payload.Description, _context.UserId);
+      CustomizationUpdated record = customization.Update(payload.Name, payload.Summary, payload.HtmlContent, _context.UserId);
       _customizationRepository.Update(customization, record);
     }
 

@@ -6,7 +6,8 @@ namespace SkillCraft.Api.Core.Languages.Models;
 public class LanguageModel : Aggregate
 {
   public string Name { get; set; } = string.Empty;
-  public string? Description { get; set; }
+  public string? Summary { get; set; }
+  public string? HtmlContent { get; set; }
 
   public ScriptModel? Script { get; set; }
   public string? TypicalSpeakers { get; set; }

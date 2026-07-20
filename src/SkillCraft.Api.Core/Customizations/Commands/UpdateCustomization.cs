@@ -34,7 +34,8 @@ internal class UpdateCustomizationCommandHandler : ICommandHandler<UpdateCustomi
 
     CustomizationUpdated record = customization.Update(
       string.IsNullOrWhiteSpace(payload.Name) ? customization.Name : payload.Name,
-      payload.Description is null ? customization.Description : payload.Description.Value,
+      payload.Summary is null ? customization.Summary : payload.Summary.Value,
+      payload.HtmlContent is null ? customization.HtmlContent : payload.HtmlContent.Value,
       _context.UserId);
     _customizationRepository.Update(customization, record);
 

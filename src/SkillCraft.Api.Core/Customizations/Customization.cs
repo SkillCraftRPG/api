@@ -17,7 +17,8 @@ public class Customization : IAuditable, IResource, IVersioned
   public CustomizationKind Kind { get; private set; }
 
   public string Name { get; private set; } = string.Empty;
-  public string? Description { get; private set; }
+  public string? Summary { get; private set; }
+  public string? HtmlContent { get; private set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -32,7 +33,8 @@ public class Customization : IAuditable, IResource, IVersioned
     CustomizationKind kind,
     string name,
     Guid? id = null,
-    string? description = null,
+    string? summary = null,
+    string? htmlContent = null,
     Guid? userId = null,
     DateTime? createdOn = null)
   {
@@ -48,7 +50,7 @@ public class Customization : IAuditable, IResource, IVersioned
     CreatedBy = userId.Value;
     CreatedOn = createdOn.Value;
 
-    Update(name, description, userId.Value, createdOn);
+    Update(name, summary, htmlContent, userId.Value, createdOn);
   }
 
   private Customization()
@@ -57,7 +59,7 @@ public class Customization : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
 
-  public CustomizationUpdated Update(string name, string? description, Guid userId, DateTime? updatedOn = null)
+  public CustomizationUpdated Update(string name, string? summary, string? htmlContent, Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
@@ -72,11 +74,18 @@ public class Customization : IAuditable, IResource, IVersioned
       Name = name;
     }
 
-    description = description?.CleanTrim();
-    if (!Equals(Description, description))
+    summary = summary?.CleanTrim();
+    if (!Equals(Summary, summary))
     {
-      record.Description = new Change<string>(Description, description);
-      Description = description;
+      record.Summary = new Change<string>(Summary, summary);
+      Summary = summary;
+    }
+
+    htmlContent = htmlContent?.CleanTrim();
+    if (!Equals(HtmlContent, htmlContent))
+    {
+      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
+      HtmlContent = htmlContent;
     }
 
     return record;

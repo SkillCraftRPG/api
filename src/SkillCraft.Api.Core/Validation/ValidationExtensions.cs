@@ -11,11 +11,6 @@ internal static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(moment.Value.AddYears(-maximumAge), moment.Value.AddYears(-minimumAge));
   }
 
-  public static IRuleBuilderOptions<T, string> Description<T>(this IRuleBuilder<T, string> ruleBuilder)
-  {
-    return ruleBuilder.NotEmpty();
-  }
-
   public static IRuleBuilderOptions<T, string> EmailAddressValue<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue).EmailAddress();
@@ -24,6 +19,11 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> Gender<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(10).SetValidator(new GenderValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, string> HtmlContent<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty();
   }
 
   public static IRuleBuilderOptions<T, string> Locale<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -86,6 +86,11 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> Slug<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Constants.SlugMaximumLength).SetValidator(new SlugValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Constants.SummaryMaximumLength);
   }
 
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)

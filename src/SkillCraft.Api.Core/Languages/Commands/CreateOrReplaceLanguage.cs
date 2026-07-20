@@ -58,7 +58,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
         ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateLanguage, world, cancellationToken);
 
-      language = new Language(world, payload.Name, command.Id, payload.Description, script, payload.TypicalSpeakers, _context.UserId);
+      language = new Language(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, script, payload.TypicalSpeakers, _context.UserId);
       _languageRepository.Add(language);
       created = true;
     }
@@ -66,7 +66,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     {
       await _permissionService.CheckAsync(Actions.Update, language, cancellationToken);
 
-      LanguageUpdated record = language.Update(payload.Name, payload.Description, script, payload.TypicalSpeakers, _context.UserId);
+      LanguageUpdated record = language.Update(payload.Name, payload.Summary, payload.HtmlContent, script, payload.TypicalSpeakers, _context.UserId);
       _languageRepository.Update(language, record);
     }
 
