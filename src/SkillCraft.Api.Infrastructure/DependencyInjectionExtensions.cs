@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
@@ -46,6 +47,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddScoped<ICasteRepository, CasteRepository>()
       .AddScoped<ICustomizationRepository, CustomizationRepository>()
+      .AddScoped<IEducationRepository, EducationRepository>()
       .AddScoped<ILanguageRepository, LanguageRepository>()
       .AddScoped<IScriptRepository, ScriptRepository>()
       .AddScoped<IWorldRepository, WorldRepository>();

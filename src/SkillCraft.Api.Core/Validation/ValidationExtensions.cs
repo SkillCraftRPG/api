@@ -107,4 +107,9 @@ internal static class ValidationExtensions
   {
     return ruleBuilder.NotEmpty();
   }
+
+  public static IRuleBuilderOptions<T, int> WealthMultiplier<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(1, 999);
+  }
 }

@@ -6,6 +6,8 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Educations;
+using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
@@ -65,6 +67,28 @@ internal class Mapper
       Summary = source.Summary,
       HtmlContent = source.HtmlContent
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public EducationModel ToEducation(Education source)
+  {
+    EducationModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      HtmlContent = source.HtmlContent,
+      Skill = source.Skill,
+      WealthMultiplier = source.WealthMultiplier
+    };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureHtmlContent);
+    }
 
     MapAggregate(source, destination);
 
