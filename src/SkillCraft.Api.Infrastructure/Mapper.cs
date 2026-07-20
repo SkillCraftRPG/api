@@ -6,6 +6,7 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts;
@@ -43,6 +44,11 @@ internal class Mapper
       Skill = source.Skill,
       WealthRoll = source.WealthRoll
     };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureHtmlContent);
+    }
 
     MapAggregate(source, destination);
 

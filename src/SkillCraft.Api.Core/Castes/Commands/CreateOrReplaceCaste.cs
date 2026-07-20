@@ -1,6 +1,7 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds;
 
@@ -38,6 +39,8 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
       caste = await _casteRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
+    Feature? feature = payload.Feature is null ? null : new(payload.Feature);
+
     bool created = false;
     if (caste is null)
     {
@@ -45,7 +48,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
         ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateCaste, world, cancellationToken);
 
-      caste = new Caste(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthRoll, _context.UserId);
+      caste = new Caste(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthRoll, feature, _context.UserId);
       _casteRepository.Add(caste);
       created = true;
     }
@@ -53,7 +56,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
     {
       await _permissionService.CheckAsync(Actions.Update, caste, cancellationToken);
 
-      CasteUpdated record = caste.Update(payload.Name, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthRoll, _context.UserId);
+      CasteUpdated record = caste.Update(payload.Name, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthRoll, feature, _context.UserId);
       _casteRepository.Update(caste, record);
     }
 

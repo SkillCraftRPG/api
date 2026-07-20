@@ -1,4 +1,5 @@
-using FluentValidation;
+﻿using FluentValidation;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Castes.Models;
@@ -11,6 +12,7 @@ public record CreateOrReplaceCastePayload
 
   public Skill? Skill { get; set; }
   public string? WealthRoll { get; set; }
+  public FeatureModel? Feature { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
@@ -24,6 +26,7 @@ public record CreateOrReplaceCastePayload
 
       When(x => x.Skill.HasValue, () => RuleFor(x => x.Skill!.Value).IsInEnum());
       When(x => !string.IsNullOrWhiteSpace(x.WealthRoll), () => RuleFor(x => x.WealthRoll!).Roll());
+      When(x => x.Feature is not null, () => RuleFor(x => x.Feature!).SetValidator(new FeatureValidator()));
     }
   }
 }

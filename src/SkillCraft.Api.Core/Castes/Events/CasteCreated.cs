@@ -1,3 +1,5 @@
+﻿using SkillCraft.Api.Core.Features;
+
 namespace SkillCraft.Api.Core.Castes.Events;
 
 public class CasteCreated : CreateEvent
@@ -8,6 +10,7 @@ public class CasteCreated : CreateEvent
 
   public Skill? Skill { get; set; }
   public string? WealthRoll { get; set; }
+  public Feature? Feature { get; set; }
 
   public CasteCreated() : base()
   {
@@ -21,5 +24,9 @@ public class CasteCreated : CreateEvent
 
     Skill = caste.Skill;
     WealthRoll = caste.WealthRoll;
+    if (caste.FeatureName is not null)
+    {
+      Feature = new Feature(caste.FeatureName, caste.FeatureHtmlContent);
+    }
   }
 }

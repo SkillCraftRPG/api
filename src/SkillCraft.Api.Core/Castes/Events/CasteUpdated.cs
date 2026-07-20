@@ -1,3 +1,5 @@
+﻿using SkillCraft.Api.Core.Features;
+
 namespace SkillCraft.Api.Core.Castes.Events;
 
 public class CasteUpdated : UpdateEvent
@@ -8,6 +10,7 @@ public class CasteUpdated : UpdateEvent
 
   public Change<Skill?>? Skill { get; set; }
   public Change<string>? WealthRoll { get; set; }
+  public Change<Feature>? Feature { get; set; }
 
   public CasteUpdated() : base()
   {

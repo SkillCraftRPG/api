@@ -1,6 +1,7 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Permissions;
 
 namespace SkillCraft.Api.Core.Castes.Commands;
@@ -32,12 +33,26 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     }
     await _permissionService.CheckAsync(Actions.Update, caste, cancellationToken);
 
+    Feature? feature = null;
+    if (payload.Feature is null)
+    {
+      if (caste.FeatureName is not null)
+      {
+        feature = new Feature(caste.FeatureName, caste.FeatureHtmlContent);
+      }
+    }
+    else if (payload.Feature.Value is not null)
+    {
+      feature = new Feature(payload.Feature.Value);
+    }
+
     CasteUpdated record = caste.Update(
       string.IsNullOrWhiteSpace(payload.Name) ? caste.Name : payload.Name,
       payload.Summary is null ? caste.Summary : payload.Summary.Value,
       payload.HtmlContent is null ? caste.HtmlContent : payload.HtmlContent.Value,
       payload.Skill is null ? caste.Skill : payload.Skill.Value,
       payload.WealthRoll is null ? caste.WealthRoll : payload.WealthRoll.Value,
+      feature,
       _context.UserId);
     _casteRepository.Update(caste, record);
 

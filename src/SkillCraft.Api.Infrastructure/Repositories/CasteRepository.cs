@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
@@ -65,7 +65,7 @@ internal class CasteRepository : Repository, ICasteRepository
     IQueryBuilder builder = _sqlHelper.Query(Db.Castes.Table).SelectAll(Db.Castes.Table)
       .Where(Db.Castes.WorldId, Operators.IsEqualTo(_context.WorldId))
       .ApplyIdFilter(Db.Castes.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Castes.Name, Db.Castes.Summary);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Castes.Name, Db.Castes.Summary, Db.Castes.FeatureName);
 
     if (payload.Skill.HasValue)
     {

@@ -25,7 +25,7 @@ internal class CustomizationConfiguration : IEntityTypeConfiguration<Customizati
     builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
     builder.Property(x => x.Kind).HasMaxLength(10).HasConversion(new EnumToStringConverter<CustomizationKind>());
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength).IsRequired();
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Customizations)

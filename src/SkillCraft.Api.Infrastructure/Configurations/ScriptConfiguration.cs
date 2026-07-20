@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Validation;
@@ -22,7 +22,7 @@ internal class ScriptConfiguration : IEntityTypeConfiguration<Script>
     builder.HasIndex(x => new { x.WorldId, x.UpdatedBy });
     builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength).IsRequired();
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Scripts)

@@ -1,5 +1,6 @@
-using Logitar;
+﻿using Logitar;
 using SkillCraft.Api.Core.Castes.Events;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Castes;
@@ -21,6 +22,9 @@ public class Caste : IAuditable, IResource, IVersioned
   public Skill? Skill { get; private set; }
   public string? WealthRoll { get; private set; }
 
+  public string? FeatureName { get; private set; }
+  public string? FeatureHtmlContent { get; private set; }
+
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
   public DateTime CreatedOn { get; private set; }
@@ -37,6 +41,7 @@ public class Caste : IAuditable, IResource, IVersioned
     string? htmlContent = null,
     Skill? skill = null,
     string? wealthRoll = null,
+    Feature? feature = null,
     Guid? userId = null,
     DateTime? createdOn = null)
   {
@@ -50,7 +55,7 @@ public class Caste : IAuditable, IResource, IVersioned
     CreatedBy = userId.Value;
     CreatedOn = createdOn.Value;
 
-    Update(name, summary, htmlContent, skill, wealthRoll, userId.Value, createdOn);
+    Update(name, summary, htmlContent, skill, wealthRoll, feature, userId.Value, createdOn);
   }
 
   private Caste()
@@ -65,6 +70,7 @@ public class Caste : IAuditable, IResource, IVersioned
     string? htmlContent,
     Skill? skill,
     string? wealthRoll,
+    Feature? feature,
     Guid userId,
     DateTime? updatedOn = null)
   {
@@ -106,6 +112,14 @@ public class Caste : IAuditable, IResource, IVersioned
     {
       record.WealthRoll = new Change<string>(WealthRoll, wealthRoll);
       WealthRoll = wealthRoll;
+    }
+
+    Feature? currentFeature = FeatureName is null ? null : new(FeatureName, FeatureHtmlContent);
+    if (!Equals(currentFeature, feature))
+    {
+      record.Feature = new Change<Feature>(currentFeature, feature);
+      FeatureName = feature?.Name;
+      FeatureHtmlContent = feature?.HtmlContent;
     }
 
     return record;
