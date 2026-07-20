@@ -172,7 +172,7 @@ public class ScriptIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a script.")]
   public async Task Given_NotAllowed_When_Replace_Then_PermissionDeniedException()
   {
-    Context.World = new WorldBuilder(Faker).Build();
+    Context.User = new UserBuilder(Faker).Build();
 
     CreateOrReplaceScriptPayload payload = new()
     {
@@ -189,7 +189,7 @@ public class ScriptIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a script.")]
   public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
   {
-    Context.World = new WorldBuilder(Faker).Build();
+    Context.User = new UserBuilder(Faker).Build();
 
     UpdateScriptPayload payload = new();
 

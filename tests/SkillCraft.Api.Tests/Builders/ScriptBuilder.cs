@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
@@ -57,4 +57,10 @@ public class ScriptBuilder : IScriptBuilder
     World world = _world ?? new WorldBuilder(_faker).Build();
     return new Script(world, _name, _id, _description);
   }
+
+  public static Script Renon(Faker? faker = null, World? world = null) => new ScriptBuilder(faker)
+    .WithWorld(world)
+    .WithName("Rénon")
+    .WithDescription("Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.")
+    .Build();
 }

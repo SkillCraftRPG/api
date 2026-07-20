@@ -82,6 +82,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     StringBuilder sql = new();
     TableId[] tables =
     [
+      Infrastructure.Db.Languages.Table,
       Infrastructure.Db.Scripts.Table,
       Infrastructure.Db.Customizations.Table,
       Infrastructure.Db.Worlds.Table,
