@@ -86,7 +86,7 @@ public class LanguageIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should filter search results by script ID.")]
   public async Task Given_ScriptId_When_Search_Then_Results()
   {
-    Language commun = new LanguageBuilder(Faker).WithWorld(Context.World).WithName("Commun").WithScript(_renon).Build();
+    Language commun = LanguageBuilder.Common(Faker, Context.World, _renon);
     _languageRepository.Add(commun);
     await Context.SaveChangesAsync();
 
