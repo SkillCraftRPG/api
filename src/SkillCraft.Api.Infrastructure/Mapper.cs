@@ -37,7 +37,8 @@ internal class Mapper
       Id = source.Id,
       Kind = source.Kind,
       Name = source.Name,
-      Description = source.Description
+      Summary = source.Summary,
+      HtmlContent = source.HtmlContent
     };
 
     MapAggregate(source, destination);
@@ -51,7 +52,8 @@ internal class Mapper
     {
       Id = source.Id,
       Name = source.Name,
-      Description = source.Description,
+      Summary = source.Summary,
+      HtmlContent = source.HtmlContent,
       TypicalSpeakers = source.TypicalSpeakers
     };
 
@@ -75,7 +77,8 @@ internal class Mapper
     {
       Id = source.Id,
       Name = source.Name,
-      Description = source.Description
+      Summary = source.Summary,
+      HtmlContent = source.HtmlContent
     };
 
     MapAggregate(source, destination);
@@ -91,7 +94,7 @@ internal class Mapper
       Owner = FindActor(source.OwnerId),
       Key = source.Key,
       Name = source.Name,
-      Description = source.Description
+      HtmlContent = source.HtmlContent
     };
 
     MapAggregate(source, destination);
