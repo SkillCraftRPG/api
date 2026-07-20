@@ -42,7 +42,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = "The-New-World",
       Name = " The New World ",
-      Description = "  This is the new world.  "
+      HtmlContent = "  This is the new world.  "
     };
     Guid? id = withId ? Guid.NewGuid() : null;
 
@@ -67,7 +67,7 @@ public class WorldIntegrationTests : IntegrationTests
 
     Assert.Equal(SlugHelper.Format(payload.Key), world.Key);
     Assert.Equal(payload.Name?.CleanTrim(), world.Name);
-    Assert.Equal(payload.Description?.CleanTrim(), world.Description);
+    Assert.Equal(payload.HtmlContent?.CleanTrim(), world.HtmlContent);
   }
 
   [Fact(DisplayName = "It should read a world by ID.")]
@@ -93,7 +93,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = "The-New-World",
       Name = " The New World ",
-      Description = "  This is the new world.  "
+      HtmlContent = "  This is the new world.  "
     };
     Guid id = _world.Id;
 
@@ -111,7 +111,7 @@ public class WorldIntegrationTests : IntegrationTests
 
     Assert.Equal(SlugHelper.Format(payload.Key), world.Key);
     Assert.Equal(payload.Name?.CleanTrim(), world.Name);
-    Assert.Equal(payload.Description?.CleanTrim(), world.Description);
+    Assert.Equal(payload.HtmlContent?.CleanTrim(), world.HtmlContent);
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
@@ -230,7 +230,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = "The-New-World",
       Name = " The New World ",
-      Description = "  This is the new world.  "
+      HtmlContent = "  This is the new world.  "
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload));
@@ -248,7 +248,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = "The-New-World",
       Name = " The New World ",
-      Description = "  This is the new world.  "
+      HtmlContent = "  This is the new world.  "
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload, _world.Id));
@@ -286,7 +286,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = "The-New-World",
       Name = new Optional<string>(" The New World "),
-      Description = new Optional<string>("  This is the new world.  ")
+      HtmlContent = new Optional<string>("  This is the new world.  ")
     };
 
     WorldModel? world = await _worldService.UpdateAsync(id, payload);
@@ -301,6 +301,6 @@ public class WorldIntegrationTests : IntegrationTests
 
     Assert.Equal(SlugHelper.Format(payload.Key), world.Key);
     Assert.Equal(payload.Name.Value?.CleanTrim(), world.Name);
-    Assert.Equal(payload.Description.Value?.CleanTrim(), world.Description);
+    Assert.Equal(payload.HtmlContent.Value?.CleanTrim(), world.HtmlContent);
   }
 }

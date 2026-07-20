@@ -10,7 +10,8 @@ public interface ICustomizationBuilder
   ICustomizationBuilder WithWorld(World? world);
   ICustomizationBuilder WithKind(CustomizationKind kind);
   ICustomizationBuilder WithName(string name);
-  ICustomizationBuilder WithDescription(string? description);
+  ICustomizationBuilder WithSummary(string? summary);
+  ICustomizationBuilder WithHtmlContent(string? htmlContent);
 
   Customization Build();
 }
@@ -19,10 +20,11 @@ public class CustomizationBuilder : ICustomizationBuilder
 {
   private readonly Faker _faker;
 
-  private string? _description = null;
+  private string? _htmlContent = null;
   private Guid? _id = null;
   private CustomizationKind? _kind = null;
   private string _name = "Customization";
+  private string? _summary = null;
   private World? _world = null;
 
   public CustomizationBuilder(Faker? faker = null)
@@ -54,9 +56,15 @@ public class CustomizationBuilder : ICustomizationBuilder
     return this;
   }
 
-  public ICustomizationBuilder WithDescription(string? description)
+  public ICustomizationBuilder WithSummary(string? summary)
   {
-    _description = description;
+    _summary = summary;
+    return this;
+  }
+
+  public ICustomizationBuilder WithHtmlContent(string? htmlContent)
+  {
+    _htmlContent = htmlContent;
     return this;
   }
 
@@ -64,6 +72,6 @@ public class CustomizationBuilder : ICustomizationBuilder
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
     CustomizationKind kind = _kind ?? _faker.PickRandom<CustomizationKind>();
-    return new Customization(world, kind, _name, _id, _description);
+    return new Customization(world, kind, _name, _id, _summary, _htmlContent);
   }
 }

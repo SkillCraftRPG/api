@@ -10,7 +10,7 @@ public interface IWorldBuilder
   IWorldBuilder WithOwner(User? owner);
   IWorldBuilder WithKey(string key);
   IWorldBuilder WithName(string? name);
-  IWorldBuilder WithDescription(string? description);
+  IWorldBuilder WithHtmlContent(string? htmlContent);
 
   World Build();
 }
@@ -19,7 +19,7 @@ public class WorldBuilder : IWorldBuilder
 {
   private readonly Faker _faker;
 
-  private string? _description = null;
+  private string? _htmlContent = null;
   private Guid? _id = null;
   private string _key = "ungar";
   private string? _name = "Ungar";
@@ -54,15 +54,15 @@ public class WorldBuilder : IWorldBuilder
     return this;
   }
 
-  public IWorldBuilder WithDescription(string? description)
+  public IWorldBuilder WithHtmlContent(string? htmlContent)
   {
-    _description = description;
+    _htmlContent = htmlContent;
     return this;
   }
 
   public World Build()
   {
     User owner = _owner ?? new UserBuilder(_faker).Build();
-    return new World(owner.Id, _key, _id, _name, _description);
+    return new World(owner.Id, _key, _id, _name, _htmlContent);
   }
 }
