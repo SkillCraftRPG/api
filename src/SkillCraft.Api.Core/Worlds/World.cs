@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
@@ -27,6 +28,7 @@ public class World : IAuditable, IResource, IVersioned
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id);
 
+  public List<Caste> Castes { get; private set; } = [];
   public List<Customization> Customizations { get; private set; } = [];
   public List<Language> Languages { get; private set; } = [];
   public List<Script> Scripts { get; private set; } = [];

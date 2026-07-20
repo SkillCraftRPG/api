@@ -83,6 +83,11 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue);
   }
 
+  public static IRuleBuilderOptions<T, string> Roll<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Constants.RollMaximumLength).SetValidator(new RollValidator<T>());
+  }
+
   public static IRuleBuilderOptions<T, string> Slug<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Constants.SlugMaximumLength).SetValidator(new SlugValidator<T>());
