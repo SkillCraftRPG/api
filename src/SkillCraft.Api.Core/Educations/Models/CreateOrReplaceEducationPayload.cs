@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Validation;
 
@@ -25,7 +25,7 @@ public record CreateOrReplaceEducationPayload
       When(x => !string.IsNullOrWhiteSpace(x.HtmlContent), () => RuleFor(x => x.HtmlContent!).HtmlContent());
 
       When(x => x.Skill.HasValue, () => RuleFor(x => x.Skill!.Value).IsInEnum());
-      When(x => x.WealthMultiplier.HasValue, () => RuleFor(x => x.WealthMultiplier!.Value).InclusiveBetween(1, 999));
+      When(x => x.WealthMultiplier.HasValue, () => RuleFor(x => x.WealthMultiplier!.Value).WealthMultiplier());
       When(x => x.Feature is not null, () => RuleFor(x => x.Feature!).SetValidator(new FeatureValidator()));
     }
   }
