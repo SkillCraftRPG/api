@@ -2,6 +2,8 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Castes;
+using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Languages;
@@ -28,6 +30,23 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public CasteModel ToCaste(Caste source)
+  {
+    CasteModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      HtmlContent = source.HtmlContent,
+      Skill = source.Skill,
+      WealthRoll = source.WealthRoll
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public CustomizationModel ToCustomization(Customization source)
