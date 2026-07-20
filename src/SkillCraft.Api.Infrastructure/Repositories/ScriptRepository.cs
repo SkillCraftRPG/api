@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +44,7 @@ internal class ScriptRepository : Repository, IScriptRepository
 
   public async Task<Script?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Scripts.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    return await Database.Scripts.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
   }
 
   public async Task<ScriptModel> ReadAsync(Script script, CancellationToken cancellationToken)
