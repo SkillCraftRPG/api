@@ -68,7 +68,7 @@ internal class LanguageRepository : Repository, ILanguageRepository
     IQueryBuilder builder = _sqlHelper.Query(Db.Languages.Table).SelectAll(Db.Languages.Table)
       .Where(Db.Languages.WorldId, Operators.IsEqualTo(_context.WorldId))
       .ApplyIdFilter(Db.Languages.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Languages.Name);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Languages.Name, Db.Languages.Summary);
 
     if (payload.ScriptId.HasValue)
     {

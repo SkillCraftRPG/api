@@ -65,7 +65,7 @@ internal class ScriptRepository : Repository, IScriptRepository
     IQueryBuilder builder = _sqlHelper.Query(Db.Scripts.Table).SelectAll(Db.Scripts.Table)
       .Where(Db.Scripts.WorldId, Operators.IsEqualTo(_context.WorldId))
       .ApplyIdFilter(Db.Scripts.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Scripts.Name);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Scripts.Name, Db.Scripts.Summary);
 
     IQueryable<Script> query = Database.Scripts.FromQuery(builder).AsNoTracking();
 
