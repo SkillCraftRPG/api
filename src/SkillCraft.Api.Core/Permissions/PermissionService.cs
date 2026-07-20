@@ -70,6 +70,7 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.CreateCustomization:
       case Actions.Update:
         return _context.IsWorldOwner();
       default:
