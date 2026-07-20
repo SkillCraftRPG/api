@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
@@ -13,7 +13,7 @@ public interface ITalentBuilder
   ITalentBuilder WithName(string name);
   ITalentBuilder WithSummary(string? summary);
   ITalentBuilder WithHtmlContent(string? htmlContent);
-  ITalentBuilder WithAllowMultiplePurchases(bool allowMultiplePurchases);
+  ITalentBuilder AllowMultiplePurchases(bool allowMultiplePurchases = true);
   ITalentBuilder WithSkill(Skill? skill);
   ITalentBuilder WithRequiredTalent(Talent? requiredTalent);
 
@@ -75,7 +75,7 @@ public class TalentBuilder : ITalentBuilder
     return this;
   }
 
-  public ITalentBuilder WithAllowMultiplePurchases(bool allowMultiplePurchases)
+  public ITalentBuilder AllowMultiplePurchases(bool allowMultiplePurchases = true)
   {
     _allowMultiplePurchases = allowMultiplePurchases;
     return this;
@@ -98,4 +98,12 @@ public class TalentBuilder : ITalentBuilder
     World world = _world ?? new WorldBuilder(_faker).Build();
     return new Talent(world, _tier, _name, _id, _summary, _htmlContent, _allowMultiplePurchases, _skill, _requiredTalent);
   }
+
+  public static Talent Melee(Faker? faker = null, World? world = null) => new TalentBuilder(faker)
+    .WithWorld(world)
+    .WithName("Mêlée")
+    .WithSummary("Forme au combat rapproché et au maniement des armes simples.")
+    .WithHtmlContent("[Forme](/regles/equipement/armes/formation) le personnage au maniement des [armes simples](/regles/equipement/armes/simples) de mêlée.\n\nIl est également [formé](/regles/equipement/armures/formation) au port des [armures légères](/regles/equipement/armures/legeres) et à l’utilisation des [boucliers légers](/regles/equipement/boucliers).")
+    .WithSkill(Skill.Melee)
+    .Build();
 }
