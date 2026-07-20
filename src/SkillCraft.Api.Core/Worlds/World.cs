@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Worlds.Events;
 
 namespace SkillCraft.Api.Core.Worlds;
@@ -23,6 +24,8 @@ public class World : IAuditable, IResource, IVersioned
   public DateTime UpdatedOn { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id);
+
+  public List<Customization> Customizations { get; private set; } = [];
 
   public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {

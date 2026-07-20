@@ -1,6 +1,7 @@
 ﻿using Logitar.CQRS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
@@ -39,6 +40,8 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)
   {
-    return services.AddScoped<IWorldRepository, WorldRepository>();
+    return services
+      .AddScoped<ICustomizationRepository, CustomizationRepository>()
+      .AddScoped<IWorldRepository, WorldRepository>();
   }
 }

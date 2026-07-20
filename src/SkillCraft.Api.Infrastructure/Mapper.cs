@@ -2,6 +2,8 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Models;
 
@@ -22,6 +24,21 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public CustomizationModel ToCustomization(Customization source)
+  {
+    CustomizationModel destination = new()
+    {
+      Id = source.Id,
+      Kind = source.Kind,
+      Name = source.Name,
+      Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public WorldModel ToWorld(World source)
