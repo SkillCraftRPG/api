@@ -1,9 +1,10 @@
-namespace SkillCraft.Api.Core.Scripts.Events;
+﻿namespace SkillCraft.Api.Core.Scripts.Events;
 
 public class ScriptCreated : CreateEvent
 {
   public string Name { get; set; } = string.Empty;
-  public string? Description { get; set; }
+  public string? Summary { get; set; }
+  public string? HtmlContent { get; set; }
 
   public ScriptCreated() : base()
   {
@@ -12,6 +13,7 @@ public class ScriptCreated : CreateEvent
   public ScriptCreated(Script script) : base(script)
   {
     Name = script.Name;
-    Description = script.Description;
+    Summary = script.Summary;
+    HtmlContent = script.HtmlContent;
   }
 }

@@ -15,6 +15,7 @@ internal class ScriptConfiguration : IEntityTypeConfiguration<Script>
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Name });
+    builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Version });
     builder.HasIndex(x => new { x.WorldId, x.CreatedBy });
     builder.HasIndex(x => new { x.WorldId, x.CreatedOn });
@@ -22,6 +23,7 @@ internal class ScriptConfiguration : IEntityTypeConfiguration<Script>
     builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength).IsRequired();
+    builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Scripts)
       .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)

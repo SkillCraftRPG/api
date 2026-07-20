@@ -5,7 +5,8 @@ public class CustomizationCreated : CreateEvent
   public CustomizationKind Kind { get; set; }
 
   public string Name { get; set; } = string.Empty;
-  public string? Description { get; set; }
+  public string? Summary { get; set; }
+  public string? HtmlContent { get; set; }
 
   public CustomizationCreated() : base()
   {
@@ -16,6 +17,7 @@ public class CustomizationCreated : CreateEvent
     Kind = customization.Kind;
 
     Name = customization.Name;
-    Description = customization.Description;
+    Summary = customization.Summary;
+    HtmlContent = customization.HtmlContent;
   }
 }

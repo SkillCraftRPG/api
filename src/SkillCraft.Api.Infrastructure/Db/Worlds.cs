@@ -9,7 +9,7 @@ public static class Worlds
 
   public static readonly ColumnId CreatedBy = new(nameof(World.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(World.CreatedOn), Table);
-  public static readonly ColumnId Description = new(nameof(World.Description), Table);
+  public static readonly ColumnId HtmlContent = new(nameof(World.HtmlContent), Table);
   public static readonly ColumnId Id = new(nameof(World.Id), Table);
   public static readonly ColumnId Key = new(nameof(World.Key), Table);
   public static readonly ColumnId Name = new(nameof(World.Name), Table);

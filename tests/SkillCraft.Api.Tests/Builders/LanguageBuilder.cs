@@ -10,7 +10,8 @@ public interface ILanguageBuilder
   ILanguageBuilder WithId(Guid id);
   ILanguageBuilder WithWorld(World? world);
   ILanguageBuilder WithName(string name);
-  ILanguageBuilder WithDescription(string? description);
+  ILanguageBuilder WithSummary(string? summary);
+  ILanguageBuilder WithHtmlContent(string? htmlContent);
   ILanguageBuilder WithScript(Script? script);
   ILanguageBuilder WithTypicalSpeakers(string? typicalSpeakers);
 
@@ -21,10 +22,11 @@ public class LanguageBuilder : ILanguageBuilder
 {
   private readonly Faker _faker;
 
-  private string? _description = null;
+  private string? _htmlContent = null;
   private Guid? _id = null;
   private string _name = "Language";
   private Script? _script = null;
+  private string? _summary = null;
   private string? _typicalSpeakers = null;
   private World? _world = null;
 
@@ -51,9 +53,15 @@ public class LanguageBuilder : ILanguageBuilder
     return this;
   }
 
-  public ILanguageBuilder WithDescription(string? script)
+  public ILanguageBuilder WithSummary(string? summary)
   {
-    _description = script;
+    _summary = summary;
+    return this;
+  }
+
+  public ILanguageBuilder WithHtmlContent(string? htmlContent)
+  {
+    _htmlContent = htmlContent;
     return this;
   }
 
@@ -72,6 +80,6 @@ public class LanguageBuilder : ILanguageBuilder
   public Language Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Language(world, _name, _id, _description, _script, _typicalSpeakers);
+    return new Language(world, _name, _id, _summary, _htmlContent, _script, _typicalSpeakers);
   }
 }

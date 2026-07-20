@@ -35,7 +35,7 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     WorldUpdated record = world.Update(
       string.IsNullOrWhiteSpace(payload.Key) ? world.Key : payload.Key,
       payload.Name is null ? world.Name : payload.Name.Value,
-      payload.Description is null ? world.Description : payload.Description.Value,
+      payload.HtmlContent is null ? world.HtmlContent : payload.HtmlContent.Value,
       _context.UserId);
     _worldRepository.Update(world, record);
 

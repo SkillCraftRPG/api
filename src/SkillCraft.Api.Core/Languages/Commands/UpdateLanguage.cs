@@ -48,7 +48,8 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
 
     LanguageUpdated record = language.Update(
       string.IsNullOrWhiteSpace(payload.Name) ? language.Name : payload.Name,
-      payload.Description is null ? language.Description : payload.Description.Value,
+      payload.Summary is null ? language.Summary : payload.Summary.Value,
+      payload.HtmlContent is null ? language.HtmlContent : payload.HtmlContent.Value,
       payload.ScriptId is null ? language.Script : script,
       payload.TypicalSpeakers is null ? language.TypicalSpeakers : payload.TypicalSpeakers.Value,
       _context.UserId);

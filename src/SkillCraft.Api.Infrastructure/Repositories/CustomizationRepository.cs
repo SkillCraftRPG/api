@@ -65,7 +65,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
     IQueryBuilder builder = _sqlHelper.Query(Db.Customizations.Table).SelectAll(Db.Customizations.Table)
       .Where(Db.Customizations.WorldId, Operators.IsEqualTo(_context.WorldId))
       .ApplyIdFilter(Db.Customizations.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Customizations.Name);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Customizations.Name, Db.Customizations.Summary);
 
     if (payload.Kind.HasValue)
     {
