@@ -25,7 +25,7 @@ public class Customization : IAuditable, IResource, IVersioned
   public Guid UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, Id);
+  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
   public Customization(
     World world,

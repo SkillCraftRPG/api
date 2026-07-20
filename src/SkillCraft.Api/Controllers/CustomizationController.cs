@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Extensions;
+using SkillCraft.Api.Filters;
 using SkillCraft.Api.Models.Customization;
 
 namespace SkillCraft.Api.Controllers;
