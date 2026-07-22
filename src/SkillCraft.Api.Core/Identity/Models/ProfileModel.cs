@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Localization;
+﻿using Krakenar.Contracts.Localization;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Users;
 
@@ -22,6 +22,8 @@ public record ProfileModel
   public DateTime CreatedOn { get; set; }
   public DateTime UpdatedOn { get; set; }
   public DateTime? AuthenticatedOn { get; set; }
+
+  public UserExperience DefaultExperience { get; set; }
 
   public ProfileModel() : this(string.Empty, string.Empty, string.Empty, string.Empty, new Locale(), string.Empty)
   {
@@ -59,5 +61,7 @@ public record ProfileModel
     CreatedOn = user.CreatedOn;
     UpdatedOn = user.UpdatedOn;
     AuthenticatedOn = user.AuthenticatedOn;
+
+    DefaultExperience = user.GetDefaultExperience();
   }
 }

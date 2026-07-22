@@ -1,5 +1,7 @@
 ﻿using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Users;
+using SkillCraft.Api.Core.Identity;
+using SkillCraft.Api.Core.Identity.Models;
 
 namespace SkillCraft.Api.Models.Identity;
 
@@ -8,6 +10,8 @@ public record CurrentUser
   public string DisplayName { get; set; }
   public string? EmailAddress { get; set; }
   public string? PictureUrl { get; set; }
+
+  public UserExperience DefaultExperience { get; set; }
 
   public CurrentUser() : this(string.Empty)
   {
@@ -26,5 +30,6 @@ public record CurrentUser
 
   public CurrentUser(User user) : this(user.FullName ?? user.UniqueName, user.Email?.Address, user.Picture)
   {
+    DefaultExperience = user.GetDefaultExperience();
   }
 }

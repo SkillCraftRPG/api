@@ -1,11 +1,11 @@
-using SkillCraft.Api.Core.Identity;
-using SkillCraft.Api.Core.Identity.Models;
-using Krakenar.Client;
+﻿using Krakenar.Client;
 using Krakenar.Client.Users;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
 using Logitar;
+using SkillCraft.Api.Core.Identity;
+using SkillCraft.Api.Core.Identity.Models;
 
 namespace SkillCraft.Api.Infrastructure.Identity;
 
@@ -43,6 +43,7 @@ internal class UserGateway : IUserGateway
       Locale = new Change<string>(profile.Locale),
       TimeZone = new Change<string>(profile.TimeZone)
     };
+    payload.CustomAttributes.Add(new CustomAttribute(UserHelper.DefaultExperienceKey, profile.DefaultExperience.ToString()));
     payload.CustomAttributes.Add(new CustomAttribute(UserHelper.MultiFactorAuthenticationModeKey, profile.MultiFactorAuthenticationMode.ToString()));
     payload.CustomAttributes.Add(new CustomAttribute(UserHelper.ProfileCompletedOnKey, DateTime.Now.ToISOString()));
 
@@ -106,6 +107,10 @@ internal class UserGateway : IUserGateway
       Locale = string.IsNullOrWhiteSpace(profile.Locale) ? null : new Change<string>(profile.Locale),
       TimeZone = string.IsNullOrWhiteSpace(profile.TimeZone) ? null : new Change<string>(profile.TimeZone)
     };
+    if (profile.DefaultExperience.HasValue)
+    {
+      payload.CustomAttributes.Add(new CustomAttribute(UserHelper.DefaultExperienceKey, profile.DefaultExperience.Value.ToString()));
+    }
     RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(id).Build();
     return await _userClient.UpdateAsync(id, payload, context) ?? throw new ArgumentException($"The updated user 'Id={id}' was not found.", nameof(id));
   }
