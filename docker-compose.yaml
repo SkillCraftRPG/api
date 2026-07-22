@@ -22,6 +22,7 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_Environment: Development
+      KRAKENAR_BASE_URL: http://host.docker.internal:8888
       POSTGRESQLCONNSTR_SkillCraft: User ID=postgres;Password=XjMyhxpV9nBc3fqD;Host=skillcraft_api_postgres;Port=5432;Database=skillcraft;
     ports:
       - 8088:8080
