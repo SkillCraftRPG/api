@@ -14,7 +14,7 @@ public record ProfileModel
   public string LastName { get; set; }
   public string FullName { get; set; }
 
-  public DateTime? Birthdate { get; set; }
+  public DateTime? DateOfBirth { get; set; }
   public string? Gender { get; set; }
   public Locale Locale { get; set; }
   public string TimeZone { get; set; }
@@ -53,7 +53,7 @@ public record ProfileModel
     LastName = user.LastName ?? string.Empty;
     FullName = user.FullName ?? string.Empty;
 
-    Birthdate = user.Birthdate;
+    DateOfBirth = user.Birthdate;
     Gender = user.Gender;
     Locale = user.Locale ?? new Locale();
     TimeZone = user.TimeZone ?? string.Empty;
