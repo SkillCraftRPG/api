@@ -1,7 +1,7 @@
-﻿using Krakenar.Contracts.Sessions;
-using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts.Users;
 using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Identity.Models;
+using SessionDto = Krakenar.Contracts.Sessions.Session;
 
 namespace SkillCraft.Api.Models.Identity;
 
@@ -24,7 +24,7 @@ public record CurrentUser
     PictureUrl = pictureUrl;
   }
 
-  public CurrentUser(Session session) : this(session.User)
+  public CurrentUser(SessionDto session) : this(session.User)
   {
   }
 

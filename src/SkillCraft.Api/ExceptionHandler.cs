@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Extensions;
 using SkillCraft.Api.Settings;
@@ -66,7 +67,7 @@ internal class ExceptionHandler : IExceptionHandler
     return await _problemDetailsService.TryWriteAsync(context);
   }
 
-  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is ValidationException;
+  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is IdentityException || exception is ValidationException;
 
   private static Error ToError(Exception exception)
   {

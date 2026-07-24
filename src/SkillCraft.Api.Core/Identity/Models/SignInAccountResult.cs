@@ -1,5 +1,7 @@
-using Krakenar.Contracts.Passwords;
+﻿using Krakenar.Contracts.Passwords;
 using Krakenar.Contracts.Sessions;
+using Krakenar.Contracts.Users;
+using Logitar;
 
 namespace SkillCraft.Api.Core.Identity.Models;
 
@@ -7,7 +9,7 @@ public record SignInAccountResult
 {
   public List<AuthenticationFlow> AllowedFlows { get; set; } = [];
   public Guid? EmailVerificationMessageId { get; set; }
-  public MultiFactorAuthenticationMessage? MultiFactorAuthenticationMessage { get; set; }
+  public MultiFactorAuthenticationChallenge? MultiFactorAuthenticationChallenge { get; set; }
   public string? ProfileCompletionToken { get; set; }
   public Session? Session { get; set; }
 
@@ -21,10 +23,30 @@ public record SignInAccountResult
     EmailVerificationMessageId = id
   };
 
-  public static SignInAccountResult MultiFactorAuthenticationMessageSent(OneTimePassword oneTimePassword, Guid messageId, MultiFactorAuthenticationMode multiFactorAuthenticationMode) => new()
+  public static SignInAccountResult MultiFactorAuthenticationMessageSent(OneTimePassword oneTimePassword, Guid messageId, User user)
   {
-    MultiFactorAuthenticationMessage = new MultiFactorAuthenticationMessage(oneTimePassword, messageId, multiFactorAuthenticationMode)
-  };
+    MultiFactorAuthenticationMode mode = user.GetMultiFactorAuthenticationMode();
+    string maskedContact;
+    switch (mode)
+    {
+      case MultiFactorAuthenticationMode.Email:
+        string emailAddress = user.Email?.Address ?? throw new ArgumentException("The user has no email.", nameof(user));
+        int index = emailAddress.IndexOf('@');
+        maskedContact = index <= 1 ? emailAddress : string.Concat(emailAddress.First(), emailAddress[1..index].Mask('·'), emailAddress[index..]);
+        break;
+      case MultiFactorAuthenticationMode.Phone:
+        string phoneNumber = user.Phone?.E164Formatted ?? throw new ArgumentException("The user has no phone.", nameof(user));
+        maskedContact = phoneNumber.Length < 4 ? phoneNumber : string.Concat(phoneNumber[..^4], phoneNumber[^4..].Mask('·'));
+        break;
+      default:
+        maskedContact = string.Empty;
+        break;
+    }
+    return new SignInAccountResult
+    {
+      MultiFactorAuthenticationChallenge = new MultiFactorAuthenticationChallenge(oneTimePassword, messageId, mode, maskedContact)
+    };
+  }
 
   public static SignInAccountResult RequirePassword(bool allowPasswordless = false)
   {
