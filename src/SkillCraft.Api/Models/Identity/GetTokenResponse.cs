@@ -2,11 +2,11 @@
 
 namespace SkillCraft.Api.Models.Identity;
 
-public class GetTokenResponse
+public record GetTokenResponse
 {
   public List<AuthenticationFlow> AllowedFlows { get; set; } = [];
   public Guid? EmailVerificationMessageId { get; set; }
-  public MultiFactorAuthenticationMessage? MultiFactorAuthenticationMessage { get; set; }
+  public MultiFactorAuthenticationChallenge? MultiFactorAuthenticationChallenge { get; set; }
   public string? ProfileCompletionToken { get; set; }
   public TokenResponse? Token { get; set; }
 
@@ -18,7 +18,7 @@ public class GetTokenResponse
   {
     AllowedFlows = result.AllowedFlows;
     EmailVerificationMessageId = result.EmailVerificationMessageId;
-    MultiFactorAuthenticationMessage = result.MultiFactorAuthenticationMessage;
+    MultiFactorAuthenticationChallenge = result.MultiFactorAuthenticationChallenge;
     ProfileCompletionToken = result.ProfileCompletionToken;
   }
 }

@@ -1,10 +1,10 @@
-using SkillCraft.Api.Core.Identity.Models;
-using Krakenar.Contracts.Passwords;
+﻿using Krakenar.Contracts.Passwords;
 using Krakenar.Contracts.Realms;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Tokens;
 using Krakenar.Contracts.Users;
 using Logitar.CQRS;
+using SkillCraft.Api.Core.Identity.Models;
 
 namespace SkillCraft.Api.Core.Identity.Commands;
 
@@ -175,7 +175,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
   {
     OneTimePassword oneTimePassword = await _oneTimePasswordGateway.CreateMultiFactorAuthenticationAsync(user, cancellationToken);
     Guid messageId = await _messageGateway.SendMultiFactorAuthenticationAsync(user, locale, oneTimePassword, cancellationToken);
-    return SignInAccountResult.MultiFactorAuthenticationMessageSent(oneTimePassword, messageId, user.GetMultiFactorAuthenticationMode());
+    return SignInAccountResult.MultiFactorAuthenticationMessageSent(oneTimePassword, messageId, user);
   }
 
   private async Task<SignInAccountResult> EnsureProfileIsCompletedAsync(User user, CancellationToken cancellationToken)

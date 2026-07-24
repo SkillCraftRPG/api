@@ -1,23 +1,23 @@
-using Krakenar.Contracts.Passwords;
+﻿using Krakenar.Contracts.Passwords;
 
 namespace SkillCraft.Api.Core.Identity.Models;
 
-public record MultiFactorAuthenticationMessage
+public record MultiFactorAuthenticationChallenge
 {
   public Guid OneTimePasswordId { get; set; }
-
   public Guid MessageId { get; set; }
-  public MultiFactorAuthenticationMode MultiFactorAuthenticationMode { get; set; }
+  public MultiFactorAuthenticationMode Mode { get; set; }
+  public string MaskedContact { get; set; } = string.Empty;
 
-  public MultiFactorAuthenticationMessage()
+  public MultiFactorAuthenticationChallenge()
   {
   }
 
-  public MultiFactorAuthenticationMessage(OneTimePassword oneTimePassword, Guid messageId, MultiFactorAuthenticationMode multiFactorAuthenticationMode)
+  public MultiFactorAuthenticationChallenge(OneTimePassword oneTimePassword, Guid messageId, MultiFactorAuthenticationMode mode, string maskedContact)
   {
     OneTimePasswordId = oneTimePassword.Id;
-
     MessageId = messageId;
-    MultiFactorAuthenticationMode = multiFactorAuthenticationMode;
+    Mode = mode;
+    MaskedContact = maskedContact;
   }
 }
