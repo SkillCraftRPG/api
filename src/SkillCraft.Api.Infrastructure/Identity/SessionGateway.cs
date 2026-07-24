@@ -1,9 +1,10 @@
-using SkillCraft.Api.Core;
-using SkillCraft.Api.Core.Identity;
-using Krakenar.Client;
+﻿using Krakenar.Client;
 using Krakenar.Client.Sessions;
+using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Users;
+using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Identity;
 
 namespace SkillCraft.Api.Infrastructure.Identity;
 
@@ -28,6 +29,19 @@ internal class SessionGateway : ISessionGateway
   public async Task<Session?> FindAsync(Guid id, CancellationToken cancellationToken)
   {
     return await _sessionClient.ReadAsync(id, cancellationToken);
+  }
+
+  public async Task<IReadOnlyCollection<Session>> ListAsync(User user, CancellationToken cancellationToken)
+  {
+    SearchSessionsPayload payload = new()
+    {
+      UserId = user.Id,
+      IsActive = true
+    };
+    payload.Sort.Add(new SessionSortOption(SessionSort.UpdatedOn, isDescending: true));
+
+    SearchResults<Session> results = await _sessionClient.SearchAsync(payload, cancellationToken);
+    return results.Items.AsReadOnly();
   }
 
   public async Task<Session> RenewAsync(string refreshToken, CancellationToken cancellationToken)
