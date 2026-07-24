@@ -31,7 +31,7 @@ internal class SessionGateway : ISessionGateway
     return await _sessionClient.ReadAsync(id, cancellationToken);
   }
 
-  public async Task<IReadOnlyCollection<Session>> ListAsync(User user, CancellationToken cancellationToken)
+  public async Task<IReadOnlyCollection<Session>> ListActiveAsync(User user, CancellationToken cancellationToken)
   {
     SearchSessionsPayload payload = new()
     {

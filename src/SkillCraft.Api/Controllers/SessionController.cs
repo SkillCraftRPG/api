@@ -25,7 +25,7 @@ public class SessionController : ControllerBase
   public async Task<ActionResult<SearchResults<SessionModel>>> SearchAsync(CancellationToken cancellationToken)
   {
     User user = HttpContext.GetUser() ?? throw new InvalidOperationException("An authenticated user is required.");
-    IReadOnlyCollection<Session> sessions = await _sessionGateway.ListAsync(user, cancellationToken);
+    IReadOnlyCollection<Session> sessions = await _sessionGateway.ListActiveAsync(user, cancellationToken);
 
     SessionMapper mapper = new(HttpContext.GetSessionId());
     SearchResults<SessionModel> results = new(sessions.Select(mapper.Map));
