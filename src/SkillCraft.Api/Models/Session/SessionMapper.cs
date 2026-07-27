@@ -1,6 +1,5 @@
 ﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Constants;
-using System.Text.RegularExpressions;
 using SessionDto = Krakenar.Contracts.Sessions.Session;
 
 namespace SkillCraft.Api.Models.Session;
@@ -33,7 +32,7 @@ internal partial class SessionMapper
           headers = JsonSerializer.Deserialize<Dictionary<string, string>>(customAttribute.Value);
           break;
         case "IpAddress":
-          destination.IpAddress = customAttribute.Value;
+          destination.IpAddress = NormalizeIpAddress(customAttribute.Value);
           break;
       }
     }
@@ -49,6 +48,16 @@ internal partial class SessionMapper
     }
 
     return destination;
+  }
+
+  private static string NormalizeIpAddress(string value)
+  {
+    if (IPAddress.TryParse(value, out IPAddress? ipAddress))
+    {
+      return ipAddress.IsIPv4MappedToIPv6 ? ipAddress.MapToIPv4().ToString() : ipAddress.ToString();
+    }
+
+    return value;
   }
 
   private static string? TryGetHeader(IReadOnlyDictionary<string, string> headers, string key) => headers.TryGetValue(key, out string? value) ? value : null;
