@@ -89,6 +89,8 @@ public class IdentityController : ControllerBase
   }
 
   [HttpPost("/sign/out")]
+  [Authorize]
+  [AllowAnonymous]
   public async Task<ActionResult> SignOutAsync(bool everywhere, CancellationToken cancellationToken)
   {
     if (everywhere)
