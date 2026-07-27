@@ -1,8 +1,9 @@
 ﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Constants;
-using SessionDto = Krakenar.Contracts.Sessions.Session;
+using Krakenar.Contracts.Sessions;
+using SkillCraft.Api.Core.Identity.Models;
 
-namespace SkillCraft.Api.Models.Session;
+namespace SkillCraft.Api.Core.Identity;
 
 internal partial class SessionMapper
 {
@@ -13,7 +14,7 @@ internal partial class SessionMapper
     _currentId = currentId;
   }
 
-  public SessionModel Map(SessionDto source)
+  public SessionModel Map(Session source)
   {
     SessionModel destination = new()
     {

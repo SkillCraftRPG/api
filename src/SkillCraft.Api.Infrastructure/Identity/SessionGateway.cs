@@ -31,11 +31,11 @@ internal class SessionGateway : ISessionGateway
     return await _sessionClient.ReadAsync(id, cancellationToken);
   }
 
-  public async Task<IReadOnlyCollection<Session>> ListActiveAsync(User user, CancellationToken cancellationToken)
+  public async Task<IReadOnlyCollection<Session>> ListActiveAsync(Guid userId, CancellationToken cancellationToken)
   {
     SearchSessionsPayload payload = new()
     {
-      UserId = user.Id,
+      UserId = userId,
       IsActive = true
     };
     payload.Sort.Add(new SessionSortOption(SessionSort.UpdatedOn, isDescending: true));

@@ -1,4 +1,4 @@
-﻿namespace SkillCraft.Api.Models.Session;
+﻿namespace SkillCraft.Api.Core.Identity.Models;
 
 public class SessionModel
 {

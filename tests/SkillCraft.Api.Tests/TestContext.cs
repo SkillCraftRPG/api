@@ -34,6 +34,7 @@ public class TestContext : IContext
 
   public bool IsWorldOwner() => User is not null && World is not null && World.OwnerId == User.Id;
 
+  public Guid? TryGetSessionId() => null;
   public Guid? TryGetUserId() => User?.Id;
   public Guid? TryGetWorldId() => World?.Id;
 

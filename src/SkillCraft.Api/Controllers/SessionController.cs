@@ -1,11 +1,8 @@
 ﻿using Krakenar.Contracts.Search;
-using Krakenar.Contracts.Sessions;
-using Krakenar.Contracts.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Core.Identity;
-using SkillCraft.Api.Extensions;
-using SkillCraft.Api.Models.Session;
+using SkillCraft.Api.Core.Identity.Models;
 
 namespace SkillCraft.Api.Controllers;
 
@@ -14,21 +11,24 @@ namespace SkillCraft.Api.Controllers;
 [Route("sessions")]
 public class SessionController : ControllerBase
 {
-  private readonly ISessionGateway _sessionGateway;
+  private readonly IIdentityService _identityService;
 
-  public SessionController(ISessionGateway sessionGateway)
+  public SessionController(IIdentityService identityService)
   {
-    _sessionGateway = sessionGateway;
+    _identityService = identityService;
   }
 
   [HttpGet]
   public async Task<ActionResult<SearchResults<SessionModel>>> SearchAsync(CancellationToken cancellationToken)
   {
-    User user = HttpContext.GetUser() ?? throw new InvalidOperationException("An authenticated user is required.");
-    IReadOnlyCollection<Session> sessions = await _sessionGateway.ListActiveAsync(user, cancellationToken);
+    SearchResults<SessionModel> sessions = await _identityService.ListActiveSessionsAsync(cancellationToken);
+    return Ok(sessions);
+  }
 
-    SessionMapper mapper = new(HttpContext.GetSessionId());
-    SearchResults<SessionModel> results = new(sessions.Select(mapper.Map));
-    return Ok(results);
+  [HttpDelete("{id}")]
+  public async Task<ActionResult> SignOutAsync(Guid id, CancellationToken cancellationToken)
+  {
+    bool found = await _identityService.SignOutAsync(id, cancellationToken);
+    return found ? NoContent() : NotFound();
   }
 }
