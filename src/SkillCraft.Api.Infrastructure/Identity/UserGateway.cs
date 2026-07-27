@@ -80,10 +80,10 @@ internal class UserGateway : IUserGateway
     return await _userClient.ReadAsync(id: null, uniqueName, customIdentifier: null, cancellationToken);
   }
 
-  public async Task<User> SignOutAsync(User user, CancellationToken cancellationToken)
+  public async Task<User> SignOutAsync(Guid userId, CancellationToken cancellationToken)
   {
-    RequestContext context = new RequestContextBuilder(cancellationToken).WithUser(user).Build();
-    return await _userClient.SignOutAsync(user.Id, context) ?? throw new ArgumentException($"The signed-out user 'Id={user.Id}' was not found.", nameof(user));
+    RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(userId).Build();
+    return await _userClient.SignOutAsync(userId, context) ?? throw new ArgumentException($"The signed-out user 'Id={userId}' was not found.", nameof(userId));
   }
 
   public async Task<User> UpdateEmailAsync(User user, Email email, CancellationToken cancellationToken)
