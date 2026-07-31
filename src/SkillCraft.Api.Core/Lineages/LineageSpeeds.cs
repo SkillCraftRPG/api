@@ -12,9 +12,30 @@ public interface ILineageSpeeds
   int? Burrow { get; }
 }
 
-[method: JsonConstructor]
-public record LineageSpeeds(int? Walk, int? Climb, int? Swim, int? Fly, bool Hover, int? Burrow) : ILineageSpeeds
+public record LineageSpeeds : ILineageSpeeds
 {
+  public int? Walk { get; }
+  public int? Climb { get; }
+  public int? Swim { get; }
+  public int? Fly { get; }
+  public bool Hover { get; }
+  public int? Burrow { get; }
+
+  public LineageSpeeds()
+  {
+  }
+
+  [JsonConstructor]
+  public LineageSpeeds(int? walk, int? climb, int? swim, int? fly, bool hover, int? burrow)
+  {
+    Walk = walk;
+    Climb = climb;
+    Swim = swim;
+    Fly = fly;
+    Hover = hover;
+    Burrow = burrow;
+  }
+
   public LineageSpeeds(Lineage lineage) : this(lineage.Walk, lineage.Climb, lineage.Swim, lineage.Fly, lineage.Hover, lineage.Burrow)
   {
   }

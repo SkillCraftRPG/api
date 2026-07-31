@@ -12,9 +12,28 @@ public interface ILineageWeight
   string? Obese { get; }
 }
 
-[method: JsonConstructor]
-public record LineageWeight(string? Malnutrition, string? Skinny, string? Normal, string? Overweight, string? Obese) : ILineageWeight
+public record LineageWeight : ILineageWeight
 {
+  public string? Malnutrition { get; }
+  public string? Skinny { get; }
+  public string? Normal { get; }
+  public string? Overweight { get; }
+  public string? Obese { get; }
+
+  public LineageWeight()
+  {
+  }
+
+  [JsonConstructor]
+  public LineageWeight(string? malnutrition, string? skinny, string? normal, string? overweight, string? obese)
+  {
+    Malnutrition = malnutrition;
+    Skinny = skinny;
+    Normal = normal;
+    Overweight = overweight;
+    Obese = obese;
+  }
+
   public LineageWeight(Lineage lineage) : this(lineage.Malnutrition, lineage.Skinny, lineage.NormalWeight, lineage.NormalWeight, lineage.Obese)
   {
   }

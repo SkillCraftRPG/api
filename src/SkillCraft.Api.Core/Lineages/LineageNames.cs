@@ -9,6 +9,15 @@ public class LineageNames
   public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Custom { get; }
   public string? Content { get; }
 
+  public LineageNames()
+  {
+    Family = [];
+    Female = [];
+    Male = [];
+    Unisex = [];
+    Custom = new Dictionary<string, IReadOnlyCollection<string>>().AsReadOnly();
+  }
+
   [JsonConstructor]
   public LineageNames(
     IReadOnlyCollection<string> family,

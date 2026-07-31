@@ -10,6 +10,7 @@ public class LineageLanguages
 
   public LineageLanguages()
   {
+    Ids = [];
   }
 
   [JsonConstructor]

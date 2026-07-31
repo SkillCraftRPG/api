@@ -22,6 +22,8 @@ public class LineageFeature : IAuditable, IFeature
   {
   }
 
+  public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
+
   public override bool Equals(object? obj) => obj is LineageFeature feature && feature.LineageFeatureId == LineageFeatureId;
   public override int GetHashCode() => LineageFeatureId.GetHashCode();
   public override string ToString() => $"{Name} | {GetType()} (LineageFeatureId={LineageFeatureId})";

@@ -91,10 +91,6 @@ public class Lineage : IAuditable, IResource, IVersioned
   public IReadOnlyCollection<Guid> GetUserIds()
   {
     List<Guid> userIds = [CreatedBy, UpdatedBy];
-    if (Parent is not null)
-    {
-      userIds.AddRange(Parent.GetUserIds());
-    }
     foreach (LineageFeature feature in Features)
     {
       userIds.AddRange(feature.GetUserIds());

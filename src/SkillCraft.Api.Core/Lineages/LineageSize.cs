@@ -9,9 +9,22 @@ public interface ILineageSize
   string? Height { get; }
 }
 
-[method: JsonConstructor]
-public record LineageSize(SizeCategory Category, string? Height) : ILineageSize
+public record LineageSize : ILineageSize
 {
+  public SizeCategory Category { get; }
+  public string? Height { get; }
+
+  public LineageSize()
+  {
+  }
+
+  [JsonConstructor]
+  public LineageSize(SizeCategory category, string? height)
+  {
+    Category = category;
+    Height = height;
+  }
+
   public LineageSize(Lineage lineage) : this(lineage.SizeCategory, lineage.HeightRoll)
   {
   }

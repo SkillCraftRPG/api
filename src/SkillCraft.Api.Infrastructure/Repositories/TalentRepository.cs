@@ -7,7 +7,6 @@ using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Infrastructure.Actors;
-using SkillCraft.Api.Infrastructure.Db;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
@@ -73,23 +72,23 @@ internal class TalentRepository : Repository, ITalentRepository
 
     if (payload.Tiers.Count > 0)
     {
-      builder.Where(Talents.Tier, Operators.IsIn(payload.Tiers.Select(tier => (object)tier).ToArray()));
+      builder.Where(Db.Talents.Tier, Operators.IsIn(payload.Tiers.Select(tier => (object)tier).ToArray()));
     }
     if (payload.AllowMultiplePurchases.HasValue)
     {
-      builder.Where(Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
+      builder.Where(Db.Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
     }
     if (payload.Skill.HasValue)
     {
-      builder.Where(Talents.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
+      builder.Where(Db.Talents.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
     }
     if (payload.RequiredTalentId.HasValue)
     {
-      TableId requiredTalents = new(Talents.Table.Schema, Talents.Table.Table!, "RequiredTalents");
+      TableId requiredTalents = new(Db.Talents.Table.Schema, Db.Talents.Table.Table!, "RequiredTalents");
       ColumnId requiredTalentId = new(nameof(Talent.TalentId), requiredTalents);
       ColumnId requiredTalentUid = new(nameof(Talent.Id), requiredTalents);
       OperatorCondition condition = new(requiredTalentUid, Operators.IsEqualTo(payload.RequiredTalentId.Value));
-      builder.Join(requiredTalentId, Talents.RequiredTalentId, condition);
+      builder.Join(requiredTalentId, Db.Talents.RequiredTalentId, condition);
     }
 
     IQueryable<Talent> query = Database.Talents.FromQuery(builder).AsNoTracking()

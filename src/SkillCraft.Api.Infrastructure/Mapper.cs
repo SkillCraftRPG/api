@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
@@ -13,6 +13,8 @@ using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Lineages;
+using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Talents;
@@ -135,6 +137,24 @@ internal class Mapper
       }
       destination.Script = ToScript(source.Script);
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LineageModel ToLineage(Lineage source)
+  {
+    LineageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+      // TODO(fpion): complete
+    };
+
+    // TODO(fpion): complete
 
     MapAggregate(source, destination);
 

@@ -1,8 +1,17 @@
 ﻿namespace SkillCraft.Api.Core.Features;
 
-[method: JsonConstructor]
-public record Feature(string Name, string? Content = null) : IFeature
+public record Feature : IFeature
 {
+  public string Name { get; }
+  public string? Content { get; }
+
+  [JsonConstructor]
+  public Feature(string name, string? content = null)
+  {
+    Name = name;
+    Content = content;
+  }
+
   public Feature(IFeature feature) : this(feature.Name, feature.Content)
   {
   }

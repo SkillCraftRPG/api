@@ -10,9 +10,26 @@ public interface ILineageAge
   int? Venerable { get; }
 }
 
-[method: JsonConstructor]
-public record LineageAge(int? Teenager, int? Adult, int? Mature, int? Venerable) : ILineageAge
+public record LineageAge : ILineageAge
 {
+  public int? Teenager { get; }
+  public int? Adult { get; }
+  public int? Mature { get; }
+  public int? Venerable { get; }
+
+  public LineageAge()
+  {
+  }
+
+  [JsonConstructor]
+  public LineageAge(int? teenager, int? adult, int? mature, int? venerable)
+  {
+    Teenager = teenager;
+    Adult = adult;
+    Mature = mature;
+    Venerable = venerable;
+  }
+
   public LineageAge(Lineage lineage) : this(lineage.Teenager, lineage.Adult, lineage.Mature, lineage.Venerable)
   {
   }
