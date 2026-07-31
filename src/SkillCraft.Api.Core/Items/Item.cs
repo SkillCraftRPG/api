@@ -34,6 +34,7 @@ public class Item : IAuditable, IResource, IVersioned
     WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
 
+    Version = 1;
     CreatedBy = UpdatedBy = userId ?? world.OwnerId;
     CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
@@ -46,6 +47,7 @@ public class Item : IAuditable, IResource, IVersioned
 
   public void Update(Guid userId, DateTime? updatedOn = null)
   {
+    Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
   }
