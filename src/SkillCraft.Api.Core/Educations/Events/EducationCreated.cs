@@ -6,7 +6,7 @@ public class EducationCreated : CreateEvent
 {
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public Skill? Skill { get; set; }
   public int? WealthMultiplier { get; set; }
@@ -20,13 +20,13 @@ public class EducationCreated : CreateEvent
   {
     Name = education.Name;
     Summary = education.Summary;
-    HtmlContent = education.HtmlContent;
+    Content = education.Content;
 
     Skill = education.Skill;
     WealthMultiplier = education.WealthMultiplier;
     if (education.FeatureName is not null)
     {
-      Feature = new Feature(education.FeatureName, education.FeatureHtmlContent);
+      Feature = new Feature(education.FeatureName, education.FeatureContent);
     }
   }
 }

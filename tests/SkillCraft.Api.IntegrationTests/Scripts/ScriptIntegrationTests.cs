@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -41,7 +41,7 @@ public class ScriptIntegrationTests : IntegrationTests
     {
       Name = " Rénon ",
       Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      HtmlContent = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
+      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
     };
     Guid? id = withId ? Guid.NewGuid() : null;
 
@@ -66,7 +66,7 @@ public class ScriptIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), script.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), script.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), script.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), script.Content);
   }
 
   [Fact(DisplayName = "It should read a script by ID.")]
@@ -84,7 +84,7 @@ public class ScriptIntegrationTests : IntegrationTests
     {
       Name = " Rénon ",
       Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      HtmlContent = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
+      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
     };
     Guid id = _script.Id;
 
@@ -102,7 +102,7 @@ public class ScriptIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), script.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), script.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), script.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), script.Content);
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
@@ -165,7 +165,7 @@ public class ScriptIntegrationTests : IntegrationTests
     {
       Name = " Rénon ",
       Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      HtmlContent = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
+      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload));
@@ -183,7 +183,7 @@ public class ScriptIntegrationTests : IntegrationTests
     {
       Name = " Rénon ",
       Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      HtmlContent = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
+      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload, _script.Id));
@@ -213,7 +213,7 @@ public class ScriptIntegrationTests : IntegrationTests
     {
       Name = " Rénon ",
       Summary = new Optional<string>("  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  "),
-      HtmlContent = new Optional<string>("   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   ")
+      Content = new Optional<string>("   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   ")
     };
 
     ScriptModel? script = await _scriptService.UpdateAsync(id, payload);
@@ -228,6 +228,6 @@ public class ScriptIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), script.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), script.Summary);
-    Assert.Equal(payload.HtmlContent.Value?.CleanTrim(), script.HtmlContent);
+    Assert.Equal(payload.Content.Value?.CleanTrim(), script.Content);
   }
 }

@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -212,7 +212,7 @@ public class CasteIntegrationTests : IntegrationTests
     {
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
-      HtmlContent = new Optional<string>(create.HtmlContent),
+      Content = new Optional<string>(create.Content),
       Skill = new Optional<Skill?>(create.Skill),
       WealthRoll = new Optional<string>(create.WealthRoll),
       Feature = new Optional<FeatureModel>(create.Feature)
@@ -230,19 +230,19 @@ public class CasteIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), caste.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), caste.Summary);
-    Assert.Equal(payload.HtmlContent.Value?.CleanTrim(), caste.HtmlContent);
+    Assert.Equal(payload.Content.Value?.CleanTrim(), caste.Content);
     Assert.Equal(payload.Skill.Value, caste.Skill);
     Assert.Equal(payload.WealthRoll.Value?.CleanTrim()?.ToLowerInvariant(), caste.WealthRoll);
     Assert.NotNull(caste.Feature);
     Assert.Equal(payload.Feature.Value!.Name.Trim(), caste.Feature.Name);
-    Assert.Equal(payload.Feature.Value.HtmlContent?.CleanTrim(), caste.Feature.HtmlContent);
+    Assert.Equal(payload.Feature.Value.Content?.CleanTrim(), caste.Feature.Content);
   }
 
   private static CreateOrReplaceCastePayload CreateArtisanPayload() => new()
   {
     Name = " Artisan ",
     Summary = "  Expert des métiers manuels, membre d’une organisation d’artisans.  ",
-    HtmlContent = "   L’artisan est un expert d’un procédé de transformation des matières brutes.\n\nIl peut être un boulanger, un forgeron, un orfèvre, un tisserand ou pratiquer tout genre de profession œuvrant dans la transformation des matières brutes.   ",
+    Content = "   L’artisan est un expert d’un procédé de transformation des matières brutes.\n\nIl peut être un boulanger, un forgeron, un orfèvre, un tisserand ou pratiquer tout genre de profession œuvrant dans la transformation des matières brutes.   ",
     Skill = Skill.Crafting,
     WealthRoll = " 8D6 ",
     Feature = new FeatureModel(
@@ -254,11 +254,11 @@ public class CasteIntegrationTests : IntegrationTests
   {
     Assert.Equal(payload.Name.CleanTrim(), caste.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), caste.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), caste.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), caste.Content);
     Assert.Equal(payload.Skill, caste.Skill);
     Assert.Equal(payload.WealthRoll?.CleanTrim()?.ToLowerInvariant(), caste.WealthRoll);
     Assert.NotNull(caste.Feature);
     Assert.Equal(payload.Feature!.Name.Trim(), caste.Feature.Name);
-    Assert.Equal(payload.Feature.HtmlContent?.CleanTrim(), caste.Feature.HtmlContent);
+    Assert.Equal(payload.Feature.Content?.CleanTrim(), caste.Feature.Content);
   }
 }

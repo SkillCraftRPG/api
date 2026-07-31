@@ -1,10 +1,10 @@
-﻿namespace SkillCraft.Api.Core.Languages.Events;
+namespace SkillCraft.Api.Core.Languages.Events;
 
 public class LanguageUpdated : UpdateEvent
 {
   public Change<string>? Name { get; set; }
   public Change<string>? Summary { get; set; }
-  public Change<string>? HtmlContent { get; set; }
+  public Change<string>? Content { get; set; }
 
   public Change<Guid?>? ScriptId { get; set; }
   public Change<string>? TypicalSpeakers { get; set; }

@@ -29,21 +29,21 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CasteId"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FeatureHtmlContent")
+                    b.Property<string>("FeatureContent")
                         .HasColumnType("text");
 
                     b.Property<string>("FeatureName")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -111,14 +111,14 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CustomizationId"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -181,21 +181,21 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EducationId"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FeatureHtmlContent")
+                    b.Property<string>("FeatureContent")
                         .HasColumnType("text");
 
                     b.Property<string>("FeatureName")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -254,6 +254,79 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.ToTable("Educations", "Game");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Core.Items.Item", b =>
+                {
+                    b.Property<int>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ItemId"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<double?>("Weight")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid>("WorldId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ItemId");
+
+                    b.HasIndex("WorldId", "CreatedBy");
+
+                    b.HasIndex("WorldId", "CreatedOn");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.HasIndex("WorldId", "Price");
+
+                    b.HasIndex("WorldId", "Summary");
+
+                    b.HasIndex("WorldId", "UpdatedBy");
+
+                    b.HasIndex("WorldId", "UpdatedOn");
+
+                    b.HasIndex("WorldId", "Version");
+
+                    b.HasIndex("WorldId", "Weight");
+
+                    b.ToTable("Items", "Game");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Core.Languages.Language", b =>
                 {
                     b.Property<int>("LanguageId")
@@ -262,14 +335,14 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LanguageId"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -335,14 +408,14 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ScriptId"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -401,14 +474,14 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Property<bool>("AllowMultiplePurchases")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -484,14 +557,14 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WorldId"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HtmlContent")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -636,6 +709,18 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Core.Items.Item", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Core.Worlds.World", "World")
+                        .WithMany("Items")
+                        .HasForeignKey("WorldId")
+                        .HasPrincipalKey("Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("World");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Core.Languages.Language", b =>
                 {
                     b.HasOne("SkillCraft.Api.Core.Scripts.Script", "Script")
@@ -703,6 +788,8 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("Customizations");
 
                     b.Navigation("Educations");
+
+                    b.Navigation("Items");
 
                     b.Navigation("Languages");
 

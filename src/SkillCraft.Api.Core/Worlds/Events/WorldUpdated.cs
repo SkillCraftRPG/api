@@ -1,10 +1,10 @@
-﻿namespace SkillCraft.Api.Core.Worlds.Events;
+namespace SkillCraft.Api.Core.Worlds.Events;
 
 public class WorldUpdated : UpdateEvent
 {
   public Change<string>? Key { get; set; }
   public Change<string>? Name { get; set; }
-  public Change<string>? HtmlContent { get; set; }
+  public Change<string>? Content { get; set; }
 
   public WorldUpdated() : base()
   {

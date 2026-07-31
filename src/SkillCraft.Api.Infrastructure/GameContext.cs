@@ -2,6 +2,7 @@
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
+using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
@@ -19,6 +20,7 @@ public class GameContext : DbContext
   internal DbSet<Customization> Customizations => Set<Customization>();
   internal DbSet<Education> Educations => Set<Education>();
   internal DbSet<HistoryRecord> History => Set<HistoryRecord>();
+  internal DbSet<Item> Items => Set<Item>();
   internal DbSet<Language> Languages => Set<Language>();
   internal DbSet<Script> Scripts => Set<Script>();
   internal DbSet<Talent> Talents => Set<Talent>();

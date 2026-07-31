@@ -5,6 +5,7 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Identity;
+using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
@@ -49,6 +50,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<ICasteRepository, CasteRepository>()
       .AddScoped<ICustomizationRepository, CustomizationRepository>()
       .AddScoped<IEducationRepository, EducationRepository>()
+      .AddScoped<IItemRepository, ItemRepository>()
       .AddScoped<ILanguageRepository, LanguageRepository>()
       .AddScoped<IScriptRepository, ScriptRepository>()
       .AddScoped<ITalentRepository, TalentRepository>()

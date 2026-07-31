@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
@@ -11,7 +11,7 @@ public interface ILanguageBuilder
   ILanguageBuilder WithWorld(World? world);
   ILanguageBuilder WithName(string name);
   ILanguageBuilder WithSummary(string? summary);
-  ILanguageBuilder WithHtmlContent(string? htmlContent);
+  ILanguageBuilder WithContent(string? content);
   ILanguageBuilder WithScript(Script? script);
   ILanguageBuilder WithTypicalSpeakers(string? typicalSpeakers);
 
@@ -22,7 +22,7 @@ public class LanguageBuilder : ILanguageBuilder
 {
   private readonly Faker _faker;
 
-  private string? _htmlContent = null;
+  private string? _content = null;
   private Guid? _id = null;
   private string _name = "Language";
   private Script? _script = null;
@@ -59,9 +59,9 @@ public class LanguageBuilder : ILanguageBuilder
     return this;
   }
 
-  public ILanguageBuilder WithHtmlContent(string? htmlContent)
+  public ILanguageBuilder WithContent(string? content)
   {
-    _htmlContent = htmlContent;
+    _content = content;
     return this;
   }
 
@@ -80,14 +80,22 @@ public class LanguageBuilder : ILanguageBuilder
   public Language Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Language(world, _name, _id, _summary, _htmlContent, _script, _typicalSpeakers);
+    Language language = new(world, _id)
+    {
+      Name = _name,
+      Summary = _summary,
+      Content = _content,
+      TypicalSpeakers = _typicalSpeakers
+    };
+    language.SetScript(_script);
+    return language;
   }
 
   public static Language Common(Faker? faker = null, World? world = null, Script? script = null) => new LanguageBuilder(faker)
     .WithWorld(world)
     .WithName("Commun")
     .WithSummary("Langue véhiculaire pragmatique et évolutive, parlée sur tout Ouespéro.")
-    .WithHtmlContent("Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.")
+    .WithContent("Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.")
     .WithScript(script ?? ScriptBuilder.Renon(faker, world))
     .WithTypicalSpeakers("Humains")
     .Build();

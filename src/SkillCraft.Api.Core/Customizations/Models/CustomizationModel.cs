@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts;
+using Krakenar.Contracts;
 
 namespace SkillCraft.Api.Core.Customizations.Models;
 
@@ -8,7 +8,7 @@ public class CustomizationModel : Aggregate
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

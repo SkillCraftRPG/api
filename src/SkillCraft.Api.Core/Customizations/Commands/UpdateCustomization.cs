@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -32,14 +33,29 @@ internal class UpdateCustomizationCommandHandler : ICommandHandler<UpdateCustomi
     }
     await _permissionService.CheckAsync(Actions.Update, customization, cancellationToken);
 
-    CustomizationUpdated record = customization.Update(
-      string.IsNullOrWhiteSpace(payload.Name) ? customization.Name : payload.Name,
-      payload.Summary is null ? customization.Summary : payload.Summary.Value,
-      payload.HtmlContent is null ? customization.HtmlContent : payload.HtmlContent.Value,
-      _context.UserId);
-    _customizationRepository.Update(customization, record);
+    CustomizationSnapshot snapshot = new(customization);
 
-    await _context.SaveChangesAsync(cancellationToken);
+    if (!string.IsNullOrWhiteSpace(payload.Name))
+    {
+      customization.Name = payload.Name.Trim();
+    }
+    if (payload.Summary is not null)
+    {
+      customization.Summary = payload.Summary.Value?.CleanTrim();
+    }
+    if (payload.Content is not null)
+    {
+      customization.Content = payload.Content.Value?.CleanTrim();
+    }
+
+    CustomizationUpdated? record = snapshot.Compare(customization);
+    if (record is not null)
+    {
+      customization.Update(_context.UserId);
+      _customizationRepository.Update(customization, record);
+
+      await _context.SaveChangesAsync(cancellationToken);
+    }
 
     return await _customizationRepository.ReadAsync(customization, cancellationToken);
   }

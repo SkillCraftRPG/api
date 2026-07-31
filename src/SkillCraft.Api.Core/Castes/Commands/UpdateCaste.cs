@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Features;
@@ -33,30 +34,42 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     }
     await _permissionService.CheckAsync(Actions.Update, caste, cancellationToken);
 
-    Feature? feature = null;
-    if (payload.Feature is null)
+    CasteSnapshot snapshot = new(caste);
+
+    if (!string.IsNullOrWhiteSpace(payload.Name))
     {
-      if (caste.FeatureName is not null)
-      {
-        feature = new Feature(caste.FeatureName, caste.FeatureHtmlContent);
-      }
+      caste.Name = payload.Name.Trim();
     }
-    else if (payload.Feature.Value is not null)
+    if (payload.Summary is not null)
     {
-      feature = new Feature(payload.Feature.Value);
+      caste.Summary = payload.Summary.Value?.CleanTrim();
+    }
+    if (payload.Content is not null)
+    {
+      caste.Content = payload.Content.Value?.CleanTrim();
     }
 
-    CasteUpdated record = caste.Update(
-      string.IsNullOrWhiteSpace(payload.Name) ? caste.Name : payload.Name,
-      payload.Summary is null ? caste.Summary : payload.Summary.Value,
-      payload.HtmlContent is null ? caste.HtmlContent : payload.HtmlContent.Value,
-      payload.Skill is null ? caste.Skill : payload.Skill.Value,
-      payload.WealthRoll is null ? caste.WealthRoll : payload.WealthRoll.Value,
-      feature,
-      _context.UserId);
-    _casteRepository.Update(caste, record);
+    if (payload.Skill is not null)
+    {
+      caste.Skill = payload.Skill.Value;
+    }
+    if (payload.WealthRoll is not null)
+    {
+      caste.WealthRoll = payload.WealthRoll.Value?.CleanTrim()?.ToLowerInvariant();
+    }
+    if (payload.Feature is not null)
+    {
+      caste.SetFeature(payload.Feature.Value is null ? null : new Feature(payload.Feature.Value));
+    }
 
-    await _context.SaveChangesAsync(cancellationToken);
+    CasteUpdated? record = snapshot.Compare(caste);
+    if (record is not null)
+    {
+      caste.Update(_context.UserId);
+      _casteRepository.Update(caste, record);
+
+      await _context.SaveChangesAsync(cancellationToken);
+    }
 
     return await _casteRepository.ReadAsync(caste, cancellationToken);
   }

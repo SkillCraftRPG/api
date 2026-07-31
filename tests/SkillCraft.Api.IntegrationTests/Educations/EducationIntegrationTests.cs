@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -210,7 +210,7 @@ public class EducationIntegrationTests : IntegrationTests
     {
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
-      HtmlContent = new Optional<string>(create.HtmlContent),
+      Content = new Optional<string>(create.Content),
       Skill = new Optional<Skill?>(create.Skill),
       WealthMultiplier = new Optional<int?>(create.WealthMultiplier),
       Feature = new Optional<FeatureModel>(create.Feature)
@@ -228,19 +228,19 @@ public class EducationIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), education.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), education.Summary);
-    Assert.Equal(payload.HtmlContent.Value?.CleanTrim(), education.HtmlContent);
+    Assert.Equal(payload.Content.Value?.CleanTrim(), education.Content);
     Assert.Equal(payload.Skill.Value, education.Skill);
     Assert.Equal(payload.WealthMultiplier.Value, education.WealthMultiplier);
     Assert.NotNull(education.Feature);
     Assert.Equal(payload.Feature.Value!.Name.Trim(), education.Feature.Name);
-    Assert.Equal(payload.Feature.Value.HtmlContent?.CleanTrim(), education.Feature.HtmlContent);
+    Assert.Equal(payload.Feature.Value.Content?.CleanTrim(), education.Feature.Content);
   }
 
   private static CreateOrReplaceEducationPayload CreateJudicieuxPayload() => new()
   {
     Name = " Judicieux ",
     Summary = "  Esprit posé et analytique, prêt à guider par des décisions avisées.  ",
-    HtmlContent = "   Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.   ",
+    Content = "   Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.   ",
     Skill = Skill.Orientation,
     WealthMultiplier = 10,
     Feature = new FeatureModel(
@@ -252,11 +252,11 @@ public class EducationIntegrationTests : IntegrationTests
   {
     Assert.Equal(payload.Name.CleanTrim(), education.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), education.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), education.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), education.Content);
     Assert.Equal(payload.Skill, education.Skill);
     Assert.Equal(payload.WealthMultiplier, education.WealthMultiplier);
     Assert.NotNull(education.Feature);
     Assert.Equal(payload.Feature!.Name.Trim(), education.Feature.Name);
-    Assert.Equal(payload.Feature.HtmlContent?.CleanTrim(), education.Feature.HtmlContent);
+    Assert.Equal(payload.Feature.Content?.CleanTrim(), education.Feature.Content);
   }
 }

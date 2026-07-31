@@ -1,5 +1,6 @@
-﻿using Bogus;
+using Bogus;
 using Krakenar.Contracts.Users;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Builders;
@@ -10,7 +11,7 @@ public interface IWorldBuilder
   IWorldBuilder WithOwner(User? owner);
   IWorldBuilder WithKey(string key);
   IWorldBuilder WithName(string? name);
-  IWorldBuilder WithHtmlContent(string? htmlContent);
+  IWorldBuilder WithContent(string? content);
 
   World Build();
 }
@@ -19,7 +20,7 @@ public class WorldBuilder : IWorldBuilder
 {
   private readonly Faker _faker;
 
-  private string? _htmlContent = null;
+  private string? _content = null;
   private Guid? _id = null;
   private string _key = "ungar";
   private string? _name = "Ungar";
@@ -54,15 +55,20 @@ public class WorldBuilder : IWorldBuilder
     return this;
   }
 
-  public IWorldBuilder WithHtmlContent(string? htmlContent)
+  public IWorldBuilder WithContent(string? content)
   {
-    _htmlContent = htmlContent;
+    _content = content;
     return this;
   }
 
   public World Build()
   {
     User owner = _owner ?? new UserBuilder(_faker).Build();
-    return new World(owner.Id, _key, _id, _name, _htmlContent);
+    return new World(owner.Id, _id)
+    {
+      Key = SlugHelper.Format(_key),
+      Name = _name,
+      Content = _content
+    };
   }
 }

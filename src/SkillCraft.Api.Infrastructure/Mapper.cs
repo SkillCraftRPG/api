@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts;
+using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
@@ -9,6 +9,8 @@ using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
+using SkillCraft.Api.Core.Items;
+using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts;
@@ -44,14 +46,14 @@ internal class Mapper
       Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
-      HtmlContent = source.HtmlContent,
+      Content = source.Content,
       Skill = source.Skill,
       WealthRoll = source.WealthRoll
     };
 
     if (source.FeatureName is not null)
     {
-      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureHtmlContent);
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureContent);
     }
 
     MapAggregate(source, destination);
@@ -67,7 +69,7 @@ internal class Mapper
       Kind = source.Kind,
       Name = source.Name,
       Summary = source.Summary,
-      HtmlContent = source.HtmlContent
+      Content = source.Content
     };
 
     MapAggregate(source, destination);
@@ -82,15 +84,32 @@ internal class Mapper
       Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
-      HtmlContent = source.HtmlContent,
+      Content = source.Content,
       Skill = source.Skill,
       WealthMultiplier = source.WealthMultiplier
     };
 
     if (source.FeatureName is not null)
     {
-      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureHtmlContent);
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureContent);
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemModel ToItem(Item source)
+  {
+    ItemModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Price = source.Price,
+      Weight = source.Weight
+    };
 
     MapAggregate(source, destination);
 
@@ -104,7 +123,7 @@ internal class Mapper
       Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
-      HtmlContent = source.HtmlContent,
+      Content = source.Content,
       TypicalSpeakers = source.TypicalSpeakers
     };
 
@@ -129,7 +148,7 @@ internal class Mapper
       Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
-      HtmlContent = source.HtmlContent
+      Content = source.Content
     };
 
     MapAggregate(source, destination);
@@ -145,7 +164,7 @@ internal class Mapper
       Tier = source.Tier,
       Name = source.Name,
       Summary = source.Summary,
-      HtmlContent = source.HtmlContent,
+      Content = source.Content,
       AllowMultiplePurchases = source.AllowMultiplePurchases,
       Skill = source.Skill
     };
@@ -168,7 +187,7 @@ internal class Mapper
       Owner = FindActor(source.OwnerId),
       Key = source.Key,
       Name = source.Name,
-      HtmlContent = source.HtmlContent
+      Content = source.Content
     };
 
     MapAggregate(source, destination);

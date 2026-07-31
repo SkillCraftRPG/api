@@ -1,3 +1,4 @@
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Talents.Events;
@@ -38,6 +39,7 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
       talent = await _talentRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
+    Guid userId = _context.UserId;
     Guid worldId = _context.WorldId;
 
     Talent? requiredTalent = null;
@@ -47,26 +49,15 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
         ?? throw new ResourceNotFoundException(new ResourceIdentifier(Talent.ResourceKind, payload.RequiredTalentId.Value, worldId), nameof(Talent.RequiredTalentId));
     }
 
-    bool created = false;
+    TalentSnapshot? snapshot = null;
     if (talent is null)
     {
       World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
         ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateTalent, world, cancellationToken);
 
-      talent = new Talent(
-        world,
-        payload.Tier,
-        payload.Name,
-        command.Id,
-        payload.Summary,
-        payload.HtmlContent,
-        payload.AllowMultiplePurchases,
-        payload.Skill,
-        requiredTalent,
-        _context.UserId);
+      talent = new Talent(world, payload.Tier, command.Id, userId);
       _talentRepository.Add(talent);
-      created = true;
     }
     else
     {
@@ -77,20 +68,30 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
         throw new ImmutablePropertyException<int>(talent, talent.Tier, payload.Tier, nameof(Talent.Tier));
       }
 
-      TalentUpdated record = talent.Update(
-        payload.Name,
-        payload.Summary,
-        payload.HtmlContent,
-        payload.AllowMultiplePurchases,
-        payload.Skill,
-        requiredTalent,
-        _context.UserId);
-      _talentRepository.Update(talent, record);
+      snapshot = new TalentSnapshot(talent);
+    }
+
+    talent.Name = payload.Name.Trim();
+    talent.Summary = payload.Summary?.CleanTrim();
+    talent.Content = payload.Content?.CleanTrim();
+
+    talent.SetAllowMultiplePurchases(payload.AllowMultiplePurchases);
+    talent.SetSkill(payload.Skill);
+    talent.SetRequiredTalent(requiredTalent);
+
+    if (snapshot is not null)
+    {
+      TalentUpdated? record = snapshot.Compare(talent);
+      if (record is not null)
+      {
+        talent.Update(userId);
+        _talentRepository.Update(talent, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);
 
     TalentModel model = await _talentRepository.ReadAsync(talent, cancellationToken);
-    return new CreateOrReplaceTalentResult(model, created);
+    return new CreateOrReplaceTalentResult(model, Created: snapshot is null);
   }
 }

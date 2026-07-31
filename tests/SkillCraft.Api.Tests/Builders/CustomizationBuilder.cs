@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Worlds;
 
@@ -11,7 +11,7 @@ public interface ICustomizationBuilder
   ICustomizationBuilder WithKind(CustomizationKind kind);
   ICustomizationBuilder WithName(string name);
   ICustomizationBuilder WithSummary(string? summary);
-  ICustomizationBuilder WithHtmlContent(string? htmlContent);
+  ICustomizationBuilder WithContent(string? content);
 
   Customization Build();
 }
@@ -20,7 +20,7 @@ public class CustomizationBuilder : ICustomizationBuilder
 {
   private readonly Faker _faker;
 
-  private string? _htmlContent = null;
+  private string? _content = null;
   private Guid? _id = null;
   private CustomizationKind? _kind = null;
   private string _name = "Customization";
@@ -62,9 +62,9 @@ public class CustomizationBuilder : ICustomizationBuilder
     return this;
   }
 
-  public ICustomizationBuilder WithHtmlContent(string? htmlContent)
+  public ICustomizationBuilder WithContent(string? content)
   {
-    _htmlContent = htmlContent;
+    _content = content;
     return this;
   }
 
@@ -72,6 +72,11 @@ public class CustomizationBuilder : ICustomizationBuilder
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
     CustomizationKind kind = _kind ?? _faker.PickRandom<CustomizationKind>();
-    return new Customization(world, kind, _name, _id, _summary, _htmlContent);
+    return new Customization(world, kind, _id)
+    {
+      Name = _name,
+      Summary = _summary,
+      Content = _content
+    };
   }
 }

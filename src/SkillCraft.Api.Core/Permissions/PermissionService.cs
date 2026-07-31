@@ -73,6 +73,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateCaste:
       case Actions.CreateCustomization:
       case Actions.CreateEducation:
+      case Actions.CreateItem:
       case Actions.CreateLanguage:
       case Actions.CreateLineage:
       case Actions.CreateScript:

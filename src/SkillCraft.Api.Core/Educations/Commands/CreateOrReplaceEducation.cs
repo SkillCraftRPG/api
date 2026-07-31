@@ -1,3 +1,4 @@
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Educations.Models;
@@ -39,30 +40,47 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
       education = await _educationRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Feature? feature = payload.Feature is null ? null : new(payload.Feature);
+    Guid userId = _context.UserId;
+    Guid worldId = _context.WorldId;
 
-    bool created = false;
+    EducationSnapshot? snapshot = null;
     if (education is null)
     {
-      World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
+        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateEducation, world, cancellationToken);
 
-      education = new Education(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthMultiplier, feature, _context.UserId);
+      education = new Education(world, command.Id, userId);
       _educationRepository.Add(education);
-      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, education, cancellationToken);
 
-      EducationUpdated record = education.Update(payload.Name, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthMultiplier, feature, _context.UserId);
-      _educationRepository.Update(education, record);
+      snapshot = new EducationSnapshot(education);
+    }
+
+    education.Name = payload.Name.Trim();
+    education.Summary = payload.Summary?.CleanTrim();
+    education.Content = payload.Content?.CleanTrim();
+
+    education.Skill = payload.Skill;
+    education.WealthMultiplier = payload.WealthMultiplier;
+    education.SetFeature(payload.Feature is null ? null : new Feature(payload.Feature));
+
+    if (snapshot is not null)
+    {
+      EducationUpdated? record = snapshot.Compare(education);
+      if (record is not null)
+      {
+        education.Update(userId);
+        _educationRepository.Update(education, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);
 
     EducationModel model = await _educationRepository.ReadAsync(education, cancellationToken);
-    return new CreateOrReplaceEducationResult(model, created);
+    return new CreateOrReplaceEducationResult(model, Created: snapshot is null);
   }
 }

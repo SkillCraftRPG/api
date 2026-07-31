@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -365,7 +365,7 @@ public class TalentIntegrationTests : IntegrationTests
     {
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
-      HtmlContent = new Optional<string>(create.HtmlContent),
+      Content = new Optional<string>(create.Content),
       AllowMultiplePurchases = create.AllowMultiplePurchases,
       Skill = new Optional<Skill?>(create.Skill),
       RequiredTalentId = new Optional<Guid?>(create.RequiredTalentId)
@@ -383,7 +383,7 @@ public class TalentIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), talent.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), talent.Summary);
-    Assert.Equal(payload.HtmlContent.Value?.CleanTrim(), talent.HtmlContent);
+    Assert.Equal(payload.Content.Value?.CleanTrim(), talent.Content);
     Assert.Equal(payload.AllowMultiplePurchases, talent.AllowMultiplePurchases);
     Assert.Equal(payload.Skill.Value, talent.Skill);
     Assert.NotNull(talent.RequiredTalent);
@@ -395,7 +395,7 @@ public class TalentIntegrationTests : IntegrationTests
     Tier = 0,
     Name = " Formation martiale ",
     Summary = "  Accorde la maîtrise des armes et armures moyennes en combat.  ",
-    HtmlContent = "   Le personnage acquiert les capacités suivantes :\n\n- Il est [formé](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de mêlée.\n- Il est [formé](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et à l’utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu’il dégaine ou rengaine une arme, il peut en faire de même avec un bouclier en [action libre](/regles/combat/deroulement/tour).   ",
+    Content = "   Le personnage acquiert les capacités suivantes :\n\n- Il est [formé](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de mêlée.\n- Il est [formé](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et à l’utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu’il dégaine ou rengaine une arme, il peut en faire de même avec un bouclier en [action libre](/regles/combat/deroulement/tour).   ",
     AllowMultiplePurchases = false,
     Skill = Skill.Melee,
     RequiredTalentId = _melee.Id
@@ -406,7 +406,7 @@ public class TalentIntegrationTests : IntegrationTests
     Assert.Equal(payload.Tier, talent.Tier);
     Assert.Equal(payload.Name.CleanTrim(), talent.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), talent.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), talent.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), talent.Content);
     Assert.Equal(payload.AllowMultiplePurchases, talent.AllowMultiplePurchases);
     Assert.Equal(payload.Skill, talent.Skill);
     Assert.NotNull(talent.RequiredTalent);

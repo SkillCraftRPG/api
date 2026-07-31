@@ -53,25 +53,23 @@ public class InvalidRequiredTalentException : DomainException
     }
   }
 
-  public InvalidRequiredTalentException(Talent talent)
-    : base(BuildMessage(talent))
+  public InvalidRequiredTalentException(Talent requiringTalent, Talent requiredTalent)
+    : base(BuildMessage(requiringTalent, requiredTalent))
   {
-    Talent requiredTalent = talent.RequiredTalent ?? throw new ArgumentException("The required talent is required.", nameof(talent));
-
-    WorldId = talent.WorldId;
-    RequiringTalentId = talent.Id;
+    WorldId = new HashSet<Guid>([requiringTalent.WorldId, requiredTalent.WorldId]).Single();
+    RequiringTalentId = requiringTalent.Id;
     RequiredTalentId = requiredTalent.Id;
-    RequiringTalentTier = talent.Tier;
+    RequiringTalentTier = requiringTalent.Tier;
     RequiredTalentTier = requiredTalent.Tier;
     PropertyName = nameof(Talent.RequiredTalentId);
   }
 
-  private static string BuildMessage(Talent talent) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(WorldId), talent.WorldId)
-    .AddData(nameof(RequiringTalentId), talent.Id)
-    .AddData(nameof(RequiredTalentId), talent.RequiredTalent?.Id)
-    .AddData(nameof(RequiringTalentTier), talent.Tier)
-    .AddData(nameof(RequiredTalentTier), talent.RequiredTalent?.Tier)
+  private static string BuildMessage(Talent requiringTalent, Talent requiredTalent) => new ErrorMessageBuilder(ErrorMessage)
+    .AddData(nameof(WorldId), new HashSet<Guid>([requiringTalent.WorldId, requiredTalent.WorldId]).Single())
+    .AddData(nameof(RequiringTalentId), requiringTalent.Id)
+    .AddData(nameof(RequiredTalentId), requiredTalent.Id)
+    .AddData(nameof(RequiringTalentTier), requiringTalent.Tier)
+    .AddData(nameof(RequiredTalentTier), requiredTalent.Tier)
     .AddData(nameof(PropertyName), nameof(Talent.RequiredTalentId))
     .Build();
 }
