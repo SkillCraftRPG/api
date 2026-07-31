@@ -1,4 +1,5 @@
-using Logitar;
+﻿using Logitar;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Educations;
@@ -20,8 +21,8 @@ public class Education : IAuditable, IResource, IVersioned
   public Skill? Skill { get; set; }
   public int? WealthMultiplier { get; set; }
 
-  public string? FeatureName { get; set; }
-  public string? FeatureHtmlContent { get; set; }
+  public string? FeatureName { get; private set; }
+  public string? FeatureHtmlContent { get; private set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -47,6 +48,12 @@ public class Education : IAuditable, IResource, IVersioned
   }
 
   public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
+
+  public void SetFeature(Feature? feature)
+  {
+    FeatureName = feature?.Name;
+    FeatureHtmlContent = feature?.HtmlContent;
+  }
 
   public void Update(Guid userId, DateTime? updatedOn = null)
   {

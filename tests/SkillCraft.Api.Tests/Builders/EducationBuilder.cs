@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Features;
@@ -89,16 +89,16 @@ public class EducationBuilder : IEducationBuilder
   public Education Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Education(world, _id)
+    Education education = new(world, _id)
     {
       Name = _name,
       Summary = _summary,
       HtmlContent = _htmlContent,
       Skill = _skill,
-      WealthMultiplier = _wealthMultiplier,
-      FeatureName = _feature?.Name,
-      FeatureHtmlContent = _feature?.HtmlContent
+      WealthMultiplier = _wealthMultiplier
     };
+    education.SetFeature(_feature);
+    return education;
   }
 
   public static Education Judicieux(Faker? faker = null, World? world = null) => new EducationBuilder(faker)

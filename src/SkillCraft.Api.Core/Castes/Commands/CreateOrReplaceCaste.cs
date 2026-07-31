@@ -66,10 +66,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
 
     caste.Skill = payload.Skill;
     caste.WealthRoll = payload.WealthRoll?.CleanTrim()?.ToLowerInvariant();
-
-    Feature? feature = payload.Feature is null ? null : new(payload.Feature);
-    caste.FeatureName = feature?.Name;
-    caste.FeatureHtmlContent = feature?.HtmlContent;
+    caste.SetFeature(payload.Feature is null ? null : new Feature(payload.Feature));
 
     if (snapshot is not null)
     {

@@ -89,16 +89,16 @@ public class CasteBuilder : ICasteBuilder
   public Caste Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Caste(world, _id)
+    Caste caste = new(world, _id)
     {
       Name = _name,
       Summary = _summary,
       HtmlContent = _htmlContent,
       Skill = _skill,
-      WealthRoll = _wealthRoll,
-      FeatureName = _feature?.Name,
-      FeatureHtmlContent = _feature?.HtmlContent
+      WealthRoll = _wealthRoll
     };
+    caste.SetFeature(_feature);
+    return caste;
   }
 
   public static Caste Artisan(Faker? faker = null, World? world = null) => new CasteBuilder(faker)

@@ -59,9 +59,7 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     }
     if (payload.Feature is not null)
     {
-      Feature? feature = payload.Feature.Value is null ? null : new(payload.Feature.Value);
-      caste.FeatureName = feature?.Name;
-      caste.FeatureHtmlContent = feature?.HtmlContent;
+      caste.SetFeature(payload.Feature.Value is null ? null : new Feature(payload.Feature.Value));
     }
 
     CasteUpdated? record = snapshot.Compare(caste);

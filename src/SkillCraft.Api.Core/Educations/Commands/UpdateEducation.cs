@@ -58,9 +58,7 @@ internal class UpdateEducationCommandHandler : ICommandHandler<UpdateEducationCo
     }
     if (payload.Feature is not null)
     {
-      Feature? feature = payload.Feature.Value is null ? null : new(payload.Feature.Value);
-      education.FeatureName = feature?.Name;
-      education.FeatureHtmlContent = feature?.HtmlContent;
+      education.SetFeature(payload.Feature.Value is null ? null : new Feature(payload.Feature.Value));
     }
 
     EducationUpdated? record = snapshot.Compare(education);
