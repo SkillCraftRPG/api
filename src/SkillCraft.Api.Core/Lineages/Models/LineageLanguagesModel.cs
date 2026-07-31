@@ -4,7 +4,7 @@ namespace SkillCraft.Api.Core.Lineages.Models;
 
 public record LineageLanguagesModel
 {
-  public List<LanguageModel> Languages { get; set; } = []; // TODO(fpion): rename
+  public List<LanguageModel> Granted { get; set; } = [];
   public int Extra { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 }

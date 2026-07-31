@@ -11,7 +11,7 @@ public class LineageFeature : IAuditable, IFeature
   public Guid Id { get; private set; }
 
   public string Name { get; private set; } = string.Empty;
-  public string? HtmlContent { get; private set; }
+  public string? Content { get; private set; }
 
   public Guid CreatedBy { get; private set; }
   public DateTime CreatedOn { get; private set; }

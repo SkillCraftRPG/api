@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts.Search;
+using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Lineages.Models;
 
 namespace SkillCraft.Api.Core.Lineages;
@@ -7,7 +8,7 @@ public interface ILineageRepository
 {
   void Add(params Lineage[] lineages);
   void Remove(Lineage lineage);
-  //void Update(Lineage lineage, LineageUpdated record);
+  void Update(Lineage lineage, LineageUpdated record);
 
   Task<Lineage?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
 

@@ -50,9 +50,9 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     {
       lineage.Summary = payload.Summary.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      lineage.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      lineage.Content = payload.Content.Value?.CleanTrim();
     }
 
     if (payload.Languages is not null)
@@ -69,37 +69,37 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
           throw new LanguagesNotFoundException(_context.WorldId, missingIds, propertyName);
         }
       }
-      LineageHelper.SetLanguages(lineage, languages, payload.Languages);
+      lineage.SetLanguages(languages, payload.Languages.Extra, payload.Languages.Content);
     }
     if (payload.Names is not null)
     {
-      LineageHelper.SetNames(lineage, payload.Names);
+      lineage.SetNames(payload.Names.Family, payload.Names.Female, payload.Names.Male, payload.Names.Unisex, payload.Names.Custom, payload.Names.Content);
     }
     if (payload.Speeds is not null)
     {
-      LineageHelper.SetSpeeds(lineage, payload.Speeds);
+      lineage.SetSpeeds(payload.Speeds);
     }
     if (payload.Size is not null)
     {
-      LineageHelper.SetSize(lineage, payload.Size);
+      lineage.SetSize(payload.Size);
     }
     if (payload.Weight is not null)
     {
-      LineageHelper.SetWeight(lineage, payload.Weight);
+      lineage.SetWeight(payload.Weight);
     }
     if (payload.Age is not null)
     {
-      LineageHelper.SetAge(lineage, payload.Age);
+      lineage.SetAge(payload.Age);
     }
 
-    if (snapshot.HasChanges)
+    LineageUpdated? record = snapshot.Compare(lineage);
+    if (record is not null)
     {
       lineage.Update(_context.UserId);
-      // TODO(fpion): produce record
-      // TODO(fpion): _lineageRepository.Update(lineage, record);
-    }
+      _lineageRepository.Update(lineage, record);
 
-    await _context.SaveChangesAsync(cancellationToken);
+      await _context.SaveChangesAsync(cancellationToken);
+    }
 
     return await _lineageRepository.ReadAsync(lineage, cancellationToken);
   }

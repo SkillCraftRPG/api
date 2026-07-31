@@ -9,7 +9,7 @@ public record CreateOrReplaceLineagePayload
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public LineageLanguagesPayload Languages { get; set; } = new();
   public LineageNamesModel Names { get; set; } = new();
@@ -26,14 +26,14 @@ public record CreateOrReplaceLineagePayload
     {
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
-      When(x => !string.IsNullOrWhiteSpace(x.HtmlContent), () => RuleFor(x => x.HtmlContent!).HtmlContent());
+      When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
-      // TODO(fpion): Languages
-      // TODO(fpion): Names
-      // TODO(fpion): Speeds
-      // TODO(fpion): Size
-      // TODO(fpion): Weight
-      // TODO(fpion): Age
+      RuleFor(x => x.Languages).SetValidator(new LineageLanguagesValidator());
+      RuleFor(x => x.Names).SetValidator(new LineageNamesValidator());
+      RuleFor(x => x.Speeds).SetValidator(new LineageSpeedsValidator());
+      RuleFor(x => x.Size).SetValidator(new LineageSizeValidator());
+      RuleFor(x => x.Weight).SetValidator(new LineageWeightValidator());
+      RuleFor(x => x.Age).SetValidator(new LineageAgeValidator());
     }
   }
 }

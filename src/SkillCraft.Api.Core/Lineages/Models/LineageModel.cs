@@ -6,7 +6,7 @@ public class LineageModel : Aggregate
 {
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public List<LineageFeatureModel> Features { get; set; } = [];
   public LineageLanguagesModel Languages { get; set; } = new();

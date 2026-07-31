@@ -8,7 +8,7 @@ public record UpdateLineagePayload
 
   public string? Name { get; set; }
   public Optional<string>? Summary { get; set; }
-  public Optional<string>? HtmlContent { get; set; }
+  public Optional<string>? Content { get; set; }
 
   public LineageLanguagesPayload? Languages { get; set; }
   public LineageNamesModel? Names { get; set; }
@@ -25,14 +25,14 @@ public record UpdateLineagePayload
     {
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Summary?.Value), () => RuleFor(x => x.Summary!.Value!).Summary());
-      When(x => !string.IsNullOrWhiteSpace(x.HtmlContent?.Value), () => RuleFor(x => x.HtmlContent!.Value!).HtmlContent());
+      When(x => !string.IsNullOrWhiteSpace(x.Content?.Value), () => RuleFor(x => x.Content!.Value!).Content());
 
-      // TODO(fpion): Languages
-      // TODO(fpion): Names
-      // TODO(fpion): Speeds
-      // TODO(fpion): Size
-      // TODO(fpion): Weight
-      // TODO(fpion): Age
+      When(x => x.Languages is not null, () => RuleFor(x => x.Languages!).SetValidator(new LineageLanguagesValidator()));
+      When(x => x.Names is not null, () => RuleFor(x => x.Names!).SetValidator(new LineageNamesValidator()));
+      When(x => x.Speeds is not null, () => RuleFor(x => x.Speeds!).SetValidator(new LineageSpeedsValidator()));
+      When(x => x.Size is not null, () => RuleFor(x => x.Size!).SetValidator(new LineageSizeValidator()));
+      When(x => x.Weight is not null, () => RuleFor(x => x.Weight!).SetValidator(new LineageWeightValidator()));
+      When(x => x.Age is not null, () => RuleFor(x => x.Age!).SetValidator(new LineageAgeValidator()));
     }
   }
 }

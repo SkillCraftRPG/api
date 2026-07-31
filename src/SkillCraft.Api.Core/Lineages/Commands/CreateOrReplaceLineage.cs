@@ -51,11 +51,6 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     {
       parent = await _lineageRepository.LoadAsync(payload.ParentId.Value, cancellationToken)
         ?? throw new ResourceNotFoundException(new ResourceIdentifier(Lineage.ResourceKind, payload.ParentId.Value, worldId), nameof(payload.ParentId));
-
-      if (parent.Parent is not null)
-      {
-        throw new InvalidParentLineageException(parent, nameof(payload.ParentId));
-      }
     }
 
     IReadOnlyCollection<Language> languages = [];
@@ -95,20 +90,23 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
 
     lineage.Name = payload.Name.Trim();
     lineage.Summary = payload.Summary?.CleanTrim();
-    lineage.HtmlContent = payload.HtmlContent?.CleanTrim();
+    lineage.Content = payload.Content?.CleanTrim();
 
-    LineageHelper.SetLanguages(lineage, languages, payload.Languages);
-    LineageHelper.SetNames(lineage, payload.Names);
-    LineageHelper.SetSpeeds(lineage, payload.Speeds);
-    LineageHelper.SetSize(lineage, payload.Size);
-    LineageHelper.SetWeight(lineage, payload.Weight);
-    LineageHelper.SetAge(lineage, payload.Age);
+    lineage.SetLanguages(languages, payload.Languages.Extra, payload.Languages.Content);
+    lineage.SetNames(payload.Names.Family, payload.Names.Female, payload.Names.Male, payload.Names.Unisex, payload.Names.Custom, payload.Names.Content);
+    lineage.SetSpeeds(payload.Speeds);
+    lineage.SetSize(payload.Size);
+    lineage.SetWeight(payload.Weight);
+    lineage.SetAge(payload.Age);
 
-    if (snapshot is not null && snapshot.HasChanges)
+    if (snapshot is not null)
     {
-      lineage.Update(userId);
-      // TODO(fpion): produce record
-      // TODO(fpion): _lineageRepository.Update(lineage, record);
+      LineageUpdated? record = snapshot.Compare(lineage);
+      if (record is not null)
+      {
+        lineage.Update(userId);
+        _lineageRepository.Update(lineage, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);

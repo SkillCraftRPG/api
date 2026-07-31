@@ -8,7 +8,7 @@ public class LineageFeatureModel : IFeature
   public Guid Id { get; set; }
 
   public string Name { get; set; } = string.Empty;
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public Actor CreatedBy { get; set; } = new();
   public DateTime CreatedOn { get; set; }

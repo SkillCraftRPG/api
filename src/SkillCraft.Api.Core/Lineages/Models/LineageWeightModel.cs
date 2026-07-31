@@ -1,6 +1,6 @@
 ﻿namespace SkillCraft.Api.Core.Lineages.Models;
 
-public record LineageWeightModel
+public record LineageWeightModel : ILineageWeight
 {
   public string? Malnutrition { get; set; }
   public string? Skinny { get; set; }
