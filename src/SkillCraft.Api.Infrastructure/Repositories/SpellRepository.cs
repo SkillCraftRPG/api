@@ -67,6 +67,11 @@ internal class SpellRepository : Repository, ISpellRepository
       .ApplyIdFilter(Db.Spells.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Spells.Name, Db.Spells.Summary);
 
+    if (payload.Tiers.Count > 0)
+    {
+      builder.Where(Db.Spells.Tier, Operators.IsIn(payload.Tiers.Select(tier => (object)tier).ToArray()));
+    }
+
     IQueryable<Spell> query = Database.Spells.FromQuery(builder).AsNoTracking();
 
     long total = await query.LongCountAsync(cancellationToken);

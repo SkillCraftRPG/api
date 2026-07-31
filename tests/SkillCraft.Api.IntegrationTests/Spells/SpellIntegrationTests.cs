@@ -59,9 +59,29 @@ public class SpellIntegrationTests : IntegrationTests
     Assert.Equal(spell.CreatedBy, spell.UpdatedBy);
     Assert.Equal(spell.CreatedOn, spell.UpdatedOn);
 
+    Assert.Equal(payload.Tier, spell.Tier);
     Assert.Equal(payload.Name.CleanTrim(), spell.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), spell.Summary);
     Assert.Equal(payload.Content?.CleanTrim(), spell.Content);
+  }
+
+  [Fact(DisplayName = "It should filter search results by tiers.")]
+  public async Task Given_Tiers_When_Search_Then_Results()
+  {
+    Spell protection = SpellBuilder.ProtectionContreLaMagie(Faker, Context.World);
+    _spellRepository.Add(protection);
+    await Context.SaveChangesAsync();
+
+    SearchSpellsPayload payload = new()
+    {
+      Tiers = [protection.Tier]
+    };
+
+    SearchResults<SpellModel> results = await _spellService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    SpellModel spell = Assert.Single(results.Items);
+    Assert.Equal(protection.Id, spell.Id);
   }
 
   [Fact(DisplayName = "It should read a spell by ID.")]
@@ -76,6 +96,7 @@ public class SpellIntegrationTests : IntegrationTests
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
+    payload.Tier = _spell.Tier;
     Guid id = _spell.Id;
 
     CreateOrReplaceSpellResult result = await _spellService.CreateOrReplaceAsync(payload, id);
@@ -90,6 +111,7 @@ public class SpellIntegrationTests : IntegrationTests
     Assert.Equal(Actor, spell.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, spell.UpdatedOn, TimeSpan.FromSeconds(10));
 
+    Assert.Equal(payload.Tier, spell.Tier);
     Assert.Equal(payload.Name.CleanTrim(), spell.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), spell.Summary);
     Assert.Equal(payload.Content?.CleanTrim(), spell.Content);
@@ -146,6 +168,20 @@ public class SpellIntegrationTests : IntegrationTests
     Assert.Equal(miracle.Id, spell.Id);
   }
 
+  [Fact(DisplayName = "It should throw ImmutablePropertyException when the tier is changing.")]
+  public async Task Given_DifferentTier_When_Replace_Then_ImmutablePropertyException()
+  {
+    CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
+
+    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<int>>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.Id));
+    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Spell.ResourceKind, exception.ResourceKind);
+    Assert.Equal(_spell.Id, exception.ResourceId);
+    Assert.Equal(_spell.Tier, exception.ExpectedValue);
+    Assert.Equal(payload.Tier, exception.AttemptedValue);
+    Assert.Equal("Tier", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a spell.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
@@ -165,6 +201,7 @@ public class SpellIntegrationTests : IntegrationTests
     Context.User = new UserBuilder(Faker).Build();
 
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
+    payload.Tier = _spell.Tier;
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.Id));
     Assert.Equal(Context.UserId, exception.UserId);
@@ -214,6 +251,7 @@ public class SpellIntegrationTests : IntegrationTests
 
   private static CreateOrReplaceSpellPayload CreateProtectionContreLaMagiePayload() => new()
   {
+    Tier = 1,
     Name = " Protection contre la magie ",
     Summary = "  Détection, dissipation et interruption des effets magiques adverses.  ",
     Content = "   Pouvoir défensif et utilitaire permettant de détecter la magie, dissiper les effets surnaturels actifs et interrompre les incantations ennemies en réaction.   "

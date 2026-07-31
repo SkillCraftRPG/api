@@ -8,6 +8,7 @@ public interface ISpellBuilder
 {
   ISpellBuilder WithId(Guid id);
   ISpellBuilder WithWorld(World? world);
+  ISpellBuilder WithTier(int tier);
   ISpellBuilder WithName(string name);
   ISpellBuilder WithSummary(string? summary);
   ISpellBuilder WithContent(string? content);
@@ -23,6 +24,7 @@ public class SpellBuilder : ISpellBuilder
   private Guid? _id = null;
   private string _name = "Spell";
   private string? _summary = null;
+  private int _tier = 0;
   private World? _world = null;
 
   public SpellBuilder(Faker? faker = null)
@@ -39,6 +41,12 @@ public class SpellBuilder : ISpellBuilder
   public ISpellBuilder WithWorld(World? world)
   {
     _world = world;
+    return this;
+  }
+
+  public ISpellBuilder WithTier(int tier)
+  {
+    _tier = tier;
     return this;
   }
 
@@ -63,7 +71,7 @@ public class SpellBuilder : ISpellBuilder
   public Spell Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Spell(world, _id)
+    return new Spell(world, _tier, _id)
     {
       Name = _name,
       Summary = _summary,
@@ -73,6 +81,7 @@ public class SpellBuilder : ISpellBuilder
 
   public static Spell ProtectionContreLaMagie(Faker? faker = null, World? world = null) => new SpellBuilder(faker)
     .WithWorld(world)
+    .WithTier(1)
     .WithName("Protection contre la magie")
     .WithSummary("Détection, dissipation et interruption des effets magiques adverses.")
     .WithContent("Pouvoir défensif et utilitaire permettant de détecter la magie, dissiper les effets surnaturels actifs et interrompre les incantations ennemies en réaction.")
@@ -87,6 +96,7 @@ public class SpellBuilder : ISpellBuilder
 
   public static Spell Guerison(Faker? faker = null, World? world = null) => new SpellBuilder(faker)
     .WithWorld(world)
+    .WithTier(1)
     .WithName("Guérison")
     .WithSummary("Guérit une ou plusieurs créatures au toucher ou par un mot à distance.")
     .WithContent("Pouvoir de guérison permettant de restaurer la Vitalité d’une ou plusieurs créatures, au toucher ou à distance. Les morts-vivants et les constructions ne sont pas affectés par ce pouvoir.")

@@ -5,6 +5,8 @@ namespace SkillCraft.Api.Core.Spells.Models;
 
 public record CreateOrReplaceSpellPayload
 {
+  public int Tier { get; set; }
+
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
   public string? Content { get; set; }
@@ -15,6 +17,8 @@ public record CreateOrReplaceSpellPayload
   {
     public Validator()
     {
+      RuleFor(x => x.Tier).TalentTier();
+
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());

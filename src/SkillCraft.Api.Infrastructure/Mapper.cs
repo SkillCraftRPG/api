@@ -231,6 +231,7 @@ internal class Mapper
     SpellModel destination = new()
     {
       Id = source.Id,
+      Tier = source.Tier,
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content

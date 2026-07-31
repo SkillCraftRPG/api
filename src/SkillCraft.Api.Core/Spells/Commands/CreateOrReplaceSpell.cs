@@ -49,12 +49,17 @@ internal class CreateOrReplaceSpellCommandHandler : ICommandHandler<CreateOrRepl
         ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateSpell, world, cancellationToken);
 
-      spell = new Spell(world, command.Id, userId);
+      spell = new Spell(world, payload.Tier, command.Id, userId);
       _spellRepository.Add(spell);
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, spell, cancellationToken);
+
+      if (payload.Tier != spell.Tier)
+      {
+        throw new ImmutablePropertyException<int>(spell, spell.Tier, payload.Tier, nameof(Spell.Tier));
+      }
 
       snapshot = new SpellSnapshot(spell);
     }

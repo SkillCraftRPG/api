@@ -13,6 +13,8 @@ public class Spell : IAuditable, IResource, IVersioned
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
+  public int Tier { get; private set; }
+
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
   public string? Content { get; set; }
@@ -25,11 +27,13 @@ public class Spell : IAuditable, IResource, IVersioned
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public Spell(World world, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
+  public Spell(World world, int tier, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
   {
     World = world;
     WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
+
+    Tier = tier;
 
     Version = 1;
     CreatedBy = UpdatedBy = userId ?? world.OwnerId;

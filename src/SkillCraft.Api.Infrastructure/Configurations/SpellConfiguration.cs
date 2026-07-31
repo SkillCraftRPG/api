@@ -14,6 +14,7 @@ internal class SpellConfiguration : IEntityTypeConfiguration<Spell>
     builder.HasKey(x => x.SpellId);
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
+    builder.HasIndex(x => new { x.WorldId, x.Tier });
     builder.HasIndex(x => new { x.WorldId, x.Name });
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Version });

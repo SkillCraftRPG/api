@@ -14,6 +14,7 @@ public static class Spells
   public static readonly ColumnId Name = new(nameof(Spell.Name), Table);
   public static readonly ColumnId SpellId = new(nameof(Spell.SpellId), Table);
   public static readonly ColumnId Summary = new(nameof(Spell.Summary), Table);
+  public static readonly ColumnId Tier = new(nameof(Spell.Tier), Table);
   public static readonly ColumnId UpdatedBy = new(nameof(Spell.UpdatedBy), Table);
   public static readonly ColumnId UpdatedOn = new(nameof(Spell.UpdatedOn), Table);
   public static readonly ColumnId Version = new(nameof(Spell.Version), Table);
