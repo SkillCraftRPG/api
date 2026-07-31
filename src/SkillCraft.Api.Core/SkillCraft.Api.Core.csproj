@@ -25,6 +25,7 @@
   <ItemGroup>
     <Using Include=" System.Net" />
     <Using Include="System.Globalization" />
+    <Using Include="System.Text" />
     <Using Include="System.Text.Json" />
     <Using Include="System.Text.Json.Serialization" />
     <Using Include="System.Text.RegularExpressions" />

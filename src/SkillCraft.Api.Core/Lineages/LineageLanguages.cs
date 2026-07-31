@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace SkillCraft.Api.Core.Lineages;
+﻿namespace SkillCraft.Api.Core.Lineages;
 
 public class LineageLanguages
 {
@@ -55,10 +53,10 @@ public class LineageLanguages
         value.Append(" - ").Append(id).AppendLine();
       }
     }
-    value.Append(nameof(Extra)).Append(": ").Append(Extra).AppendLine();
+    value.Append(nameof(Extra)).Append(':').Append(Extra).AppendLine();
     if (Content is not null)
     {
-      value.Append(nameof(Content)).Append(": ").Append(Content).AppendLine();
+      value.Append(nameof(Content)).Append(':').Append(Content).AppendLine();
     }
     return value.ToString();
   }
