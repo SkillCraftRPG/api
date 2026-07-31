@@ -7,7 +7,7 @@ public record EducationSnapshot
 {
   public string Name { get; }
   public string? Summary { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public Skill? Skill { get; }
   public int? WealthMultiplier { get; }
@@ -17,11 +17,11 @@ public record EducationSnapshot
   {
     Name = education.Name;
     Summary = education.Summary;
-    HtmlContent = education.HtmlContent;
+    Content = education.Content;
 
     Skill = education.Skill;
     WealthMultiplier = education.WealthMultiplier;
-    Feature = education.FeatureName is null ? null : new Feature(education.FeatureName, education.FeatureHtmlContent);
+    Feature = education.FeatureName is null ? null : new Feature(education.FeatureName, education.FeatureContent);
   }
 
   public EducationUpdated? Compare(Education education)
@@ -41,10 +41,10 @@ public record EducationSnapshot
       record.Summary = new Change<string>(Summary, education.Summary);
     }
 
-    if (HtmlContent != education.HtmlContent)
+    if (Content != education.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, education.HtmlContent);
+      record.Content = new Change<string>(Content, education.Content);
     }
 
     if (Skill != education.Skill)
@@ -59,7 +59,7 @@ public record EducationSnapshot
       record.WealthMultiplier = new Change<int?>(WealthMultiplier, education.WealthMultiplier);
     }
 
-    Feature? feature = education.FeatureName is null ? null : new Feature(education.FeatureName, education.FeatureHtmlContent);
+    Feature? feature = education.FeatureName is null ? null : new Feature(education.FeatureName, education.FeatureContent);
     if (Feature != feature)
     {
       changes++;

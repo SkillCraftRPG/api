@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
@@ -61,7 +61,7 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
 
     script.Name = payload.Name.Trim();
     script.Summary = payload.Summary?.CleanTrim();
-    script.HtmlContent = payload.HtmlContent?.CleanTrim();
+    script.Content = payload.Content?.CleanTrim();
 
     if (snapshot is not null)
     {

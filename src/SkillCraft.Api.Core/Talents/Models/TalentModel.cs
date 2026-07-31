@@ -8,7 +8,7 @@ public class TalentModel : Aggregate
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public bool AllowMultiplePurchases { get; set; }
   public Skill? Skill { get; set; }

@@ -6,7 +6,7 @@ public class TalentCreated : CreateEvent
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public bool AllowMultiplePurchases { get; set; }
   public Skill? Skill { get; set; }
@@ -22,7 +22,7 @@ public class TalentCreated : CreateEvent
 
     Name = talent.Name;
     Summary = talent.Summary;
-    HtmlContent = talent.HtmlContent;
+    Content = talent.Content;
 
     AllowMultiplePurchases = talent.AllowMultiplePurchases;
     Skill = talent.Skill;

@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Features;
@@ -12,7 +12,7 @@ public interface IEducationBuilder
   IEducationBuilder WithWorld(World? world);
   IEducationBuilder WithName(string name);
   IEducationBuilder WithSummary(string? summary);
-  IEducationBuilder WithHtmlContent(string? htmlContent);
+  IEducationBuilder WithContent(string? content);
   IEducationBuilder WithSkill(Skill? skill);
   IEducationBuilder WithWealthMultiplier(int? wealthMultiplier);
   IEducationBuilder WithFeature(Feature? feature);
@@ -25,7 +25,7 @@ public class EducationBuilder : IEducationBuilder
   private readonly Faker _faker;
 
   private Feature? _feature = null;
-  private string? _htmlContent = null;
+  private string? _content = null;
   private Guid? _id = null;
   private string _name = "Education";
   private Skill? _skill = null;
@@ -62,9 +62,9 @@ public class EducationBuilder : IEducationBuilder
     return this;
   }
 
-  public IEducationBuilder WithHtmlContent(string? htmlContent)
+  public IEducationBuilder WithContent(string? content)
   {
-    _htmlContent = htmlContent;
+    _content = content;
     return this;
   }
 
@@ -93,7 +93,7 @@ public class EducationBuilder : IEducationBuilder
     {
       Name = _name,
       Summary = _summary,
-      HtmlContent = _htmlContent,
+      Content = _content,
       Skill = _skill,
       WealthMultiplier = _wealthMultiplier
     };
@@ -105,7 +105,7 @@ public class EducationBuilder : IEducationBuilder
     .WithWorld(world)
     .WithName("Judicieux")
     .WithSummary("Esprit posé et analytique, prêt à guider par des décisions avisées.")
-    .WithHtmlContent("Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.")
+    .WithContent("Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.")
     .WithSkill(Skill.Orientation)
     .WithWealthMultiplier(10)
     .WithFeature(new Feature("Conseiller avisé", "La nature calme et analytique du personnage lui permet d’être reconnu rapidement pour son jugement sûr.\n\nIl peut ajouter un bonus égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1) à ses [tests](/regles/competences/tests) d’[Intuition](/regles/competences/intuition) ou d’[Investigation](/regles/competences/investigation) effectués afin de comprendre un plan, évaluer un risque ou choisir la meilleure approche de manière objective.\n\nÉgalement, il ajoute également ce bonus à ses tests de [Diplomatie](/regles/competences/diplomatie) effectués afin de convaincre un individue rationnel."))

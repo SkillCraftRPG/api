@@ -6,13 +6,13 @@ public record ScriptSnapshot
 {
   public string Name { get; }
   public string? Summary { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public ScriptSnapshot(Script script)
   {
     Name = script.Name;
     Summary = script.Summary;
-    HtmlContent = script.HtmlContent;
+    Content = script.Content;
   }
 
   public ScriptUpdated? Compare(Script script)
@@ -32,10 +32,10 @@ public record ScriptSnapshot
       record.Summary = new Change<string>(Summary, script.Summary);
     }
 
-    if (HtmlContent != script.HtmlContent)
+    if (Content != script.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, script.HtmlContent);
+      record.Content = new Change<string>(Content, script.Content);
     }
 
     return changes < 1 ? null : record;

@@ -1,21 +1,21 @@
-﻿namespace SkillCraft.Api.Core.Features;
+namespace SkillCraft.Api.Core.Features;
 
 public record FeatureModel : IFeature
 {
   public string Name { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public FeatureModel() : this(string.Empty)
   {
   }
 
-  public FeatureModel(string name, string? htmlContent = null)
+  public FeatureModel(string name, string? content = null)
   {
     Name = name;
-    HtmlContent = htmlContent;
+    Content = content;
   }
 
-  public FeatureModel(IFeature feature) : this(feature.Name, feature.HtmlContent)
+  public FeatureModel(IFeature feature) : this(feature.Name, feature.Content)
   {
   }
 }

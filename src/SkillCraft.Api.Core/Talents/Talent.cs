@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents;
@@ -17,7 +17,7 @@ public class Talent : IAuditable, IResource, IVersioned
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public bool AllowMultiplePurchases { get; private set; }
   public Skill? Skill { get; private set; }

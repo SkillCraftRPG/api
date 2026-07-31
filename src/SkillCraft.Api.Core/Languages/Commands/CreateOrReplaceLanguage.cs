@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
@@ -72,7 +72,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
 
     language.Name = payload.Name.Trim();
     language.Summary = payload.Summary?.CleanTrim();
-    language.HtmlContent = payload.HtmlContent?.CleanTrim();
+    language.Content = payload.Content?.CleanTrim();
 
     language.SetScript(script);
     language.TypicalSpeakers = payload.TypicalSpeakers?.CleanTrim();

@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
@@ -43,9 +43,9 @@ internal class UpdateScriptCommandHandler : ICommandHandler<UpdateScriptCommand,
     {
       script.Summary = payload.Summary.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      script.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      script.Content = payload.Content.Value?.CleanTrim();
     }
 
     ScriptUpdated? record = snapshot.Compare(script);

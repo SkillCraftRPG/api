@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds.Events;
@@ -43,9 +43,9 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     {
       world.Name = payload.Name.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      world.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      world.Content = payload.Content.Value?.CleanTrim();
     }
 
     WorldUpdated? record = snapshot.Compare(world);

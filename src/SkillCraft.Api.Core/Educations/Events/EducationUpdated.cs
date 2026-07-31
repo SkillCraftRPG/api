@@ -6,7 +6,7 @@ public class EducationUpdated : UpdateEvent
 {
   public Change<string>? Name { get; set; }
   public Change<string>? Summary { get; set; }
-  public Change<string>? HtmlContent { get; set; }
+  public Change<string>? Content { get; set; }
 
   public Change<Skill?>? Skill { get; set; }
   public Change<int?>? WealthMultiplier { get; set; }

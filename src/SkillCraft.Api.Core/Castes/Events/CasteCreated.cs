@@ -1,4 +1,4 @@
-﻿using SkillCraft.Api.Core.Features;
+using SkillCraft.Api.Core.Features;
 
 namespace SkillCraft.Api.Core.Castes.Events;
 
@@ -6,7 +6,7 @@ public class CasteCreated : CreateEvent
 {
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public Skill? Skill { get; set; }
   public string? WealthRoll { get; set; }
@@ -20,13 +20,13 @@ public class CasteCreated : CreateEvent
   {
     Name = caste.Name;
     Summary = caste.Summary;
-    HtmlContent = caste.HtmlContent;
+    Content = caste.Content;
 
     Skill = caste.Skill;
     WealthRoll = caste.WealthRoll;
     if (caste.FeatureName is not null)
     {
-      Feature = new Feature(caste.FeatureName, caste.FeatureHtmlContent);
+      Feature = new Feature(caste.FeatureName, caste.FeatureContent);
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -42,7 +42,7 @@ public class CustomizationIntegrationTests : IntegrationTests
       Kind = CustomizationKind.Gift,
       Name = " Baraqué ",
       Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      HtmlContent = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
+      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
     };
     Guid? id = withId ? Guid.NewGuid() : null;
 
@@ -68,7 +68,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     Assert.Equal(payload.Kind, customization.Kind);
     Assert.Equal(payload.Name.CleanTrim(), customization.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), customization.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), customization.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), customization.Content);
   }
 
   [Fact(DisplayName = "It should read a customization by ID.")]
@@ -87,7 +87,7 @@ public class CustomizationIntegrationTests : IntegrationTests
       Kind = CustomizationKind.Gift,
       Name = " Baraqué ",
       Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      HtmlContent = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
+      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
     };
     Guid id = _customization.Id;
 
@@ -106,7 +106,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     Assert.Equal(_customization.Kind, customization.Kind);
     Assert.Equal(payload.Name.CleanTrim(), customization.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), customization.Summary);
-    Assert.Equal(payload.HtmlContent?.CleanTrim(), customization.HtmlContent);
+    Assert.Equal(payload.Content?.CleanTrim(), customization.Content);
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
@@ -193,7 +193,7 @@ public class CustomizationIntegrationTests : IntegrationTests
       Kind = CustomizationKind.Gift,
       Name = " Baraqué ",
       Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      HtmlContent = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
+      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload));
@@ -212,7 +212,7 @@ public class CustomizationIntegrationTests : IntegrationTests
       Kind = CustomizationKind.Gift,
       Name = " Baraqué ",
       Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      HtmlContent = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
+      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.Id));
@@ -242,7 +242,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     {
       Name = " Baraqué ",
       Summary = new Optional<string>("  Double portée, avantage et dégâts contre objets et structures.  "),
-      HtmlContent = new Optional<string>("   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   ")
+      Content = new Optional<string>("   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   ")
     };
 
     CustomizationModel? customization = await _customizationService.UpdateAsync(id, payload);
@@ -257,6 +257,6 @@ public class CustomizationIntegrationTests : IntegrationTests
 
     Assert.Equal(payload.Name.CleanTrim(), customization.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), customization.Summary);
-    Assert.Equal(payload.HtmlContent.Value?.CleanTrim(), customization.HtmlContent);
+    Assert.Equal(payload.Content.Value?.CleanTrim(), customization.Content);
   }
 }

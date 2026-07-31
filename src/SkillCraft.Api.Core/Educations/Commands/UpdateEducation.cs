@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Educations.Models;
@@ -44,9 +44,9 @@ internal class UpdateEducationCommandHandler : ICommandHandler<UpdateEducationCo
     {
       education.Summary = payload.Summary.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      education.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      education.Content = payload.Content.Value?.CleanTrim();
     }
     if (payload.Skill is not null)
     {

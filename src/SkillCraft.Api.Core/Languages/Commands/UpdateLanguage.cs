@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
@@ -50,9 +50,9 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     {
       language.Summary = payload.Summary.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      language.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      language.Content = payload.Content.Value?.CleanTrim();
     }
 
     if (payload.ScriptId is not null)

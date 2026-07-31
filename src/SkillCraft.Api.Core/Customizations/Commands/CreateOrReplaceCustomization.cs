@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Customizations.Models;
@@ -66,7 +66,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
 
     customization.Name = payload.Name.Trim();
     customization.Summary = payload.Summary?.CleanTrim();
-    customization.HtmlContent = payload.HtmlContent?.CleanTrim();
+    customization.Content = payload.Content?.CleanTrim();
 
     if (snapshot is not null)
     {

@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Talents.Events;
@@ -73,7 +73,7 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
 
     talent.Name = payload.Name.Trim();
     talent.Summary = payload.Summary?.CleanTrim();
-    talent.HtmlContent = payload.HtmlContent?.CleanTrim();
+    talent.Content = payload.Content?.CleanTrim();
 
     talent.SetAllowMultiplePurchases(payload.AllowMultiplePurchases);
     talent.SetSkill(payload.Skill);

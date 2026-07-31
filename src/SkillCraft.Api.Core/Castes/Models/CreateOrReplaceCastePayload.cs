@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Validation;
 
@@ -8,7 +8,7 @@ public record CreateOrReplaceCastePayload
 {
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public Skill? Skill { get; set; }
   public string? WealthRoll { get; set; }
@@ -22,7 +22,7 @@ public record CreateOrReplaceCastePayload
     {
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
-      When(x => !string.IsNullOrWhiteSpace(x.HtmlContent), () => RuleFor(x => x.HtmlContent!).HtmlContent());
+      When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
       When(x => x.Skill.HasValue, () => RuleFor(x => x.Skill!.Value).IsInEnum());
       When(x => !string.IsNullOrWhiteSpace(x.WealthRoll), () => RuleFor(x => x.WealthRoll!).Roll());

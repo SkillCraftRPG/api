@@ -6,7 +6,7 @@ public record TalentSnapshot
 {
   public string Name { get; }
   public string? Summary { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public bool AllowMultiplePurchases { get; }
   public Skill? Skill { get; }
@@ -16,7 +16,7 @@ public record TalentSnapshot
   {
     Name = talent.Name;
     Summary = talent.Summary;
-    HtmlContent = talent.HtmlContent;
+    Content = talent.Content;
 
     AllowMultiplePurchases = talent.AllowMultiplePurchases;
     Skill = talent.Skill;
@@ -40,10 +40,10 @@ public record TalentSnapshot
       record.Summary = new Change<string>(Summary, talent.Summary);
     }
 
-    if (HtmlContent != talent.HtmlContent)
+    if (Content != talent.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, talent.HtmlContent);
+      record.Content = new Change<string>(Content, talent.Content);
     }
 
     if (AllowMultiplePurchases != talent.AllowMultiplePurchases)

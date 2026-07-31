@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Items.Models;
@@ -20,7 +20,7 @@ public record UpdateItemPayload
     {
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Summary?.Value), () => RuleFor(x => x.Summary!.Value!).Summary());
-      When(x => !string.IsNullOrWhiteSpace(x.Content?.Value), () => RuleFor(x => x.Content!.Value!).HtmlContent());
+      When(x => !string.IsNullOrWhiteSpace(x.Content?.Value), () => RuleFor(x => x.Content!.Value!).Content());
 
       When(x => x.Price?.Value is not null, () => RuleFor(x => x.Price!.Value!.Value).GreaterThan(0));
       When(x => x.Weight?.Value is not null, () => RuleFor(x => x.Weight!.Value!.Value).GreaterThan(0));
