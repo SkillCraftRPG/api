@@ -4,9 +4,11 @@ using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
+using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
+using SkillCraft.Api.Infrastructure.Configurations;
 
 namespace SkillCraft.Api.Infrastructure;
 
@@ -22,6 +24,9 @@ public class GameContext : DbContext
   internal DbSet<HistoryRecord> History => Set<HistoryRecord>();
   internal DbSet<Item> Items => Set<Item>();
   internal DbSet<Language> Languages => Set<Language>();
+  internal DbSet<Lineage> Lineages => Set<Lineage>();
+  internal DbSet<LineageFeature> LineageFeatures => Set<LineageFeature>();
+  internal DbSet<LineageLanguage> LineageLanguages => Set<LineageLanguage>();
   internal DbSet<Script> Scripts => Set<Script>();
   internal DbSet<Talent> Talents => Set<Talent>();
   internal DbSet<World> Worlds => Set<World>();

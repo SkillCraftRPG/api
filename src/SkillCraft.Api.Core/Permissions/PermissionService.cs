@@ -75,6 +75,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateEducation:
       case Actions.CreateItem:
       case Actions.CreateLanguage:
+      case Actions.CreateLineage:
       case Actions.CreateScript:
       case Actions.CreateTalent:
       case Actions.Update:

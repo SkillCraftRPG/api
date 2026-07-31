@@ -99,4 +99,13 @@ public class LanguageBuilder : ILanguageBuilder
     .WithScript(script ?? ScriptBuilder.Renon(faker, world))
     .WithTypicalSpeakers("Humains")
     .Build();
+
+  public static Language Celfique(Faker? faker = null, World? world = null, Script? script = null) => new LanguageBuilder(faker)
+    .WithWorld(world)
+    .WithName("Celfique")
+    .WithSummary("Langue elfique majeure, traditions, dialectes et identité culturelle.")
+    .WithContent("Le Celfique est la langue commune de la majorité des [peuples elfiques](/regles/especes/elfe) d’Ouespéro. Elle sert à la fois de langue du quotidien, de tradition et d’identité, avec une sonorité réputée fluide et un vocabulaire très précis pour tout ce qui touche aux forêts, aux reliefs et aux cycles naturels. Hors des communautés elfiques, elle est surtout perçue comme une langue de connivence, car les elfes l’emploient volontiers entre eux pour converser sans être compris, ce qui agace fréquemment leurs voisins.\n\nLe Celfique et le [Sylvestre](/regles/langues/sylvestre) appartiennent à la famille glaïdique, dont le nom signifie littéralement _« les parlers des bois »_. Ces deux langues descendent d’un ancêtre commun ancien, mais ont suivi des évolutions distinctes. Bien qu’elles partagent encore certaines structures et racines, elles sont aujourd’hui suffisamment divergentes pour ne plus être mutuellement intelligibles.")
+    .WithScript(script)
+    .WithTypicalSpeakers("Hauts-Elfes, Elfes des mers, Elfes cramoisis et Elfes sylvains")
+    .Build();
 }

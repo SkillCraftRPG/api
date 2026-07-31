@@ -7,6 +7,7 @@ using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
+using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
@@ -24,6 +25,7 @@ public static class DependencyInjectionExtensions
     IdentityService.Register(services);
     ItemService.Register(services);
     LanguageService.Register(services);
+    LineageService.Register(services);
     PermissionService.Register(services);
     ScriptService.Register(services);
     TalentService.Register(services);

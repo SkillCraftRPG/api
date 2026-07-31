@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
@@ -13,6 +13,8 @@ using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Lineages;
+using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Talents;
@@ -140,6 +142,72 @@ internal class Mapper
 
     return destination;
   }
+
+  public LineageModel ToLineage(Lineage source)
+  {
+    LineageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    foreach (LineageFeature feature in source.Features)
+    {
+      destination.Features.Add(ToLineageFeature(feature));
+    }
+
+    foreach (Language language in source.Languages)
+    {
+      destination.Languages.Granted.Add(ToLanguage(language));
+    }
+    destination.Languages.Extra = source.ExtraLanguages;
+    destination.Languages.Content = source.LanguagesContent;
+
+    destination.Names.Family.AddRange(LineageNames.Decode(source.FamilyNames));
+    destination.Names.Female.AddRange(LineageNames.Decode(source.FemaleNames));
+    destination.Names.Male.AddRange(LineageNames.Decode(source.MaleNames));
+    destination.Names.Unisex.AddRange(LineageNames.Decode(source.UnisexNames));
+    destination.Names.Custom.AddRange(LineageNames.DecodeCustom(source.CustomNames).Select(category => new NameCategory(category.Key, category.Value)));
+    destination.Names.Content = source.NamesContent;
+
+    destination.Speeds.Walk = source.Walk;
+    destination.Speeds.Climb = source.Climb;
+    destination.Speeds.Swim = source.Swim;
+    destination.Speeds.Fly = source.Fly;
+    destination.Speeds.Hover = source.Hover;
+    destination.Speeds.Burrow = source.Burrow;
+
+    destination.Size.Category = source.SizeCategory;
+    destination.Size.Height = source.HeightRoll;
+
+    destination.Weight.Malnutrition = source.Malnutrition;
+    destination.Weight.Skinny = source.Skinny;
+    destination.Weight.Normal = source.NormalWeight;
+    destination.Weight.Overweight = source.Overweight;
+    destination.Weight.Obese = source.Obese;
+
+    destination.Age.Teenager = source.Teenager;
+    destination.Age.Adult = source.Adult;
+    destination.Age.Mature = source.Mature;
+    destination.Age.Venerable = source.Venerable;
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LineageFeatureModel ToLineageFeature(LineageFeature feature) => new()
+  {
+    Id = feature.Id,
+    Name = feature.Name,
+    Content = feature.Content,
+    CreatedBy = FindActor(feature.CreatedBy),
+    CreatedOn = feature.CreatedOn.AsUniversalTime(),
+    UpdatedBy = FindActor(feature.UpdatedBy),
+    UpdatedOn = feature.UpdatedOn.AsUniversalTime()
+  };
 
   public ScriptModel ToScript(Script source)
   {
