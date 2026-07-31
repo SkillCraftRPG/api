@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
 using SkillCraft.Api.Core.Scripts.Models;
@@ -32,14 +33,29 @@ internal class UpdateScriptCommandHandler : ICommandHandler<UpdateScriptCommand,
     }
     await _permissionService.CheckAsync(Actions.Update, script, cancellationToken);
 
-    ScriptUpdated record = script.Update(
-      string.IsNullOrWhiteSpace(payload.Name) ? script.Name : payload.Name,
-      payload.Summary is null ? script.Summary : payload.Summary.Value,
-      payload.HtmlContent is null ? script.HtmlContent : payload.HtmlContent.Value,
-      _context.UserId);
-    _scriptRepository.Update(script, record);
+    ScriptSnapshot snapshot = new(script);
 
-    await _context.SaveChangesAsync(cancellationToken);
+    if (!string.IsNullOrWhiteSpace(payload.Name))
+    {
+      script.Name = payload.Name.Trim();
+    }
+    if (payload.Summary is not null)
+    {
+      script.Summary = payload.Summary.Value?.CleanTrim();
+    }
+    if (payload.HtmlContent is not null)
+    {
+      script.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+    }
+
+    ScriptUpdated? record = snapshot.Compare(script);
+    if (record is not null)
+    {
+      script.Update(_context.UserId);
+      _scriptRepository.Update(script, record);
+
+      await _context.SaveChangesAsync(cancellationToken);
+    }
 
     return await _scriptRepository.ReadAsync(script, cancellationToken);
   }

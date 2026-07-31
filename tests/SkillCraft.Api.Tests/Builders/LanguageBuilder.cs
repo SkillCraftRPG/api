@@ -80,7 +80,15 @@ public class LanguageBuilder : ILanguageBuilder
   public Language Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Language(world, _name, _id, _summary, _htmlContent, _script, _typicalSpeakers);
+    Language language = new(world, _id)
+    {
+      Name = _name,
+      Summary = _summary,
+      HtmlContent = _htmlContent,
+      TypicalSpeakers = _typicalSpeakers
+    };
+    language.SetScript(_script);
+    return language;
   }
 
   public static Language Common(Faker? faker = null, World? world = null, Script? script = null) => new LanguageBuilder(faker)

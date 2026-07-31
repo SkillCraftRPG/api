@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
 using SkillCraft.Api.Core.Scripts.Models;
@@ -38,28 +39,43 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
       script = await _scriptRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    bool created = false;
+    Guid userId = _context.UserId;
+    Guid worldId = _context.WorldId;
+
+    ScriptSnapshot? snapshot = null;
     if (script is null)
     {
-      World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
+        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateScript, world, cancellationToken);
 
-      script = new Script(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, _context.UserId);
+      script = new Script(world, command.Id, userId);
       _scriptRepository.Add(script);
-      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, script, cancellationToken);
 
-      ScriptUpdated record = script.Update(payload.Name, payload.Summary, payload.HtmlContent, _context.UserId);
-      _scriptRepository.Update(script, record);
+      snapshot = new ScriptSnapshot(script);
+    }
+
+    script.Name = payload.Name.Trim();
+    script.Summary = payload.Summary?.CleanTrim();
+    script.HtmlContent = payload.HtmlContent?.CleanTrim();
+
+    if (snapshot is not null)
+    {
+      ScriptUpdated? record = snapshot.Compare(script);
+      if (record is not null)
+      {
+        script.Update(userId);
+        _scriptRepository.Update(script, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);
 
     ScriptModel model = await _scriptRepository.ReadAsync(script, cancellationToken);
-    return new CreateOrReplaceScriptResult(model, created);
+    return new CreateOrReplaceScriptResult(model, Created: snapshot is null);
   }
 }

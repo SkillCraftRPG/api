@@ -1,5 +1,4 @@
 ﻿using Logitar;
-using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Customizations;
@@ -16,9 +15,9 @@ public class Customization : IAuditable, IResource, IVersioned
 
   public CustomizationKind Kind { get; private set; }
 
-  public string Name { get; private set; } = string.Empty;
-  public string? Summary { get; private set; }
-  public string? HtmlContent { get; private set; }
+  public string Name { get; set; } = string.Empty;
+  public string? Summary { get; set; }
+  public string? HtmlContent { get; set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -28,29 +27,17 @@ public class Customization : IAuditable, IResource, IVersioned
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public Customization(
-    World world,
-    CustomizationKind kind,
-    string name,
-    Guid? id = null,
-    string? summary = null,
-    string? htmlContent = null,
-    Guid? userId = null,
-    DateTime? createdOn = null)
+  public Customization(World world, CustomizationKind kind, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
   {
-    createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-    userId ??= world.OwnerId;
-
     World = world;
     WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
 
     Kind = kind;
 
-    CreatedBy = userId.Value;
-    CreatedOn = createdOn.Value;
-
-    Update(name, summary, htmlContent, userId.Value, createdOn);
+    Version = 1;
+    CreatedBy = UpdatedBy = userId ?? world.OwnerId;
+    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
 
   private Customization()
@@ -59,36 +46,11 @@ public class Customization : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
 
-  public CustomizationUpdated Update(string name, string? summary, string? htmlContent, Guid userId, DateTime? updatedOn = null)
+  public void Update(Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
-
-    CustomizationUpdated record = new(this);
-
-    name = name.CleanTrim() ?? string.Empty;
-    if (!Equals(Name, name))
-    {
-      record.Name = new Change<string>(Name, name);
-      Name = name;
-    }
-
-    summary = summary?.CleanTrim();
-    if (!Equals(Summary, summary))
-    {
-      record.Summary = new Change<string>(Summary, summary);
-      Summary = summary;
-    }
-
-    htmlContent = htmlContent?.CleanTrim();
-    if (!Equals(HtmlContent, htmlContent))
-    {
-      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
-      HtmlContent = htmlContent;
-    }
-
-    return record;
   }
 
   public override bool Equals(object? obj) => obj is Customization customization && customization.CustomizationId == CustomizationId;

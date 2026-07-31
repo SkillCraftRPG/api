@@ -41,28 +41,19 @@ public class InvalidTalentSkillException : DomainException
     }
   }
 
-  public InvalidTalentSkillException(Talent talent)
-    : base(BuildMessage(talent))
+  public InvalidTalentSkillException(Talent talent, Skill attemptedSkill)
+    : base(BuildMessage(talent, attemptedSkill))
   {
-    if (!talent.AllowMultiplePurchases)
-    {
-      throw new ArgumentException("The talent must allow multiple purchases.", nameof(talent));
-    }
-    if (!talent.Skill.HasValue)
-    {
-      throw new ArgumentException("The skill is required.", nameof(talent));
-    }
-
     WorldId = talent.WorldId;
     TalentId = talent.Id;
-    AttemptedSkill = talent.Skill.Value;
+    AttemptedSkill = attemptedSkill;
     PropertyName = nameof(Talent.Skill);
   }
 
-  private static string BuildMessage(Talent talent) => new ErrorMessageBuilder(ErrorMessage)
+  private static string BuildMessage(Talent talent, Skill attemptedSkill) => new ErrorMessageBuilder(ErrorMessage)
     .AddData(nameof(WorldId), talent.WorldId)
     .AddData(nameof(TalentId), talent.Id)
-    .AddData(nameof(AttemptedSkill), talent.Skill)
+    .AddData(nameof(AttemptedSkill), attemptedSkill)
     .AddData(nameof(PropertyName), nameof(Talent.Skill))
     .Build();
 }

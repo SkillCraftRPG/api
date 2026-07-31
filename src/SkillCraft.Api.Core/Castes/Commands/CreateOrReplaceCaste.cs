@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Features;
@@ -39,30 +40,47 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
       caste = await _casteRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Feature? feature = payload.Feature is null ? null : new(payload.Feature);
+    Guid userId = _context.UserId;
+    Guid worldId = _context.WorldId;
 
-    bool created = false;
+    CasteSnapshot? snapshot = null;
     if (caste is null)
     {
-      World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
+        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateCaste, world, cancellationToken);
 
-      caste = new Caste(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthRoll, feature, _context.UserId);
+      caste = new Caste(world, command.Id, userId);
       _casteRepository.Add(caste);
-      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, caste, cancellationToken);
 
-      CasteUpdated record = caste.Update(payload.Name, payload.Summary, payload.HtmlContent, payload.Skill, payload.WealthRoll, feature, _context.UserId);
-      _casteRepository.Update(caste, record);
+      snapshot = new CasteSnapshot(caste);
+    }
+
+    caste.Name = payload.Name.Trim();
+    caste.Summary = payload.Summary?.CleanTrim();
+    caste.HtmlContent = payload.HtmlContent?.CleanTrim();
+
+    caste.Skill = payload.Skill;
+    caste.WealthRoll = payload.WealthRoll?.CleanTrim()?.ToLowerInvariant();
+    caste.SetFeature(payload.Feature is null ? null : new Feature(payload.Feature));
+
+    if (snapshot is not null)
+    {
+      CasteUpdated? record = snapshot.Compare(caste);
+      if (record is not null)
+      {
+        caste.Update(userId);
+        _casteRepository.Update(caste, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);
 
     CasteModel model = await _casteRepository.ReadAsync(caste, cancellationToken);
-    return new CreateOrReplaceCasteResult(model, created);
+    return new CreateOrReplaceCasteResult(model, Created: snapshot is null);
   }
 }

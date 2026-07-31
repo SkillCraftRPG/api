@@ -1,5 +1,4 @@
 ﻿using Logitar;
-using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Worlds;
 
@@ -15,12 +14,12 @@ public class Caste : IAuditable, IResource, IVersioned
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
-  public string Name { get; private set; } = string.Empty;
-  public string? Summary { get; private set; }
-  public string? HtmlContent { get; private set; }
+  public string Name { get; set; } = string.Empty;
+  public string? Summary { get; set; }
+  public string? HtmlContent { get; set; }
 
-  public Skill? Skill { get; private set; }
-  public string? WealthRoll { get; private set; }
+  public Skill? Skill { get; set; }
+  public string? WealthRoll { get; set; }
 
   public string? FeatureName { get; private set; }
   public string? FeatureHtmlContent { get; private set; }
@@ -33,29 +32,15 @@ public class Caste : IAuditable, IResource, IVersioned
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public Caste(
-    World world,
-    string name,
-    Guid? id = null,
-    string? summary = null,
-    string? htmlContent = null,
-    Skill? skill = null,
-    string? wealthRoll = null,
-    Feature? feature = null,
-    Guid? userId = null,
-    DateTime? createdOn = null)
+  public Caste(World world, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
   {
-    createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-    userId ??= world.OwnerId;
-
     World = world;
     WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
 
-    CreatedBy = userId.Value;
-    CreatedOn = createdOn.Value;
-
-    Update(name, summary, htmlContent, skill, wealthRoll, feature, userId.Value, createdOn);
+    Version = 1;
+    CreatedBy = UpdatedBy = userId ?? world.OwnerId;
+    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
 
   private Caste()
@@ -64,65 +49,17 @@ public class Caste : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
 
-  public CasteUpdated Update(
-    string name,
-    string? summary,
-    string? htmlContent,
-    Skill? skill,
-    string? wealthRoll,
-    Feature? feature,
-    Guid userId,
-    DateTime? updatedOn = null)
+  public void SetFeature(Feature? feature)
+  {
+    FeatureName = feature?.Name;
+    FeatureHtmlContent = feature?.HtmlContent;
+  }
+
+  public void Update(Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
-
-    CasteUpdated record = new(this);
-
-    name = name.CleanTrim() ?? string.Empty;
-    if (!Equals(Name, name))
-    {
-      record.Name = new Change<string>(Name, name);
-      Name = name;
-    }
-
-    summary = summary?.CleanTrim();
-    if (!Equals(Summary, summary))
-    {
-      record.Summary = new Change<string>(Summary, summary);
-      Summary = summary;
-    }
-
-    htmlContent = htmlContent?.CleanTrim();
-    if (!Equals(HtmlContent, htmlContent))
-    {
-      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
-      HtmlContent = htmlContent;
-    }
-
-    if (!Equals(Skill, skill))
-    {
-      record.Skill = new Change<Skill?>(Skill, skill);
-      Skill = skill;
-    }
-
-    wealthRoll = wealthRoll?.CleanTrim()?.ToLowerInvariant();
-    if (!Equals(WealthRoll, wealthRoll))
-    {
-      record.WealthRoll = new Change<string>(WealthRoll, wealthRoll);
-      WealthRoll = wealthRoll;
-    }
-
-    Feature? currentFeature = FeatureName is null ? null : new(FeatureName, FeatureHtmlContent);
-    if (!Equals(currentFeature, feature))
-    {
-      record.Feature = new Change<Feature>(currentFeature, feature);
-      FeatureName = feature?.Name;
-      FeatureHtmlContent = feature?.HtmlContent;
-    }
-
-    return record;
   }
 
   public override bool Equals(object? obj) => obj is Caste caste && caste.CasteId == CasteId;

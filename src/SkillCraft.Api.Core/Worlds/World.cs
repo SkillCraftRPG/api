@@ -6,7 +6,6 @@ using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
-using SkillCraft.Api.Core.Worlds.Events;
 
 namespace SkillCraft.Api.Core.Worlds;
 
@@ -19,9 +18,9 @@ public class World : IAuditable, IResource, IVersioned
 
   public Guid OwnerId { get; private set; }
 
-  public string Key { get; private set; } = string.Empty;
-  public string? Name { get; private set; }
-  public string? HtmlContent { get; private set; }
+  public string Key { get; set; } = string.Empty;
+  public string? Name { get; set; }
+  public string? HtmlContent { get; set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -39,18 +38,15 @@ public class World : IAuditable, IResource, IVersioned
   public List<Script> Scripts { get; private set; } = [];
   public List<Talent> Talents { get; private set; } = [];
 
-  public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? htmlContent = null, DateTime? createdOn = null)
+  public World(Guid ownerId, Guid? id = null, DateTime? createdOn = null)
   {
-    createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-
     Id = id ?? Guid.NewGuid();
 
     OwnerId = ownerId;
 
-    CreatedBy = ownerId;
-    CreatedOn = createdOn.Value;
-
-    Update(key, name, htmlContent, ownerId, createdOn);
+    Version = 1;
+    CreatedBy = UpdatedBy = ownerId;
+    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
 
   private World()
@@ -59,36 +55,11 @@ public class World : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [OwnerId, CreatedBy, UpdatedBy];
 
-  public WorldUpdated Update(string key, string? name, string? htmlContent, Guid userId, DateTime? updatedOn = null)
+  public void Update(Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
-
-    WorldUpdated record = new(this);
-
-    key = SlugHelper.Format(key);
-    if (!Equals(Key, key))
-    {
-      record.Key = new Change<string>(Key, key);
-      Key = key;
-    }
-
-    name = name?.CleanTrim();
-    if (!Equals(Name, name))
-    {
-      record.Name = new Change<string>(Name, name);
-      Name = name;
-    }
-
-    htmlContent = htmlContent?.CleanTrim();
-    if (!Equals(HtmlContent, htmlContent))
-    {
-      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
-      HtmlContent = htmlContent;
-    }
-
-    return record;
   }
 
   public override bool Equals(object? obj) => obj is World world && world.WorldId == WorldId;

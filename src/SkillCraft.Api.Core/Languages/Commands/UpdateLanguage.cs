@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -39,23 +40,44 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     }
     await _permissionService.CheckAsync(Actions.Update, language, cancellationToken);
 
-    Script? script = null;
-    if (payload.ScriptId is not null && payload.ScriptId.Value.HasValue)
+    LanguageSnapshot snapshot = new(language);
+
+    if (!string.IsNullOrWhiteSpace(payload.Name))
     {
-      script = await _scriptRepository.LoadAsync(payload.ScriptId.Value.Value, cancellationToken)
-        ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value.Value, _context.WorldId), nameof(Language.ScriptId));
+      language.Name = payload.Name.Trim();
+    }
+    if (payload.Summary is not null)
+    {
+      language.Summary = payload.Summary.Value?.CleanTrim();
+    }
+    if (payload.HtmlContent is not null)
+    {
+      language.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
     }
 
-    LanguageUpdated record = language.Update(
-      string.IsNullOrWhiteSpace(payload.Name) ? language.Name : payload.Name,
-      payload.Summary is null ? language.Summary : payload.Summary.Value,
-      payload.HtmlContent is null ? language.HtmlContent : payload.HtmlContent.Value,
-      payload.ScriptId is null ? language.Script : script,
-      payload.TypicalSpeakers is null ? language.TypicalSpeakers : payload.TypicalSpeakers.Value,
-      _context.UserId);
-    _languageRepository.Update(language, record);
+    if (payload.ScriptId is not null)
+    {
+      Script? script = null;
+      if (payload.ScriptId.Value.HasValue)
+      {
+        script = await _scriptRepository.LoadAsync(payload.ScriptId.Value.Value, cancellationToken)
+          ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value.Value, _context.WorldId), nameof(Language.ScriptId));
+      }
+      language.SetScript(script);
+    }
+    if (payload.TypicalSpeakers is not null)
+    {
+      language.TypicalSpeakers = payload.TypicalSpeakers.Value?.CleanTrim();
+    }
 
-    await _context.SaveChangesAsync(cancellationToken);
+    LanguageUpdated? record = snapshot.Compare(language);
+    if (record is not null)
+    {
+      language.Update(_context.UserId);
+      _languageRepository.Update(language, record);
+
+      await _context.SaveChangesAsync(cancellationToken);
+    }
 
     return await _languageRepository.ReadAsync(language, cancellationToken);
   }

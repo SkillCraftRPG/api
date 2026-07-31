@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -42,6 +43,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
       language = await _languageRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
+    Guid userId = _context.UserId;
     Guid worldId = _context.WorldId;
 
     Script? script = null;
@@ -51,28 +53,43 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
         ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value, worldId), nameof(Language.ScriptId));
     }
 
-    bool created = false;
+    LanguageSnapshot? snapshot = null;
     if (language is null)
     {
       World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
         ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateLanguage, world, cancellationToken);
 
-      language = new Language(world, payload.Name, command.Id, payload.Summary, payload.HtmlContent, script, payload.TypicalSpeakers, _context.UserId);
+      language = new Language(world, command.Id, userId);
       _languageRepository.Add(language);
-      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, language, cancellationToken);
 
-      LanguageUpdated record = language.Update(payload.Name, payload.Summary, payload.HtmlContent, script, payload.TypicalSpeakers, _context.UserId);
-      _languageRepository.Update(language, record);
+      snapshot = new LanguageSnapshot(language);
+    }
+
+    language.Name = payload.Name.Trim();
+    language.Summary = payload.Summary?.CleanTrim();
+    language.HtmlContent = payload.HtmlContent?.CleanTrim();
+
+    language.SetScript(script);
+    language.TypicalSpeakers = payload.TypicalSpeakers?.CleanTrim();
+
+    if (snapshot is not null)
+    {
+      LanguageUpdated? record = snapshot.Compare(language);
+      if (record is not null)
+      {
+        language.Update(userId);
+        _languageRepository.Update(language, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);
 
     LanguageModel model = await _languageRepository.ReadAsync(language, cancellationToken);
-    return new CreateOrReplaceLanguageResult(model, created);
+    return new CreateOrReplaceLanguageResult(model, Created: snapshot is null);
   }
 }
