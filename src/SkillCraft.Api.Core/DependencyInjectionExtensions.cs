@@ -10,6 +10,7 @@ using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
+using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
@@ -28,6 +29,7 @@ public static class DependencyInjectionExtensions
     LineageService.Register(services);
     PermissionService.Register(services);
     ScriptService.Register(services);
+    SpellService.Register(services);
     TalentService.Register(services);
     WorldService.Register(services);
 
