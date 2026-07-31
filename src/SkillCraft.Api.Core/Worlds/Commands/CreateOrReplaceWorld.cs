@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds.Events;
@@ -51,7 +51,7 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
 
     world.Key = SlugHelper.Format(payload.Key);
     world.Name = payload.Name?.CleanTrim();
-    world.HtmlContent = payload.HtmlContent?.CleanTrim();
+    world.Content = payload.Content?.CleanTrim();
 
     if (snapshot is not null)
     {

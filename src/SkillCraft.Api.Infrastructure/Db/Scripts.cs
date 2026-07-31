@@ -9,7 +9,7 @@ public static class Scripts
 
   public static readonly ColumnId CreatedBy = new(nameof(Script.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(Script.CreatedOn), Table);
-  public static readonly ColumnId HtmlContent = new(nameof(Script.HtmlContent), Table);
+  public static readonly ColumnId Content = new(nameof(Script.Content), Table);
   public static readonly ColumnId Id = new(nameof(Script.Id), Table);
   public static readonly ColumnId Name = new(nameof(Script.Name), Table);
   public static readonly ColumnId ScriptId = new(nameof(Script.ScriptId), Table);

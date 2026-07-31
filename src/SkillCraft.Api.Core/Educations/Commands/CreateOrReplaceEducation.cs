@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Educations.Models;
@@ -62,7 +62,7 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
 
     education.Name = payload.Name.Trim();
     education.Summary = payload.Summary?.CleanTrim();
-    education.HtmlContent = payload.HtmlContent?.CleanTrim();
+    education.Content = payload.Content?.CleanTrim();
 
     education.Skill = payload.Skill;
     education.WealthMultiplier = payload.WealthMultiplier;

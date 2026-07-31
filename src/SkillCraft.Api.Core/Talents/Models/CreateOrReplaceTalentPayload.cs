@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Talents.Models;
@@ -9,7 +9,7 @@ public record CreateOrReplaceTalentPayload
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public bool AllowMultiplePurchases { get; set; }
   public Skill? Skill { get; set; }
@@ -25,7 +25,7 @@ public record CreateOrReplaceTalentPayload
 
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
-      When(x => !string.IsNullOrWhiteSpace(x.HtmlContent), () => RuleFor(x => x.HtmlContent!).HtmlContent());
+      When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
       When(x => x.Skill.HasValue, () => RuleFor(x => x.Skill!.Value).IsInEnum());
     }

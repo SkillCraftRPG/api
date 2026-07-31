@@ -6,13 +6,13 @@ public record CustomizationSnapshot
 {
   public string Name { get; }
   public string? Summary { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public CustomizationSnapshot(Customization customization)
   {
     Name = customization.Name;
     Summary = customization.Summary;
-    HtmlContent = customization.HtmlContent;
+    Content = customization.Content;
   }
 
   public CustomizationUpdated? Compare(Customization customization)
@@ -32,10 +32,10 @@ public record CustomizationSnapshot
       record.Summary = new Change<string>(Summary, customization.Summary);
     }
 
-    if (HtmlContent != customization.HtmlContent)
+    if (Content != customization.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, customization.HtmlContent);
+      record.Content = new Change<string>(Content, customization.Content);
     }
 
     return changes < 1 ? null : record;

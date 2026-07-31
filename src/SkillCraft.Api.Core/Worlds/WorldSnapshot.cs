@@ -6,13 +6,13 @@ public record WorldSnapshot
 {
   public string Key { get; }
   public string? Name { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public WorldSnapshot(World world)
   {
     Key = world.Key;
     Name = world.Name;
-    HtmlContent = world.HtmlContent;
+    Content = world.Content;
   }
 
   public WorldUpdated? Compare(World world)
@@ -32,10 +32,10 @@ public record WorldSnapshot
       record.Name = new Change<string>(Name, world.Name);
     }
 
-    if (HtmlContent != world.HtmlContent)
+    if (Content != world.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, world.HtmlContent);
+      record.Content = new Change<string>(Content, world.Content);
     }
 
     return changes < 1 ? null : record;

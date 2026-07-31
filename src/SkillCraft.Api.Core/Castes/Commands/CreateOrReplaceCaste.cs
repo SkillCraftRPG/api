@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
@@ -62,7 +62,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
 
     caste.Name = payload.Name.Trim();
     caste.Summary = payload.Summary?.CleanTrim();
-    caste.HtmlContent = payload.HtmlContent?.CleanTrim();
+    caste.Content = payload.Content?.CleanTrim();
 
     caste.Skill = payload.Skill;
     caste.WealthRoll = payload.WealthRoll?.CleanTrim()?.ToLowerInvariant();

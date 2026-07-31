@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Features;
@@ -12,7 +12,7 @@ public interface ICasteBuilder
   ICasteBuilder WithWorld(World? world);
   ICasteBuilder WithName(string name);
   ICasteBuilder WithSummary(string? summary);
-  ICasteBuilder WithHtmlContent(string? htmlContent);
+  ICasteBuilder WithContent(string? content);
   ICasteBuilder WithSkill(Skill? skill);
   ICasteBuilder WithWealthRoll(string? wealthRoll);
   ICasteBuilder WithFeature(Feature? feature);
@@ -25,7 +25,7 @@ public class CasteBuilder : ICasteBuilder
   private readonly Faker _faker;
 
   private Feature? _feature = null;
-  private string? _htmlContent = null;
+  private string? _content = null;
   private Guid? _id = null;
   private string _name = "Caste";
   private Skill? _skill = null;
@@ -62,9 +62,9 @@ public class CasteBuilder : ICasteBuilder
     return this;
   }
 
-  public ICasteBuilder WithHtmlContent(string? htmlContent)
+  public ICasteBuilder WithContent(string? content)
   {
-    _htmlContent = htmlContent;
+    _content = content;
     return this;
   }
 
@@ -93,7 +93,7 @@ public class CasteBuilder : ICasteBuilder
     {
       Name = _name,
       Summary = _summary,
-      HtmlContent = _htmlContent,
+      Content = _content,
       Skill = _skill,
       WealthRoll = _wealthRoll
     };
@@ -105,7 +105,7 @@ public class CasteBuilder : ICasteBuilder
     .WithWorld(world)
     .WithName("Artisan")
     .WithSummary("Expert des métiers manuels, membre d’une organisation d’artisans.")
-    .WithHtmlContent("L’artisan est un expert d’un procédé de transformation des matières brutes.\n\nIl peut être un boulanger, un forgeron, un orfèvre, un tisserand ou pratiquer tout genre de profession œuvrant dans la transformation des matières brutes.")
+    .WithContent("L’artisan est un expert d’un procédé de transformation des matières brutes.\n\nIl peut être un boulanger, un forgeron, un orfèvre, un tisserand ou pratiquer tout genre de profession œuvrant dans la transformation des matières brutes.")
     .WithSkill(Skill.Crafting)
     .WithWealthRoll("8d6")
     .WithFeature(new Feature("Professionnel", "Grâce à ses apprentissages et à ses réalisations, le personnage est membre d’une organisation de professionnels comme lui, ou il connait ces organisations.\n\nS’il ne peut subvenir à ses besoins, il n’aura aucun mal à trouver du travail grâce à ces organisations afin de couvrir minimalement ces [dépenses](/regles/equipement/depenses).\n\nCes organisations possèdent souvent un pouvoir politique important, ce qui peut l’aider à rencontrer des gens importants, à rallier des fidèles à une cause ou à mettre la main sur des matériaux rares.\n\nIl connait également la base du fonctionnement des systèmes économiques auxquels il a participé."))

@@ -6,7 +6,7 @@ public record LanguageSnapshot
 {
   public string Name { get; }
   public string? Summary { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public Guid? ScriptId { get; }
   public string? TypicalSpeakers { get; }
@@ -15,7 +15,7 @@ public record LanguageSnapshot
   {
     Name = language.Name;
     Summary = language.Summary;
-    HtmlContent = language.HtmlContent;
+    Content = language.Content;
 
     ScriptId = language.Script?.Id;
     TypicalSpeakers = language.TypicalSpeakers;
@@ -38,10 +38,10 @@ public record LanguageSnapshot
       record.Summary = new Change<string>(Summary, language.Summary);
     }
 
-    if (HtmlContent != language.HtmlContent)
+    if (Content != language.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, language.HtmlContent);
+      record.Content = new Change<string>(Content, language.Content);
     }
 
     if (ScriptId != language.Script?.Id)

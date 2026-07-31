@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
@@ -16,7 +16,7 @@ public class Language : IAuditable, IResource, IVersioned
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public Script? Script { get; private set; }
   public int? ScriptId { get; private set; }

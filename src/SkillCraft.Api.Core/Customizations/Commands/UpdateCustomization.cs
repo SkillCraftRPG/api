@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Customizations.Models;
@@ -43,9 +43,9 @@ internal class UpdateCustomizationCommandHandler : ICommandHandler<UpdateCustomi
     {
       customization.Summary = payload.Summary.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      customization.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      customization.Content = payload.Content.Value?.CleanTrim();
     }
 
     CustomizationUpdated? record = snapshot.Compare(customization);

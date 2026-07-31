@@ -10,7 +10,7 @@ public static class Talents
   public static readonly ColumnId AllowMultiplePurchases = new(nameof(Talent.AllowMultiplePurchases), Table);
   public static readonly ColumnId CreatedBy = new(nameof(Talent.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(Talent.CreatedOn), Table);
-  public static readonly ColumnId HtmlContent = new(nameof(Talent.HtmlContent), Table);
+  public static readonly ColumnId Content = new(nameof(Talent.Content), Table);
   public static readonly ColumnId Id = new(nameof(Talent.Id), Table);
   public static readonly ColumnId Name = new(nameof(Talent.Name), Table);
   public static readonly ColumnId RequiredTalentId = new(nameof(Talent.RequiredTalentId), Table);

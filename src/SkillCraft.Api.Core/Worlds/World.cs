@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
@@ -20,7 +20,7 @@ public class World : IAuditable, IResource, IVersioned
 
   public string Key { get; set; } = string.Empty;
   public string? Name { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }

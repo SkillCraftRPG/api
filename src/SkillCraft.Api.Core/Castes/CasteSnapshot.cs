@@ -7,7 +7,7 @@ public record CasteSnapshot
 {
   public string Name { get; }
   public string? Summary { get; }
-  public string? HtmlContent { get; }
+  public string? Content { get; }
 
   public Skill? Skill { get; }
   public string? WealthRoll { get; }
@@ -17,11 +17,11 @@ public record CasteSnapshot
   {
     Name = caste.Name;
     Summary = caste.Summary;
-    HtmlContent = caste.HtmlContent;
+    Content = caste.Content;
 
     Skill = caste.Skill;
     WealthRoll = caste.WealthRoll;
-    Feature = caste.FeatureName is null ? null : new Feature(caste.FeatureName, caste.FeatureHtmlContent);
+    Feature = caste.FeatureName is null ? null : new Feature(caste.FeatureName, caste.FeatureContent);
   }
 
   public CasteUpdated? Compare(Caste caste)
@@ -41,10 +41,10 @@ public record CasteSnapshot
       record.Summary = new Change<string>(Summary, caste.Summary);
     }
 
-    if (HtmlContent != caste.HtmlContent)
+    if (Content != caste.Content)
     {
       changes++;
-      record.HtmlContent = new Change<string>(HtmlContent, caste.HtmlContent);
+      record.Content = new Change<string>(Content, caste.Content);
     }
 
     if (Skill != caste.Skill)
@@ -59,7 +59,7 @@ public record CasteSnapshot
       record.WealthRoll = new Change<string>(WealthRoll, caste.WealthRoll);
     }
 
-    Feature? feature = caste.FeatureName is null ? null : new Feature(caste.FeatureName, caste.FeatureHtmlContent);
+    Feature? feature = caste.FeatureName is null ? null : new Feature(caste.FeatureName, caste.FeatureContent);
     if (Feature != feature)
     {
       changes++;

@@ -1,4 +1,4 @@
-﻿namespace SkillCraft.Api.Core.Customizations.Events;
+namespace SkillCraft.Api.Core.Customizations.Events;
 
 public class CustomizationCreated : CreateEvent
 {
@@ -6,7 +6,7 @@ public class CustomizationCreated : CreateEvent
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
-  public string? HtmlContent { get; set; }
+  public string? Content { get; set; }
 
   public CustomizationCreated() : base()
   {
@@ -18,6 +18,6 @@ public class CustomizationCreated : CreateEvent
 
     Name = customization.Name;
     Summary = customization.Summary;
-    HtmlContent = customization.HtmlContent;
+    Content = customization.Content;
   }
 }

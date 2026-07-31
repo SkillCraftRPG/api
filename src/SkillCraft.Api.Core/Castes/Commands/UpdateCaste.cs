@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
@@ -44,9 +44,9 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     {
       caste.Summary = payload.Summary.Value?.CleanTrim();
     }
-    if (payload.HtmlContent is not null)
+    if (payload.Content is not null)
     {
-      caste.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+      caste.Content = payload.Content.Value?.CleanTrim();
     }
 
     if (payload.Skill is not null)

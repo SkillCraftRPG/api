@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
@@ -12,7 +12,7 @@ public interface ITalentBuilder
   ITalentBuilder WithTier(int tier);
   ITalentBuilder WithName(string name);
   ITalentBuilder WithSummary(string? summary);
-  ITalentBuilder WithHtmlContent(string? htmlContent);
+  ITalentBuilder WithContent(string? content);
   ITalentBuilder AllowMultiplePurchases(bool allowMultiplePurchases = true);
   ITalentBuilder WithSkill(Skill? skill);
   ITalentBuilder WithRequiredTalent(Talent? requiredTalent);
@@ -25,7 +25,7 @@ public class TalentBuilder : ITalentBuilder
   private readonly Faker _faker;
 
   private bool _allowMultiplePurchases = false;
-  private string? _htmlContent = null;
+  private string? _content = null;
   private Guid? _id = null;
   private string _name = "Talent";
   private Talent? _requiredTalent = null;
@@ -69,9 +69,9 @@ public class TalentBuilder : ITalentBuilder
     return this;
   }
 
-  public ITalentBuilder WithHtmlContent(string? htmlContent)
+  public ITalentBuilder WithContent(string? content)
   {
-    _htmlContent = htmlContent;
+    _content = content;
     return this;
   }
 
@@ -100,7 +100,7 @@ public class TalentBuilder : ITalentBuilder
     {
       Name = _name,
       Summary = _summary,
-      HtmlContent = _htmlContent
+      Content = _content
     };
     talent.SetAllowMultiplePurchases(_allowMultiplePurchases);
     talent.SetSkill(_skill);
@@ -112,21 +112,21 @@ public class TalentBuilder : ITalentBuilder
     .WithWorld(world)
     .WithName("Compétence")
     .WithSummary("Accorde un bonus permanent (+4) à l’Apprentissage.")
-    .WithHtmlContent("Confère au personnage un bonus permanent (+4) à l’[Apprentissage](/regles/statistiques/apprentissage).")
+    .WithContent("Confère au personnage un bonus permanent (+4) à l’[Apprentissage](/regles/statistiques/apprentissage).")
     .AllowMultiplePurchases()
     .Build();
   public static Talent Melee(Faker? faker = null, World? world = null) => new TalentBuilder(faker)
     .WithWorld(world)
     .WithName("Mêlée")
     .WithSummary("Forme au combat rapproché et au maniement des armes simples.")
-    .WithHtmlContent("[Forme](/regles/equipement/armes/formation) le personnage au maniement des [armes simples](/regles/equipement/armes/simples) de mêlée.\n\nIl est également [formé](/regles/equipement/armures/formation) au port des [armures légères](/regles/equipement/armures/legeres) et à l’utilisation des [boucliers légers](/regles/equipement/boucliers).")
+    .WithContent("[Forme](/regles/equipement/armes/formation) le personnage au maniement des [armes simples](/regles/equipement/armes/simples) de mêlée.\n\nIl est également [formé](/regles/equipement/armures/formation) au port des [armures légères](/regles/equipement/armures/legeres) et à l’utilisation des [boucliers légers](/regles/equipement/boucliers).")
     .WithSkill(Skill.Melee)
     .Build();
   public static Talent FormationMartiale(Faker? faker = null, World? world = null, Talent? requiredTalent = null) => new TalentBuilder(faker)
     .WithWorld(world)
     .WithName("Formation martiale")
     .WithSummary("Accorde la maîtrise des armes et armures moyennes en combat.")
-    .WithHtmlContent("Le personnage acquiert les capacités suivantes :\n\n- Il est [formé](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de mêlée.\n- Il est [formé](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et à l’utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu’il dégaine ou rengaine une arme, il peut en faire de même avec un bouclier en [action libre](/regles/combat/deroulement/tour).")
+    .WithContent("Le personnage acquiert les capacités suivantes :\n\n- Il est [formé](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de mêlée.\n- Il est [formé](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et à l’utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu’il dégaine ou rengaine une arme, il peut en faire de même avec un bouclier en [action libre](/regles/combat/deroulement/tour).")
     .WithSkill(Skill.Melee)
     .WithRequiredTalent(requiredTalent ?? Melee(faker, world))
     .Build();
@@ -135,7 +135,7 @@ public class TalentBuilder : ITalentBuilder
     .WithTier(1)
     .WithName("Charge")
     .WithSummary("Permet d’attaquer en courant et de renverser la cible touchée.")
-    .WithHtmlContent("Le personnage peut effectuer une [attaque de mêlée](/regles/combat/attaque/melee) en [action libre](/regles/combat/deroulement/tour) lorsqu’il [court](/regles/aventure/mouvement/types) en ligne droite sur une distance d’au moins 4,5 mètres immédiatement avant d’effectuer cette [attaque](/regles/combat/attaque).\n\nIl peut ajouter un bonus (+5) à son [test](/regles/competences/tests) d’attaque ou un [dé de dégâts](/regles/combat/degats/jet) supplémentaire.\n\nSi la [taille](/regles/especes/taille) de la cible est inférieure ou égale à celle du personnage, la cible doit effectuer un [jet de sauvegarde](/regles/competences/tests/sauvegarde) d’[Acrobaties](/regles/competences/acrobaties) ou d’[Athlétisme](/regles/competences/athletisme).\n\nLa [difficulté](/regles/competences/tests/difficulte) correspond au résultat du test de l’attaque effectuée par le personnage.\n\nEn cas d’échec, elle est repoussée de 3 mètres, ou elle est repoussée de 1,5 mètres et tombe [renversée](/regles/combat/conditions/renverse) au sol, au choix du personnage.")
+    .WithContent("Le personnage peut effectuer une [attaque de mêlée](/regles/combat/attaque/melee) en [action libre](/regles/combat/deroulement/tour) lorsqu’il [court](/regles/aventure/mouvement/types) en ligne droite sur une distance d’au moins 4,5 mètres immédiatement avant d’effectuer cette [attaque](/regles/combat/attaque).\n\nIl peut ajouter un bonus (+5) à son [test](/regles/competences/tests) d’attaque ou un [dé de dégâts](/regles/combat/degats/jet) supplémentaire.\n\nSi la [taille](/regles/especes/taille) de la cible est inférieure ou égale à celle du personnage, la cible doit effectuer un [jet de sauvegarde](/regles/competences/tests/sauvegarde) d’[Acrobaties](/regles/competences/acrobaties) ou d’[Athlétisme](/regles/competences/athletisme).\n\nLa [difficulté](/regles/competences/tests/difficulte) correspond au résultat du test de l’attaque effectuée par le personnage.\n\nEn cas d’échec, elle est repoussée de 3 mètres, ou elle est repoussée de 1,5 mètres et tombe [renversée](/regles/combat/conditions/renverse) au sol, au choix du personnage.")
     .WithRequiredTalent(requiredTalent ?? Melee(faker, world))
     .Build();
 }

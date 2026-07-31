@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Krakenar.Contracts.Settings;
 
 namespace SkillCraft.Api.Core.Validation;
@@ -21,7 +21,7 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(10).SetValidator(new GenderValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, string> HtmlContent<T>(this IRuleBuilder<T, string> ruleBuilder)
+  public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty();
   }
