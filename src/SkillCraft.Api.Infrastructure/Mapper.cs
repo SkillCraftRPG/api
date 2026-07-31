@@ -9,6 +9,8 @@ using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
+using SkillCraft.Api.Core.Items;
+using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts;
@@ -91,6 +93,23 @@ internal class Mapper
     {
       destination.Feature = new FeatureModel(source.FeatureName, source.FeatureHtmlContent);
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemModel ToItem(Item source)
+  {
+    ItemModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Price = source.Price,
+      Weight = source.Weight
+    };
 
     MapAggregate(source, destination);
 
