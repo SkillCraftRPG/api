@@ -1,4 +1,4 @@
-using Logitar.Data;
+﻿using Logitar.Data;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Infrastructure.Db;
@@ -7,9 +7,9 @@ public static class Worlds
 {
   public static readonly TableId Table = new(Schemas.Game, nameof(GameContext.Worlds), alias: null);
 
+  public static readonly ColumnId Content = new(nameof(World.Content), Table);
   public static readonly ColumnId CreatedBy = new(nameof(World.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(World.CreatedOn), Table);
-  public static readonly ColumnId Content = new(nameof(World.Content), Table);
   public static readonly ColumnId Id = new(nameof(World.Id), Table);
   public static readonly ColumnId Key = new(nameof(World.Key), Table);
   public static readonly ColumnId Name = new(nameof(World.Name), Table);

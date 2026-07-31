@@ -1,4 +1,4 @@
-using Logitar.Data;
+﻿using Logitar.Data;
 using SkillCraft.Api.Core.Castes;
 
 namespace SkillCraft.Api.Infrastructure.Db;
@@ -8,11 +8,11 @@ public static class Castes
   public static readonly TableId Table = new(Schemas.Game, nameof(GameContext.Castes), alias: null);
 
   public static readonly ColumnId CasteId = new(nameof(Caste.CasteId), Table);
+  public static readonly ColumnId Content = new(nameof(Caste.Content), Table);
   public static readonly ColumnId CreatedBy = new(nameof(Caste.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(Caste.CreatedOn), Table);
   public static readonly ColumnId FeatureContent = new(nameof(Caste.FeatureContent), Table);
   public static readonly ColumnId FeatureName = new(nameof(Caste.FeatureName), Table);
-  public static readonly ColumnId Content = new(nameof(Caste.Content), Table);
   public static readonly ColumnId Id = new(nameof(Caste.Id), Table);
   public static readonly ColumnId Name = new(nameof(Caste.Name), Table);
   public static readonly ColumnId Skill = new(nameof(Caste.Skill), Table);
