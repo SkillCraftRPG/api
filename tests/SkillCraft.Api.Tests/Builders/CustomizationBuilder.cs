@@ -72,6 +72,11 @@ public class CustomizationBuilder : ICustomizationBuilder
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
     CustomizationKind kind = _kind ?? _faker.PickRandom<CustomizationKind>();
-    return new Customization(world, kind, _name, _id, _summary, _htmlContent);
+    return new Customization(world, kind, _id)
+    {
+      Name = _name,
+      Summary = _summary,
+      HtmlContent = _htmlContent
+    };
   }
 }

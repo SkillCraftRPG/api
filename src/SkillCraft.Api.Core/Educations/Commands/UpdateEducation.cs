@@ -1,3 +1,4 @@
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Educations.Models;
@@ -33,30 +34,43 @@ internal class UpdateEducationCommandHandler : ICommandHandler<UpdateEducationCo
     }
     await _permissionService.CheckAsync(Actions.Update, education, cancellationToken);
 
-    Feature? feature = null;
-    if (payload.Feature is null)
+    EducationSnapshot snapshot = new(education);
+
+    if (!string.IsNullOrWhiteSpace(payload.Name))
     {
-      if (education.FeatureName is not null)
-      {
-        feature = new Feature(education.FeatureName, education.FeatureHtmlContent);
-      }
+      education.Name = payload.Name.Trim();
     }
-    else if (payload.Feature.Value is not null)
+    if (payload.Summary is not null)
     {
-      feature = new Feature(payload.Feature.Value);
+      education.Summary = payload.Summary.Value?.CleanTrim();
+    }
+    if (payload.HtmlContent is not null)
+    {
+      education.HtmlContent = payload.HtmlContent.Value?.CleanTrim();
+    }
+    if (payload.Skill is not null)
+    {
+      education.Skill = payload.Skill.Value;
+    }
+    if (payload.WealthMultiplier is not null)
+    {
+      education.WealthMultiplier = payload.WealthMultiplier.Value;
+    }
+    if (payload.Feature is not null)
+    {
+      Feature? feature = payload.Feature.Value is null ? null : new(payload.Feature.Value);
+      education.FeatureName = feature?.Name;
+      education.FeatureHtmlContent = feature?.HtmlContent;
     }
 
-    EducationUpdated record = education.Update(
-      string.IsNullOrWhiteSpace(payload.Name) ? education.Name : payload.Name,
-      payload.Summary is null ? education.Summary : payload.Summary.Value,
-      payload.HtmlContent is null ? education.HtmlContent : payload.HtmlContent.Value,
-      payload.Skill is null ? education.Skill : payload.Skill.Value,
-      payload.WealthMultiplier is null ? education.WealthMultiplier : payload.WealthMultiplier.Value,
-      feature,
-      _context.UserId);
-    _educationRepository.Update(education, record);
+    EducationUpdated? record = snapshot.Compare(education);
+    if (record is not null)
+    {
+      education.Update(_context.UserId);
+      _educationRepository.Update(education, record);
 
-    await _context.SaveChangesAsync(cancellationToken);
+      await _context.SaveChangesAsync(cancellationToken);
+    }
 
     return await _educationRepository.ReadAsync(education, cancellationToken);
   }

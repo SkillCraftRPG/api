@@ -63,7 +63,12 @@ public class ScriptBuilder : IScriptBuilder
   public Script Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Script(world, _name, _id, _summary, _htmlContent);
+    return new Script(world, _id)
+    {
+      Name = _name,
+      Summary = _summary,
+      HtmlContent = _htmlContent
+    };
   }
 
   public static Script Renon(Faker? faker = null, World? world = null) => new ScriptBuilder(faker)

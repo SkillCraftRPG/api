@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Logitar;
+using Logitar.CQRS;
 using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -38,16 +39,18 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
       customization = await _customizationRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    bool created = false;
+    Guid userId = _context.UserId;
+    Guid worldId = _context.WorldId;
+
+    CustomizationSnapshot? snapshot = null;
     if (customization is null)
     {
-      World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not found.");
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
+        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
       await _permissionService.CheckAsync(Actions.CreateCustomization, world, cancellationToken);
 
-      customization = new Customization(world, payload.Kind, payload.Name, command.Id, payload.Summary, payload.HtmlContent, _context.UserId);
+      customization = new Customization(world, payload.Kind, command.Id, userId);
       _customizationRepository.Add(customization);
-      created = true;
     }
     else
     {
@@ -58,13 +61,26 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
         throw new ImmutablePropertyException<CustomizationKind>(customization, customization.Kind, payload.Kind, nameof(Customization.Kind));
       }
 
-      CustomizationUpdated record = customization.Update(payload.Name, payload.Summary, payload.HtmlContent, _context.UserId);
-      _customizationRepository.Update(customization, record);
+      snapshot = new CustomizationSnapshot(customization);
+    }
+
+    customization.Name = payload.Name.Trim();
+    customization.Summary = payload.Summary?.CleanTrim();
+    customization.HtmlContent = payload.HtmlContent?.CleanTrim();
+
+    if (snapshot is not null)
+    {
+      CustomizationUpdated? record = snapshot.Compare(customization);
+      if (record is not null)
+      {
+        customization.Update(userId);
+        _customizationRepository.Update(customization, record);
+      }
     }
 
     await _context.SaveChangesAsync(cancellationToken);
 
     CustomizationModel model = await _customizationRepository.ReadAsync(customization, cancellationToken);
-    return new CreateOrReplaceCustomizationResult(model, created);
+    return new CreateOrReplaceCustomizationResult(model, Created: snapshot is null);
   }
 }

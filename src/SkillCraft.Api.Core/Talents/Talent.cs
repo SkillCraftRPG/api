@@ -1,5 +1,4 @@
 ﻿using Logitar;
-using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents;
@@ -16,9 +15,9 @@ public class Talent : IAuditable, IResource, IVersioned
 
   public int Tier { get; private set; }
 
-  public string Name { get; private set; } = string.Empty;
-  public string? Summary { get; private set; }
-  public string? HtmlContent { get; private set; }
+  public string Name { get; set; } = string.Empty;
+  public string? Summary { get; set; }
+  public string? HtmlContent { get; set; }
 
   public bool AllowMultiplePurchases { get; private set; }
   public Skill? Skill { get; private set; }
@@ -36,32 +35,17 @@ public class Talent : IAuditable, IResource, IVersioned
 
   public List<Talent> RequiringTalents { get; private set; } = [];
 
-  public Talent(
-    World world,
-    int tier,
-    string name,
-    Guid? id = null,
-    string? summary = null,
-    string? htmlContent = null,
-    bool allowMultiplePurchases = false,
-    Skill? skill = null,
-    Talent? requiredTalent = null,
-    Guid? userId = null,
-    DateTime? createdOn = null)
+  public Talent(World world, int tier, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
   {
-    createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-    userId ??= world.OwnerId;
-
     World = world;
     WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
 
     Tier = tier;
 
-    CreatedBy = userId.Value;
-    CreatedOn = createdOn.Value;
-
-    Update(name, summary, htmlContent, allowMultiplePurchases, skill, requiredTalent, userId.Value, createdOn);
+    Version = 1;
+    CreatedBy = UpdatedBy = userId ?? world.OwnerId;
+    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
 
   private Talent()
@@ -78,72 +62,42 @@ public class Talent : IAuditable, IResource, IVersioned
     return userIds.AsReadOnly();
   }
 
-  public TalentUpdated Update(
-    string name,
-    string? summary,
-    string? htmlContent,
-    bool allowMultiplePurchases,
-    Skill? skill,
-    Talent? requiredTalent,
-    Guid userId,
-    DateTime? updatedOn = null)
+  public void SetAllowMultiplePurchases(bool allowMultiplePurchases)
+  {
+    if (allowMultiplePurchases && Skill.HasValue)
+    {
+      throw new InvalidTalentSkillException(this, Skill.Value);
+    }
+
+    AllowMultiplePurchases = allowMultiplePurchases;
+  }
+
+  public void SetSkill(Skill? skill)
+  {
+    if (AllowMultiplePurchases && skill.HasValue)
+    {
+      throw new InvalidTalentSkillException(this, skill.Value);
+    }
+
+    Skill = skill;
+  }
+
+  public void SetRequiredTalent(Talent? requiredTalent)
+  {
+    if (requiredTalent is not null && requiredTalent.Tier > Tier)
+    {
+      throw new InvalidRequiredTalentException(this, requiredTalent);
+    }
+
+    RequiredTalent = requiredTalent;
+    RequiredTalentId = requiredTalent?.TalentId;
+  }
+
+  public void Update(Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
-
-    TalentUpdated record = new(this);
-
-    name = name.CleanTrim() ?? string.Empty;
-    if (!Equals(Name, name))
-    {
-      record.Name = new Change<string>(Name, name);
-      Name = name;
-    }
-
-    summary = summary?.CleanTrim();
-    if (!Equals(Summary, summary))
-    {
-      record.Summary = new Change<string>(Summary, summary);
-      Summary = summary;
-    }
-
-    htmlContent = htmlContent?.CleanTrim();
-    if (!Equals(HtmlContent, htmlContent))
-    {
-      record.HtmlContent = new Change<string>(HtmlContent, htmlContent);
-      HtmlContent = htmlContent;
-    }
-
-    if (AllowMultiplePurchases != allowMultiplePurchases)
-    {
-      record.AllowMultiplePurchases = new Change<bool>(AllowMultiplePurchases, allowMultiplePurchases);
-      AllowMultiplePurchases = allowMultiplePurchases;
-    }
-
-    if (!Equals(Skill, skill))
-    {
-      record.Skill = new Change<Skill?>(Skill, skill);
-      Skill = skill;
-    }
-
-    if (!Equals(RequiredTalent?.Id, requiredTalent?.Id))
-    {
-      record.RequiredTalentId = new Change<Guid?>(RequiredTalent?.Id, requiredTalent?.Id);
-      RequiredTalent = requiredTalent;
-      RequiredTalentId = requiredTalent?.TalentId;
-    }
-
-    if (AllowMultiplePurchases && Skill.HasValue)
-    {
-      throw new InvalidTalentSkillException(this);
-    }
-    if (RequiredTalent is not null && RequiredTalent.Tier > Tier)
-    {
-      throw new InvalidRequiredTalentException(this);
-    }
-
-    return record;
   }
 
   public override bool Equals(object? obj) => obj is Talent talent && talent.TalentId == TalentId;

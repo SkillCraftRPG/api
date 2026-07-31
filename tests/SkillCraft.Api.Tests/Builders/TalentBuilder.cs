@@ -96,7 +96,16 @@ public class TalentBuilder : ITalentBuilder
   public Talent Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Talent(world, _tier, _name, _id, _summary, _htmlContent, _allowMultiplePurchases, _skill, _requiredTalent);
+    Talent talent = new Talent(world, _tier, _id)
+    {
+      Name = _name,
+      Summary = _summary,
+      HtmlContent = _htmlContent
+    };
+    talent.SetAllowMultiplePurchases(_allowMultiplePurchases);
+    talent.SetSkill(_skill);
+    talent.SetRequiredTalent(_requiredTalent);
+    return talent;
   }
 
   public static Talent Competence(Faker? faker = null, World? world = null) => new TalentBuilder(faker)
