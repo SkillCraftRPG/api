@@ -48,6 +48,13 @@ internal class LanguageRepository : Repository, ILanguageRepository
       .Include(x => x.Script)
       .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
   }
+  public async Task<IReadOnlyCollection<Language>> LoadAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+  {
+    return (await Database.Languages
+      .Include(x => x.Script)
+      .Where(x => ids.Contains(x.Id) && x.WorldId == _context.WorldId)
+      .ToListAsync(cancellationToken)).AsReadOnly();
+  }
 
   public async Task<LanguageModel> ReadAsync(Language language, CancellationToken cancellationToken)
   {

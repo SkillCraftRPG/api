@@ -3,6 +3,7 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
+using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds.Events;
@@ -34,6 +35,7 @@ public class World : IAuditable, IResource, IVersioned
   public List<Customization> Customizations { get; private set; } = [];
   public List<Education> Educations { get; private set; } = [];
   public List<Language> Languages { get; private set; } = [];
+  public List<Lineage> Lineages { get; private set; } = [];
   public List<Script> Scripts { get; private set; } = [];
   public List<Talent> Talents { get; private set; } = [];
 

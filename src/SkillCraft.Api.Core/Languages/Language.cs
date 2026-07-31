@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using SkillCraft.Api.Core.Languages.Events;
+using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
@@ -30,6 +31,8 @@ public class Language : IAuditable, IResource, IVersioned
   public DateTime UpdatedOn { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
+
+  public List<Lineage> Lineages { get; private set; } = [];
 
   public Language(
     World world,

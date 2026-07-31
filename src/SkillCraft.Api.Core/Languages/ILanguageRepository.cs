@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
 
@@ -11,6 +11,7 @@ public interface ILanguageRepository
   void Update(Language language, LanguageUpdated record);
 
   Task<Language?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<IReadOnlyCollection<Language>> LoadAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 
   Task<LanguageModel> ReadAsync(Language language, CancellationToken cancellationToken = default);
   Task<LanguageModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
