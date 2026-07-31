@@ -1,4 +1,6 @@
-﻿namespace SkillCraft.Api.Core.Features;
+﻿using Logitar;
+
+namespace SkillCraft.Api.Core.Features;
 
 public record Feature : IFeature
 {
@@ -8,8 +10,8 @@ public record Feature : IFeature
   [JsonConstructor]
   public Feature(string name, string? content = null)
   {
-    Name = name;
-    Content = content;
+    Name = name.Trim();
+    Content = content?.CleanTrim();
   }
 
   public Feature(IFeature feature) : this(feature.Name, feature.Content)

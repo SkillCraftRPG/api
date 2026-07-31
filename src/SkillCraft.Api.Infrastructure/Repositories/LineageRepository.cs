@@ -47,6 +47,7 @@ internal class LineageRepository : Repository, ILineageRepository
     return await Database.Lineages
       .Include(x => x.Features)
       .Include(x => x.Languages)
+      .Include(x => x.Parent)
       .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
   }
 

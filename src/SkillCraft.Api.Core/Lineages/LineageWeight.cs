@@ -34,7 +34,7 @@ public record LineageWeight : ILineageWeight
     Obese = obese;
   }
 
-  public LineageWeight(Lineage lineage) : this(lineage.Malnutrition, lineage.Skinny, lineage.NormalWeight, lineage.NormalWeight, lineage.Obese)
+  public LineageWeight(Lineage lineage) : this(lineage.Malnutrition, lineage.Skinny, lineage.NormalWeight, lineage.Overweight, lineage.Obese)
   {
   }
 }

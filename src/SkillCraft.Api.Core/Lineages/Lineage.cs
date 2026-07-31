@@ -67,7 +67,7 @@ public class Lineage : IAuditable, IResource, IVersioned
 
   public Lineage(World world, Guid? id = null, Lineage? parent = null, Guid? userId = null, DateTime? createdOn = null)
   {
-    if (parent?.Parent is not null)
+    if (parent?.ParentId is not null)
     {
       throw new InvalidParentLineageException(parent, nameof(Lineage.ParentId));
     }
@@ -143,7 +143,7 @@ public class Lineage : IAuditable, IResource, IVersioned
     }
     CustomNames = customNames.Count < 1 ? null : JsonSerializer.Serialize(customNames);
 
-    Content = content?.CleanTrim();
+    NamesContent = content?.CleanTrim();
   }
 
   public void SetSize(ILineageSize size)
