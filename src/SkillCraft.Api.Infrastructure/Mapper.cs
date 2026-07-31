@@ -17,6 +17,8 @@ using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
+using SkillCraft.Api.Core.Spells;
+using SkillCraft.Api.Core.Spells.Models;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Core.Worlds;
@@ -212,6 +214,21 @@ internal class Mapper
   public ScriptModel ToScript(Script source)
   {
     ScriptModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public SpellModel ToSpell(Spell source)
+  {
+    SpellModel destination = new()
     {
       Id = source.Id,
       Name = source.Name,

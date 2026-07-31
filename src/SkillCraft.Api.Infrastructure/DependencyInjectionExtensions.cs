@@ -9,6 +9,7 @@ using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Scripts;
+using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
@@ -55,6 +56,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<ILanguageRepository, LanguageRepository>()
       .AddScoped<ILineageRepository, LineageRepository>()
       .AddScoped<IScriptRepository, ScriptRepository>()
+      .AddScoped<ISpellRepository, SpellRepository>()
       .AddScoped<ITalentRepository, TalentRepository>()
       .AddScoped<IWorldRepository, WorldRepository>();
   }

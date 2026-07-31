@@ -9,6 +9,7 @@ public static class Actions
   public const string CreateLanguage = "CreateLanguage";
   public const string CreateLineage = "CreateLineage";
   public const string CreateScript = "CreateScript";
+  public const string CreateSpell = "CreateSpell";
   public const string CreateTalent = "CreateTalent";
   public const string CreateWorld = "CreateWorld";
   public const string Update = "Update";
