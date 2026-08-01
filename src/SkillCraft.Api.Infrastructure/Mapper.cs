@@ -155,6 +155,11 @@ internal class Mapper
       Content = source.Content
     };
 
+    if (source.Parent is not null)
+    {
+      destination.Parent = ToLineage(source.Parent);
+    }
+
     foreach (LineageFeature feature in source.Features)
     {
       destination.Features.Add(ToLineageFeature(feature));

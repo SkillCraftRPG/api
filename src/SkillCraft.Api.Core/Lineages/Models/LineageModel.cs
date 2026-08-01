@@ -16,5 +16,8 @@ public class LineageModel : Aggregate
   public LineageWeightModel Weight { get; set; } = new();
   public LineageAgeModel Age { get; set; } = new();
 
+  public LineageModel? Parent { get; set; }
+  public List<LineageModel> Children { get; set; } = [];
+
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

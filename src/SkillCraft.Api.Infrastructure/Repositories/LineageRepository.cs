@@ -83,6 +83,11 @@ internal class LineageRepository : Repository, ILineageRepository
       OperatorCondition condition = new(parentLineageUid, Operators.IsEqualTo(payload.ParentId.Value));
       builder.Join(parentLineageId, Db.Lineages.ParentId, condition);
     }
+    else
+    {
+      builder.Where(Db.Lineages.ParentId, Operators.IsNull());
+    }
+
     if (payload.SizeCategory.HasValue)
     {
       builder.Where(Db.Lineages.SizeCategory, Operators.IsEqualTo(payload.SizeCategory.Value.ToString()));
