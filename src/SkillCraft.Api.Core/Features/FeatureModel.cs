@@ -1,3 +1,5 @@
+﻿using FluentValidation;
+
 namespace SkillCraft.Api.Core.Features;
 
 public record FeatureModel : IFeature
@@ -18,4 +20,6 @@ public record FeatureModel : IFeature
   public FeatureModel(IFeature feature) : this(feature.Name, feature.Content)
   {
   }
+
+  public void Validate() => new FeatureValidator().ValidateAndThrow(this);
 }
