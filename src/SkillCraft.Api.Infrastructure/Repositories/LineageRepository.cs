@@ -31,14 +31,29 @@ internal class LineageRepository : Repository, ILineageRepository
       base.RecordChange(new LineageCreated(lineage));
     }
   }
+  public void Add(LineageFeature feature)
+  {
+    Database.LineageFeatures.Add(feature);
+    base.RecordChange(new LineageFeatureCreated(feature));
+  }
   public void Remove(Lineage lineage)
   {
     Database.Lineages.Remove(lineage);
     base.RecordChange(new LineageDeleted(lineage, _context.UserId));
   }
+  public void Remove(LineageFeature feature)
+  {
+    Database.LineageFeatures.Remove(feature);
+    base.RecordChange(new LineageFeatureDeleted(feature));
+  }
   public void Update(Lineage lineage, LineageUpdated record)
   {
     Database.Lineages.Update(lineage);
+    base.RecordChange(record);
+  }
+  public void Update(LineageFeature feature, LineageFeatureUpdated record)
+  {
+    Database.LineageFeatures.Update(feature);
     base.RecordChange(record);
   }
 

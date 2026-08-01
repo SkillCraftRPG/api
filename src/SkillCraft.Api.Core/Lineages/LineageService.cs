@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Lineages.Commands;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Lineages.Queries;
@@ -10,6 +11,8 @@ namespace SkillCraft.Api.Core.Lineages;
 public interface ILineageService
 {
   Task<CreateOrReplaceLineageResult> CreateOrReplaceAsync(CreateOrReplaceLineagePayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<CreateOrReplaceLineageFeatureResult> CreateOrReplaceFeatureAsync(Guid lineageId, FeatureModel payload, Guid? featureId = null, CancellationToken cancellationToken = default);
+  Task<LineageModel?> DeleteFeatureAsync(Guid lineageId, Guid featureId, CancellationToken cancellationToken = default);
   Task<LineageModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<SearchResults<LineageModel>> SearchAsync(SearchLineagesPayload payload, CancellationToken cancellationToken = default);
   Task<LineageModel?> UpdateAsync(Guid id, UpdateLineagePayload payload, CancellationToken cancellationToken = default);
@@ -21,6 +24,8 @@ internal class LineageService : ILineageService
   {
     services.AddTransient<ILineageService, LineageService>();
     services.AddTransient<ICommandHandler<CreateOrReplaceLineageCommand, CreateOrReplaceLineageResult>, CreateOrReplaceLineageCommandHandler>();
+    services.AddTransient<ICommandHandler<CreateOrReplaceLineageFeatureCommand, CreateOrReplaceLineageFeatureResult>, CreateOrReplaceLineageFeatureCommandHandler>();
+    services.AddTransient<ICommandHandler<DeleteLineageFeatureCommand, LineageModel?>, DeleteLineageFeatureCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateLineageCommand, LineageModel?>, UpdateLineageCommandHandler>();
     services.AddTransient<IQueryHandler<ReadLineageQuery, LineageModel?>, ReadLineageQueryHandler>();
     services.AddTransient<IQueryHandler<SearchLineagesQuery, SearchResults<LineageModel>>, SearchLineagesQueryHandler>();
@@ -38,6 +43,18 @@ internal class LineageService : ILineageService
   public async Task<CreateOrReplaceLineageResult> CreateOrReplaceAsync(CreateOrReplaceLineagePayload payload, Guid? id, CancellationToken cancellationToken)
   {
     CreateOrReplaceLineageCommand command = new(payload, id);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<CreateOrReplaceLineageFeatureResult> CreateOrReplaceFeatureAsync(Guid lineageId, FeatureModel payload, Guid? featureId, CancellationToken cancellationToken)
+  {
+    CreateOrReplaceLineageFeatureCommand command = new(lineageId, payload, featureId);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<LineageModel?> DeleteFeatureAsync(Guid lineageId, Guid featureId, CancellationToken cancellationToken)
+  {
+    DeleteLineageFeatureCommand command = new(lineageId, featureId);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
