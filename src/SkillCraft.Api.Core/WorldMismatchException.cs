@@ -18,18 +18,18 @@ public class WorldMismatchException : ArgumentException
     private set => Data[nameof(Actual)] = value;
   }
 
-  public WorldMismatchException(WorldId expected, WorldId actual, string? paramName = null)
-    : base(BuildMessage(expected, actual), paramName)
+  public WorldMismatchException(WorldId expected, WorldId actual, string propertyName)
+    : base(BuildMessage(expected, actual), propertyName)
   {
     Expected = expected.ResourceId;
     Actual = actual.ResourceId;
   }
 
-  public static void ThrowIfMismatch(WorldId expected, WorldId actual, string? paramName = null)
+  public static void ThrowIfMismatch(WorldId expected, WorldId actual, string propertyName)
   {
     if (expected != actual)
     {
-      throw new WorldMismatchException(expected, actual, paramName);
+      throw new WorldMismatchException(expected, actual, propertyName);
     }
   }
 
