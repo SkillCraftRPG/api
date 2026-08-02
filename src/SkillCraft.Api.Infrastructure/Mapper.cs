@@ -6,6 +6,7 @@ using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
+using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Spells.Models;
 using SkillCraft.Api.Core.Talents.Models;
@@ -85,6 +86,23 @@ internal class Mapper
     {
       destination.Feature = new FeatureModel(source.FeatureName, source.FeatureContent);
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemModel ToItem(ItemEntity source)
+  {
+    ItemModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Price = source.Price,
+      Weight = source.Weight
+    };
 
     MapAggregate(source, destination);
 

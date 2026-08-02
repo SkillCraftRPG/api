@@ -59,6 +59,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<ICasteQuerier, CasteQuerier>()
       .AddScoped<ICustomizationQuerier, CustomizationQuerier>()
       .AddScoped<IEducationQuerier, EducationQuerier>()
+      .AddScoped<IItemQuerier, ItemQuerier>()
       .AddScoped<IScriptQuerier, ScriptQuerier>()
       .AddScoped<ISpellQuerier, SpellQuerier>()
       .AddScoped<ITalentQuerier, TalentQuerier>()
