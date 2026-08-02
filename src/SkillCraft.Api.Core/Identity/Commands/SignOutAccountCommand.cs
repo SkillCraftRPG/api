@@ -9,14 +9,12 @@ internal record SignOutAccountCommand(Guid? SessionId) : ICommand<bool>;
 internal class SignOutAccountCommandHandler : ICommandHandler<SignOutAccountCommand, bool>
 {
   private readonly IContext _context;
-  private readonly IPermissionService _permissionService;
   private readonly ISessionGateway _sessionGateway;
   private readonly IUserGateway _userGateway;
 
-  public SignOutAccountCommandHandler(IContext context, IPermissionService permissionService, ISessionGateway sessionGateway, IUserGateway userGateway)
+  public SignOutAccountCommandHandler(IContext context, ISessionGateway sessionGateway, IUserGateway userGateway)
   {
     _context = context;
-    _permissionService = permissionService;
     _sessionGateway = sessionGateway;
     _userGateway = userGateway;
   }

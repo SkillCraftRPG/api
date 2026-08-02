@@ -15,7 +15,7 @@ public readonly struct CustomizationId
   {
     StreamId = streamId;
 
-    Resource resource = Resource.Parse(streamId.Value);
+    ResourceIdentifier resource = ResourceIdentifier.Parse(streamId.Value);
     WorldId = resource.WorldId ?? throw new ArgumentException("A world is required.", nameof(streamId));
     ResourceId = resource.Id;
   }
@@ -26,7 +26,7 @@ public readonly struct CustomizationId
 
   public CustomizationId(WorldId worldId, Guid resourceId)
   {
-    Resource resource = new(Customization.ResourceKind, resourceId, worldId);
+    ResourceIdentifier resource = new(Customization.ResourceKind, resourceId, worldId);
     StreamId = new StreamId(resource.ToString());
 
     WorldId = worldId;

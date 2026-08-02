@@ -92,7 +92,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.Update:
-        return _context.IsWorldOwner() && resource.WorldId == _context.TryGetWorldId()?.ResourceId;
+        return _context.IsWorldOwner() && resource.WorldId == _context.TryGetWorldId();
       default:
         return false;
     }

@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Languages;
@@ -15,7 +15,7 @@ public readonly struct LanguageId
   {
     StreamId = streamId;
 
-    Resource resource = Resource.Parse(streamId.Value);
+    ResourceIdentifier resource = ResourceIdentifier.Parse(streamId.Value);
     WorldId = resource.WorldId ?? throw new ArgumentException("A world is required.", nameof(streamId));
     ResourceId = resource.Id;
   }
@@ -26,7 +26,7 @@ public readonly struct LanguageId
 
   public LanguageId(WorldId worldId, Guid resourceId)
   {
-    Resource resource = new(Language.ResourceKind, resourceId, worldId);
+    ResourceIdentifier resource = new(Language.ResourceKind, resourceId, worldId);
     StreamId = new StreamId(resource.ToString());
 
     WorldId = worldId;

@@ -57,7 +57,7 @@ public class KeyAlreadyUsedException : ConflictException
     : base(BuildMessage(resource, conflictId, attemptedKey, propertyName))
   {
     ResourceIdentifier identifier = resource.Identifier;
-    WorldId = identifier.WorldId;
+    WorldId = identifier.WorldId?.ResourceId;
     ResourceKind = identifier.Kind;
     ResourceId = identifier.Id;
     ConflictId = conflictId;
@@ -69,7 +69,7 @@ public class KeyAlreadyUsedException : ConflictException
   {
     ResourceIdentifier identifier = resource.Identifier;
     return new ErrorMessageBuilder(ErrorMessage)
-      .AddData(nameof(WorldId), identifier.WorldId, "<null>")
+      .AddData(nameof(WorldId), identifier.WorldId?.ResourceId, "<null>")
       .AddData(nameof(ResourceKind), identifier.Kind)
       .AddData(nameof(ResourceId), identifier.Id)
       .AddData(nameof(ConflictId), conflictId)

@@ -30,7 +30,7 @@ public class Lineage : AggregateRoot, IResource
   public LineageWeight Weight { get; private set; } = new();
   public LineageAge Age { get; private set; } = new();
 
-  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Lineage() : base()
   {

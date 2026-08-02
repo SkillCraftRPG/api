@@ -22,7 +22,7 @@ public class Education : AggregateRoot, IResource
   public WealthMultiplier? WealthMultiplier { get; private set; }
   public Feature? Feature { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Education() : base()
   {

@@ -15,7 +15,7 @@ public readonly struct LineageId
   {
     StreamId = streamId;
 
-    Resource resource = Resource.Parse(streamId.Value);
+    ResourceIdentifier resource = ResourceIdentifier.Parse(streamId.Value);
     WorldId = resource.WorldId ?? throw new ArgumentException("A world is required.", nameof(streamId));
     ResourceId = resource.Id;
   }
@@ -26,7 +26,7 @@ public readonly struct LineageId
 
   public LineageId(WorldId worldId, Guid resourceId)
   {
-    Resource resource = new(Lineage.ResourceKind, resourceId, worldId);
+    ResourceIdentifier resource = new(Lineage.ResourceKind, resourceId, worldId);
     StreamId = new StreamId(resource.ToString());
 
     WorldId = worldId;

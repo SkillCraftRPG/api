@@ -19,7 +19,7 @@ public class Customization : AggregateRoot, IResource
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Customization() : base()
   {
