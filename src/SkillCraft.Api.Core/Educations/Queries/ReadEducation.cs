@@ -7,15 +7,15 @@ internal record ReadEducationQuery(Guid Id) : IQuery<EducationModel?>;
 
 internal class ReadEducationQueryHandler : IQueryHandler<ReadEducationQuery, EducationModel?>
 {
-  private readonly IEducationRepository _educationRepository;
+  private readonly IEducationQuerier _educationQuerier;
 
-  public ReadEducationQueryHandler(IEducationRepository educationRepository)
+  public ReadEducationQueryHandler(IEducationQuerier educationQuerier)
   {
-    _educationRepository = educationRepository;
+    _educationQuerier = educationQuerier;
   }
 
   public async Task<EducationModel?> HandleAsync(ReadEducationQuery query, CancellationToken cancellationToken)
   {
-    return await _educationRepository.ReadAsync(query.Id, cancellationToken);
+    return await _educationQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

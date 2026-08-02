@@ -58,6 +58,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddScoped<ICasteQuerier, CasteQuerier>()
       .AddScoped<ICustomizationQuerier, CustomizationQuerier>()
+      .AddScoped<IEducationQuerier, EducationQuerier>()
       .AddScoped<IScriptQuerier, ScriptQuerier>()
       .AddScoped<ITalentQuerier, TalentQuerier>()
       .AddScoped<IWorldQuerier, WorldQuerier>();

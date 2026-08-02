@@ -115,6 +115,6 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, int> WealthMultiplier<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, 999);
+    return ruleBuilder.InclusiveBetween(Educations.WealthMultiplier.MinimumValue, Educations.WealthMultiplier.MaximumValue);
   }
 }
