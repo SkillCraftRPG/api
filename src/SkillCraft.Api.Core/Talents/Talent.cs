@@ -84,7 +84,7 @@ public class Talent : AggregateRoot, IResource
   {
     if (talent is not null)
     {
-      WorldMismatchException.ThrowIfMismatch(WorldId, talent.WorldId);
+      WorldMismatchException.ThrowIfMismatch(WorldId, talent.WorldId, nameof(talent));
       InvalidRequiredTalentException.ThrowIfNotValid(this, talent);
       // TODO(fpion): should not be the same talent
     }
