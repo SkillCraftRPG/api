@@ -9,7 +9,6 @@ using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Extensions;
-using SkillCraft.Api.Infrastructure;
 
 namespace SkillCraft.Api;
 
@@ -64,11 +63,5 @@ internal class HttpApplicationContext : IContext
   {
     WorldModel? world = Context.GetWorld();
     return world is null ? null : new WorldId(world.Id);
-  }
-
-  public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
-  {
-    GameContext database = Context.RequestServices.GetRequiredService<GameContext>();
-    return await database.SaveChangesAsync(cancellationToken);
   }
 }
