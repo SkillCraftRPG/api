@@ -1,5 +1,4 @@
-﻿using SkillCraft.Api.Core.Castes;
-using SkillCraft.Api.Core.Customizations;
+﻿using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
@@ -21,7 +20,7 @@ internal class WorldEntity : AggregateEntity
   public string? Name { get; private set; }
   public string? Content { get; private set; }
 
-  public List<Caste> Castes { get; private set; } = [];
+  public List<CasteEntity> Castes { get; private set; } = [];
   public List<CustomizationEntity> Customizations { get; private set; } = [];
   public List<Education> Educations { get; private set; } = [];
   public List<Item> Items { get; private set; } = [];

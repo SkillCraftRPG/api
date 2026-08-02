@@ -1,0 +1,17 @@
+﻿using SkillCraft.Api.Core.Castes;
+
+namespace SkillCraft.Api.Infrastructure.Converters;
+
+internal class CasteIdConverter : JsonConverter<CasteId>
+{
+  public override CasteId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+  {
+    string? value = reader.GetString();
+    return string.IsNullOrWhiteSpace(value) ? new CasteId() : new(value);
+  }
+
+  public override void Write(Utf8JsonWriter writer, CasteId id, JsonSerializerOptions options)
+  {
+    writer.WriteStringValue(id.Value);
+  }
+}

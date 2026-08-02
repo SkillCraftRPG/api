@@ -8,9 +8,13 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
   {
     base.RegisterConverters();
 
+    SerializerOptions.Converters.Add(new CasteIdConverter());
     SerializerOptions.Converters.Add(new ContentConverter());
+    SerializerOptions.Converters.Add(new CustomizationIdConverter());
     SerializerOptions.Converters.Add(new KeyConverter());
     SerializerOptions.Converters.Add(new NameConverter());
+    SerializerOptions.Converters.Add(new RollConverter());
+    SerializerOptions.Converters.Add(new ScriptIdConverter());
     SerializerOptions.Converters.Add(new SummaryConverter());
     SerializerOptions.Converters.Add(new TalentIdConverter());
     SerializerOptions.Converters.Add(new TalentTierConverter());
