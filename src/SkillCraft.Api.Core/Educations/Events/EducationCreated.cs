@@ -1,4 +1,4 @@
-using SkillCraft.Api.Core.Features;
+﻿using SkillCraft.Api.Core.Features;
 
 namespace SkillCraft.Api.Core.Educations.Events;
 
@@ -10,7 +10,7 @@ public class EducationCreated : CreateEvent
 
   public Skill? Skill { get; set; }
   public int? WealthMultiplier { get; set; }
-  public Feature? Feature { get; set; }
+  public FeatureOld? Feature { get; set; }
 
   public EducationCreated() : base()
   {
@@ -26,7 +26,7 @@ public class EducationCreated : CreateEvent
     WealthMultiplier = education.WealthMultiplier;
     if (education.FeatureName is not null)
     {
-      Feature = new Feature(education.FeatureName, education.FeatureContent);
+      Feature = new FeatureOld(education.FeatureName, education.FeatureContent);
     }
   }
 }

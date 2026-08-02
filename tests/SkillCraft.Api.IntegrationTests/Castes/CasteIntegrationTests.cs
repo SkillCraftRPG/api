@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Features;
@@ -29,8 +30,7 @@ public class CasteIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _caste = new CasteBuilder(Faker).WithWorld(Context.World).Build();
-    _casteRepository.Add(_caste);
-    await Context.SaveChangesAsync();
+    await _casteRepository.SaveAsync(_caste);
   }
 
   [Theory(DisplayName = "It should create a new caste.")]
@@ -54,11 +54,11 @@ public class CasteIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, caste.Id);
     }
-    Assert.Equal(1, caste.Version);
+    Assert.Equal(3, caste.Version);
     Assert.Equal(Actor, caste.CreatedBy);
     Assert.Equal(DateTime.UtcNow, caste.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(caste.CreatedBy, caste.UpdatedBy);
-    Assert.Equal(caste.CreatedOn, caste.UpdatedOn);
+    Assert.True(caste.CreatedOn < caste.UpdatedOn);
 
     AssertArtisan(payload, caste);
   }
@@ -67,8 +67,7 @@ public class CasteIntegrationTests : IntegrationTests
   public async Task Given_Skill_When_Search_Then_Results()
   {
     Caste artisan = CasteBuilder.Artisan(Faker, Context.World);
-    _casteRepository.Add(artisan);
-    await Context.SaveChangesAsync();
+    await _casteRepository.SaveAsync(artisan);
 
     SearchCastesPayload payload = new()
     {
@@ -79,22 +78,22 @@ public class CasteIntegrationTests : IntegrationTests
     Assert.Equal(1, results.Total);
 
     CasteModel caste = Assert.Single(results.Items);
-    Assert.Equal(artisan.Id, caste.Id);
+    Assert.Equal(artisan.ResourceId, caste.Id);
   }
 
   [Fact(DisplayName = "It should read a caste by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    CasteModel? caste = await _casteService.ReadAsync(_caste.Id);
+    CasteModel? caste = await _casteService.ReadAsync(_caste.ResourceId);
     Assert.NotNull(caste);
-    Assert.Equal(_caste.Id, caste.Id);
+    Assert.Equal(_caste.ResourceId, caste.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing caste.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
-    Guid id = _caste.Id;
+    Guid id = _caste.ResourceId;
 
     CreateOrReplaceCasteResult result = await _casteService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -102,9 +101,9 @@ public class CasteIntegrationTests : IntegrationTests
     Assert.NotNull(caste);
 
     Assert.Equal(id, caste.Id);
-    Assert.Equal(2, caste.Version);
-    Assert.Equal(_caste.CreatedBy, caste.CreatedBy.Id);
-    Assert.Equal(_caste.CreatedOn, caste.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, caste.Version);
+    Assert.Equal(_caste.CreatedBy, caste.CreatedBy.GetActorId());
+    Assert.Equal(_caste.CreatedOn.AsUniversalTime(), caste.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, caste.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, caste.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -128,7 +127,7 @@ public class CasteIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _casteService.ReadAsync(_caste.Id));
+    Assert.Null(await _casteService.ReadAsync(_caste.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the caste was not found.")]
@@ -143,8 +142,7 @@ public class CasteIntegrationTests : IntegrationTests
     Caste artisan = CasteBuilder.Artisan(Faker, Context.World);
     Caste boheme = new CasteBuilder(Faker).WithWorld(Context.World).WithName("Bohème").Build();
     Caste milicien = new CasteBuilder(Faker).WithWorld(Context.World).WithName("Milicien").Build();
-    _casteRepository.Add(artisan, boheme, milicien);
-    await Context.SaveChangesAsync();
+    await _casteRepository.SaveAsync([artisan, boheme, milicien]);
 
     SearchCastesPayload payload = new()
     {
@@ -154,14 +152,14 @@ public class CasteIntegrationTests : IntegrationTests
     payload.Search.Operator = SearchOperator.Or;
     payload.Search.Terms.Add(new SearchTerm("%p%"));
     payload.Search.Terms.Add(new SearchTerm("%m%"));
-    payload.Ids.AddRange([_caste.Id, artisan.Id, Guid.Empty, milicien.Id]);
+    payload.Ids.AddRange([_caste.ResourceId, artisan.ResourceId, Guid.Empty, milicien.ResourceId]);
     payload.Sort.Add(new CasteSortOption(CasteSort.Name, isDescending: true));
 
     SearchResults<CasteModel> results = await _casteService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     CasteModel caste = Assert.Single(results.Items);
-    Assert.Equal(artisan.Id, caste.Id);
+    Assert.Equal(artisan.ResourceId, caste.Id);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a caste.")]
@@ -184,7 +182,7 @@ public class CasteIntegrationTests : IntegrationTests
 
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload, _caste.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload, _caste.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
@@ -197,7 +195,7 @@ public class CasteIntegrationTests : IntegrationTests
 
     UpdateCastePayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.UpdateAsync(_caste.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.UpdateAsync(_caste.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
@@ -206,7 +204,7 @@ public class CasteIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing caste.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _caste.Id;
+    Guid id = _caste.ResourceId;
     CreateOrReplaceCastePayload create = CreateArtisanPayload();
     UpdateCastePayload payload = new()
     {
@@ -222,9 +220,9 @@ public class CasteIntegrationTests : IntegrationTests
     Assert.NotNull(caste);
 
     Assert.Equal(id, caste.Id);
-    Assert.Equal(2, caste.Version);
-    Assert.Equal(_caste.CreatedBy, caste.CreatedBy.Id);
-    Assert.Equal(_caste.CreatedOn, caste.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, caste.Version);
+    Assert.Equal(_caste.CreatedBy, caste.CreatedBy.GetActorId());
+    Assert.Equal(_caste.CreatedOn.AsUniversalTime(), caste.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, caste.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, caste.UpdatedOn, TimeSpan.FromSeconds(10));
 

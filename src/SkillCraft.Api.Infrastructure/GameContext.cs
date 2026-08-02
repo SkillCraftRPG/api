@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
@@ -16,7 +15,7 @@ public class GameContext : DbContext
   {
   }
 
-  internal DbSet<Caste> Castes => Set<Caste>();
+  internal DbSet<CasteEntity> Castes => Set<CasteEntity>();
   internal DbSet<CustomizationEntity> Customizations => Set<CustomizationEntity>();
   internal DbSet<Education> Educations => Set<Education>();
   internal DbSet<HistoryRecord> History => Set<HistoryRecord>();

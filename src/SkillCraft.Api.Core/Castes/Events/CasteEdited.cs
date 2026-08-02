@@ -2,4 +2,4 @@
 
 namespace SkillCraft.Api.Core.Castes.Events;
 
-public record CasteDeleted : DomainEvent, IDeleteEvent;
+public record CasteEdited(Summary? Summary, Content? Content) : DomainEvent;

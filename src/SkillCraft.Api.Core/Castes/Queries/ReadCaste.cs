@@ -7,15 +7,15 @@ internal record ReadCasteQuery(Guid Id) : IQuery<CasteModel?>;
 
 internal class ReadCasteQueryHandler : IQueryHandler<ReadCasteQuery, CasteModel?>
 {
-  private readonly ICasteRepository _casteRepository;
+  private readonly ICasteQuerier _casteQuerier;
 
-  public ReadCasteQueryHandler(ICasteRepository casteRepository)
+  public ReadCasteQueryHandler(ICasteQuerier casteQuerier)
   {
-    _casteRepository = casteRepository;
+    _casteQuerier = casteQuerier;
   }
 
   public async Task<CasteModel?> HandleAsync(ReadCasteQuery query, CancellationToken cancellationToken)
   {
-    return await _casteRepository.ReadAsync(query.Id, cancellationToken);
+    return await _casteQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

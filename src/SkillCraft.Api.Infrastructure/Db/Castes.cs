@@ -1,5 +1,5 @@
 ﻿using Logitar.Data;
-using SkillCraft.Api.Core.Castes;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Db;
 
@@ -7,19 +7,19 @@ public static class Castes
 {
   public static readonly TableId Table = new(Schemas.Game, nameof(GameContext.Castes), alias: null);
 
-  public static readonly ColumnId CasteId = new(nameof(Caste.CasteId), Table);
-  public static readonly ColumnId Content = new(nameof(Caste.Content), Table);
-  public static readonly ColumnId CreatedBy = new(nameof(Caste.CreatedBy), Table);
-  public static readonly ColumnId CreatedOn = new(nameof(Caste.CreatedOn), Table);
-  public static readonly ColumnId FeatureContent = new(nameof(Caste.FeatureContent), Table);
-  public static readonly ColumnId FeatureName = new(nameof(Caste.FeatureName), Table);
-  public static readonly ColumnId Id = new(nameof(Caste.Id), Table);
-  public static readonly ColumnId Name = new(nameof(Caste.Name), Table);
-  public static readonly ColumnId Skill = new(nameof(Caste.Skill), Table);
-  public static readonly ColumnId Summary = new(nameof(Caste.Summary), Table);
-  public static readonly ColumnId UpdatedBy = new(nameof(Caste.UpdatedBy), Table);
-  public static readonly ColumnId UpdatedOn = new(nameof(Caste.UpdatedOn), Table);
-  public static readonly ColumnId Version = new(nameof(Caste.Version), Table);
-  public static readonly ColumnId WealthRoll = new(nameof(Caste.WealthRoll), Table);
-  public static readonly ColumnId WorldId = new(nameof(Caste.WorldId), Table);
+  public static readonly ColumnId CasteId = new(nameof(CasteEntity.CasteId), Table);
+  public static readonly ColumnId Content = new(nameof(CasteEntity.Content), Table);
+  public static readonly ColumnId CreatedBy = new(nameof(CasteEntity.CreatedBy), Table);
+  public static readonly ColumnId CreatedOn = new(nameof(CasteEntity.CreatedOn), Table);
+  public static readonly ColumnId FeatureContent = new(nameof(CasteEntity.FeatureContent), Table);
+  public static readonly ColumnId FeatureName = new(nameof(CasteEntity.FeatureName), Table);
+  public static readonly ColumnId Id = new(nameof(CasteEntity.Id), Table);
+  public static readonly ColumnId Name = new(nameof(CasteEntity.Name), Table);
+  public static readonly ColumnId Skill = new(nameof(CasteEntity.Skill), Table);
+  public static readonly ColumnId Summary = new(nameof(CasteEntity.Summary), Table);
+  public static readonly ColumnId UpdatedBy = new(nameof(CasteEntity.UpdatedBy), Table);
+  public static readonly ColumnId UpdatedOn = new(nameof(CasteEntity.UpdatedOn), Table);
+  public static readonly ColumnId Version = new(nameof(CasteEntity.Version), Table);
+  public static readonly ColumnId WealthRoll = new(nameof(CasteEntity.WealthRoll), Table);
+  public static readonly ColumnId WorldId = new(nameof(CasteEntity.WorldId), Table);
 }

@@ -8,15 +8,15 @@ internal record SearchCastesQuery(SearchCastesPayload Payload) : IQuery<SearchRe
 
 internal class SearchCastesQueryHandler : IQueryHandler<SearchCastesQuery, SearchResults<CasteModel>>
 {
-  private readonly ICasteRepository _casteRepository;
+  private readonly ICasteQuerier _casteQuerier;
 
-  public SearchCastesQueryHandler(ICasteRepository casteRepository)
+  public SearchCastesQueryHandler(ICasteQuerier casteQuerier)
   {
-    _casteRepository = casteRepository;
+    _casteQuerier = casteQuerier;
   }
 
   public async Task<SearchResults<CasteModel>> HandleAsync(SearchCastesQuery query, CancellationToken cancellationToken)
   {
-    return await _casteRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _casteQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

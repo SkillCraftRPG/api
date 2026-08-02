@@ -15,7 +15,7 @@ public interface IEducationBuilder
   IEducationBuilder WithContent(string? content);
   IEducationBuilder WithSkill(Skill? skill);
   IEducationBuilder WithWealthMultiplier(int? wealthMultiplier);
-  IEducationBuilder WithFeature(Feature? feature);
+  IEducationBuilder WithFeature(FeatureOld? feature);
 
   Education Build();
 }
@@ -24,7 +24,7 @@ public class EducationBuilder : IEducationBuilder
 {
   private readonly Faker _faker;
 
-  private Feature? _feature = null;
+  private FeatureOld? _feature = null;
   private string? _content = null;
   private Guid? _id = null;
   private string _name = "Education";
@@ -80,7 +80,7 @@ public class EducationBuilder : IEducationBuilder
     return this;
   }
 
-  public IEducationBuilder WithFeature(Feature? feature)
+  public IEducationBuilder WithFeature(FeatureOld? feature)
   {
     _feature = feature;
     return this;
@@ -108,6 +108,6 @@ public class EducationBuilder : IEducationBuilder
     .WithContent("Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.")
     .WithSkill(Skill.Orientation)
     .WithWealthMultiplier(10)
-    .WithFeature(new Feature("Conseiller avisé", "La nature calme et analytique du personnage lui permet d’être reconnu rapidement pour son jugement sûr.\n\nIl peut ajouter un bonus égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1) à ses [tests](/regles/competences/tests) d’[Intuition](/regles/competences/intuition) ou d’[Investigation](/regles/competences/investigation) effectués afin de comprendre un plan, évaluer un risque ou choisir la meilleure approche de manière objective.\n\nÉgalement, il ajoute également ce bonus à ses tests de [Diplomatie](/regles/competences/diplomatie) effectués afin de convaincre un individue rationnel."))
+    .WithFeature(new FeatureOld("Conseiller avisé", "La nature calme et analytique du personnage lui permet d’être reconnu rapidement pour son jugement sûr.\n\nIl peut ajouter un bonus égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1) à ses [tests](/regles/competences/tests) d’[Intuition](/regles/competences/intuition) ou d’[Investigation](/regles/competences/investigation) effectués afin de comprendre un plan, évaluer un risque ou choisir la meilleure approche de manière objective.\n\nÉgalement, il ajoute également ce bonus à ses tests de [Diplomatie](/regles/competences/diplomatie) effectués afin de convaincre un individue rationnel."))
     .Build();
 }

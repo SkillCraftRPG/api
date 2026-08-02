@@ -2,8 +2,6 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
-using SkillCraft.Api.Core.Castes;
-using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
@@ -36,28 +34,6 @@ internal class MapperOld // TODO(fpion): remove this
     {
       _actors[actor.Key] = actor.Value;
     }
-  }
-
-  public CasteModel ToCaste(Caste source)
-  {
-    CasteModel destination = new()
-    {
-      Id = source.Id,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content,
-      Skill = source.Skill,
-      WealthRoll = source.WealthRoll
-    };
-
-    if (source.FeatureName is not null)
-    {
-      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureContent);
-    }
-
-    MapAggregate(source, destination);
-
-    return destination;
   }
 
   public EducationModel ToEducation(Education source)
