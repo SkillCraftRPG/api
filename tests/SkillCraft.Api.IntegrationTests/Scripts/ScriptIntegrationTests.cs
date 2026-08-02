@@ -149,9 +149,10 @@ public class ScriptIntegrationTests : IntegrationTests
     CreateOrReplaceScriptPayload payload = CreateRenonPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateScript, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a script.")]
@@ -162,9 +163,10 @@ public class ScriptIntegrationTests : IntegrationTests
     CreateOrReplaceScriptPayload payload = CreateRenonPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload, _script.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_script.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a script.")]
@@ -175,9 +177,10 @@ public class ScriptIntegrationTests : IntegrationTests
     UpdateScriptPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.UpdateAsync(_script.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_script.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing script.")]

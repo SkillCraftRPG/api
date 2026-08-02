@@ -188,9 +188,10 @@ public class SpellIntegrationTests : IntegrationTests
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateSpell, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a spell.")]
@@ -202,9 +203,10 @@ public class SpellIntegrationTests : IntegrationTests
     payload.Tier = _spell.Tier.Value;
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a spell.")]
@@ -215,9 +217,10 @@ public class SpellIntegrationTests : IntegrationTests
     UpdateSpellPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.UpdateAsync(_spell.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing spell.")]

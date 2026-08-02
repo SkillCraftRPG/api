@@ -271,9 +271,10 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHautElfePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateLineage, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a lineage.")]
@@ -284,9 +285,10 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHumainPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a lineage.")]
@@ -297,9 +299,10 @@ public class LineageIntegrationTests : IntegrationTests
     UpdateLineagePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.UpdateAsync(_lineage.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing lineage.")]

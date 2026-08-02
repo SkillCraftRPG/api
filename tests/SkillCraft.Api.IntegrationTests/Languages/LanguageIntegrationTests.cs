@@ -259,9 +259,10 @@ public class LanguageIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateLanguage, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a language.")]
@@ -279,9 +280,10 @@ public class LanguageIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_language.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a language.")]
@@ -292,9 +294,10 @@ public class LanguageIntegrationTests : IntegrationTests
     UpdateLanguagePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.UpdateAsync(_language.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_language.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing language.")]

@@ -311,9 +311,10 @@ public class TalentIntegrationTests : IntegrationTests
     CreateOrReplaceTalentPayload payload = CreateFormationMartialePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateTalent, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a talent.")]
@@ -324,9 +325,10 @@ public class TalentIntegrationTests : IntegrationTests
     CreateOrReplaceTalentPayload payload = CreateFormationMartialePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.CreateOrReplaceAsync(payload, _talent.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_talent.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a talent.")]
@@ -337,9 +339,10 @@ public class TalentIntegrationTests : IntegrationTests
     UpdateTalentPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.UpdateAsync(_talent.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_talent.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing talent.")]

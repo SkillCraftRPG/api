@@ -172,9 +172,10 @@ public class ItemIntegrationTests : IntegrationTests
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateItem, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an item.")]
@@ -185,9 +186,10 @@ public class ItemIntegrationTests : IntegrationTests
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload, _item.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an item.")]
@@ -198,9 +200,10 @@ public class ItemIntegrationTests : IntegrationTests
     UpdateItemPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.UpdateAsync(_item.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing item.")]

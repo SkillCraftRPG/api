@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts;
 using Logitar;
-using SkillCraft.Api.Core.Identity;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Permissions;
 
@@ -8,10 +9,10 @@ public class PermissionDeniedException : ErrorException
 {
   private const string ErrorMessage = "The specified permission was denied.";
 
-  public Guid? UserId
+  public string? Principal
   {
-    get => (Guid?)Data[nameof(UserId)];
-    private set => Data[nameof(UserId)] = value;
+    get => (string?)Data[nameof(Principal)];
+    private set => Data[nameof(Principal)] = value;
   }
   public string Action
   {
@@ -23,20 +24,27 @@ public class PermissionDeniedException : ErrorException
     get => (string?)Data[nameof(Resource)];
     private set => Data[nameof(Resource)] = value;
   }
+  public Guid? WorldId
+  {
+    get => (Guid?)Data[nameof(WorldId)];
+    private set => Data[nameof(WorldId)] = value;
+  }
 
   public override Error Error => new(this.GetErrorCode(), ErrorMessage);
 
-  public PermissionDeniedException(UserId? userId, string action, ResourceIdentifier? resource)
-    : base(BuildMessage(userId, action, resource))
+  public PermissionDeniedException(ActorId? actorId, string action, ResourceIdentifier? resource, WorldId? worldId)
+    : base(BuildMessage(actorId, action, resource, worldId))
   {
-    UserId = userId?.ResourceId;
+    Principal = actorId?.Value;
     Action = action;
     Resource = resource?.ToString();
+    WorldId = worldId?.ResourceId;
   }
 
-  private static string BuildMessage(UserId? userId, string action, ResourceIdentifier? resource) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(UserId), userId?.ResourceId, "<null>")
+  private static string BuildMessage(ActorId? actorId, string action, ResourceIdentifier? resource, WorldId? worldId) => new ErrorMessageBuilder(ErrorMessage)
+    .AddData(nameof(Principal), actorId, "<null>")
     .AddData(nameof(Action), action)
     .AddData(nameof(Resource), resource, "<null>")
+    .AddData(nameof(WorldId), worldId?.ResourceId, "<null>")
     .Build();
 }

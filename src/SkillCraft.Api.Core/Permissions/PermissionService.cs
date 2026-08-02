@@ -35,7 +35,7 @@ internal class PermissionService : IPermissionService
   }
   public async Task CheckAsync(string action, IResource? resource, CancellationToken cancellationToken)
   {
-    bool isAllowed = false;
+    bool isAllowed;
 
     ResourceIdentifier? identifier = null;
     if (resource is null)
@@ -50,7 +50,7 @@ internal class PermissionService : IPermissionService
 
     if (!isAllowed)
     {
-      throw new PermissionDeniedException(_context.TryGetUserId(), action, identifier);
+      throw new PermissionDeniedException(_context.ActorId, action, identifier, _context.TryGetWorldId());
     }
   }
 
@@ -58,6 +58,16 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.CreateCaste:
+      case Actions.CreateCustomization:
+      case Actions.CreateEducation:
+      case Actions.CreateItem:
+      case Actions.CreateLanguage:
+      case Actions.CreateLineage:
+      case Actions.CreateScript:
+      case Actions.CreateSpell:
+      case Actions.CreateTalent:
+        return _context.IsWorldOwner();
       case Actions.CreateWorld:
         int worlds = await _worldQuerier.CountAsync(cancellationToken);
         return worlds < _settings.WorldLimit;
@@ -68,33 +78,11 @@ internal class PermissionService : IPermissionService
 
   private bool IsAllowed(string action, World world)
   {
-    switch (action)
-    {
-      // TODO(fpion): those Create permissions should not need a World.
-      case Actions.CreateCaste:
-      case Actions.CreateCustomization:
-      case Actions.CreateEducation:
-      case Actions.CreateItem:
-      case Actions.CreateLanguage:
-      case Actions.CreateLineage:
-      case Actions.CreateScript:
-      case Actions.CreateSpell:
-      case Actions.CreateTalent:
-      case Actions.Update:
-        return _context.IsWorldOwner();
-      default:
-        return false;
-    }
+    return action == Actions.Update && world.OwnerId == _context.TryGetUserId();
   }
 
   private bool IsAllowed(string action, ResourceIdentifier resource)
   {
-    switch (action)
-    {
-      case Actions.Update:
-        return _context.IsWorldOwner() && resource.WorldId == _context.TryGetWorldId();
-      default:
-        return false;
-    }
+    return action == Actions.Update && _context.IsWorldOwner() && resource.WorldId == _context.TryGetWorldId();
   }
 }

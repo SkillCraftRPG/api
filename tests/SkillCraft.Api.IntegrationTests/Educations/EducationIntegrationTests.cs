@@ -168,9 +168,10 @@ public class EducationIntegrationTests : IntegrationTests
     CreateOrReplaceEducationPayload payload = CreateJudicieuxPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateEducation, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an education.")]
@@ -181,9 +182,10 @@ public class EducationIntegrationTests : IntegrationTests
     CreateOrReplaceEducationPayload payload = CreateJudicieuxPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.CreateOrReplaceAsync(payload, _education.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_education.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an education.")]
@@ -194,9 +196,10 @@ public class EducationIntegrationTests : IntegrationTests
     UpdateEducationPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.UpdateAsync(_education.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_education.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing education.")]

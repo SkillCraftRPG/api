@@ -172,9 +172,10 @@ public class CustomizationIntegrationTests : IntegrationTests
     CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateCustomization, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a customization.")]
@@ -185,9 +186,10 @@ public class CustomizationIntegrationTests : IntegrationTests
     CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a customization.")]
@@ -198,9 +200,10 @@ public class CustomizationIntegrationTests : IntegrationTests
     UpdateCustomizationPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.UpdateAsync(_customization.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing customization.")]

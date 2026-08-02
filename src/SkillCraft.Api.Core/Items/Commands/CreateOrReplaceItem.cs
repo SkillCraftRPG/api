@@ -14,20 +14,17 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
   private readonly IItemQuerier _itemQuerier;
   private readonly IItemRepository _itemRepository;
   private readonly IPermissionService _permissionService;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceItemCommandHandler(
     IContext context,
     IItemQuerier itemQuerier,
     IItemRepository itemRepository,
-    IPermissionService permissionService,
-    IWorldRepository worldRepository)
+    IPermissionService permissionService)
   {
     _context = context;
     _itemQuerier = itemQuerier;
     _itemRepository = itemRepository;
     _permissionService = permissionService;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceItemResult> HandleAsync(CreateOrReplaceItemCommand command, CancellationToken cancellationToken)
@@ -51,8 +48,7 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     bool created = false;
     if (item is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateItem, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateItem, cancellationToken);
 
       item = new Item(itemId, name, actorId);
       created = true;

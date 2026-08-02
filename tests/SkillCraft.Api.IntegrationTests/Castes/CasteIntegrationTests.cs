@@ -170,9 +170,10 @@ public class CasteIntegrationTests : IntegrationTests
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateCaste, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a caste.")]
@@ -183,9 +184,10 @@ public class CasteIntegrationTests : IntegrationTests
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload, _caste.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a caste.")]
@@ -196,9 +198,10 @@ public class CasteIntegrationTests : IntegrationTests
     UpdateCastePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.UpdateAsync(_caste.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing caste.")]

@@ -14,20 +14,17 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
   private readonly IPermissionService _permissionService;
   private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceScriptCommandHandler(
     IContext context,
     IPermissionService permissionService,
     IScriptQuerier scriptQuerier,
-    IScriptRepository scriptRepository,
-    IWorldRepository worldRepository)
+    IScriptRepository scriptRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _scriptQuerier = scriptQuerier;
     _scriptRepository = scriptRepository;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceScriptResult> HandleAsync(CreateOrReplaceScriptCommand command, CancellationToken cancellationToken)
@@ -51,8 +48,7 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
     bool created = false;
     if (script is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateScript, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateScript, cancellationToken);
 
       script = new Script(scriptId, name, actorId);
       created = true;

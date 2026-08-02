@@ -232,9 +232,10 @@ public class WorldIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateWorld, exception.Action);
     Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a world.")]
@@ -250,9 +251,10 @@ public class WorldIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload, _world.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_world.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when udpating a world.")]
@@ -263,9 +265,10 @@ public class WorldIntegrationTests : IntegrationTests
     UpdateWorldPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.UpdateAsync(_world.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_world.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]

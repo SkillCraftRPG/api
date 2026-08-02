@@ -15,20 +15,17 @@ internal class CreateOrReplaceSpellCommandHandler : ICommandHandler<CreateOrRepl
   private readonly IPermissionService _permissionService;
   private readonly ISpellQuerier _spellQuerier;
   private readonly ISpellRepository _spellRepository;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceSpellCommandHandler(
     IContext context,
     IPermissionService permissionService,
     ISpellQuerier spellQuerier,
-    ISpellRepository spellRepository,
-    IWorldRepository worldRepository)
+    ISpellRepository spellRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _spellQuerier = spellQuerier;
     _spellRepository = spellRepository;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceSpellResult> HandleAsync(CreateOrReplaceSpellCommand command, CancellationToken cancellationToken)
@@ -52,8 +49,7 @@ internal class CreateOrReplaceSpellCommandHandler : ICommandHandler<CreateOrRepl
     bool created = false;
     if (spell is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateSpell, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateSpell, cancellationToken);
 
       spell = new Spell(spellId, new TalentTier(payload.Tier), name, actorId);
       created = true;

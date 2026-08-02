@@ -32,7 +32,7 @@ internal class SignOutAccountCommandHandler : ICommandHandler<SignOutAccountComm
       }
       else if (session.User.Id != userId.ResourceId)
       {
-        throw new PermissionDeniedException(userId, "SignOut", new ResourceIdentifier("Session", command.SessionId.Value));
+        throw new PermissionDeniedException(userId.ActorId, "SignOut", new ResourceIdentifier("Session", command.SessionId.Value), _context.TryGetWorldId());
       }
 
       await _sessionGateway.SignOutAsync(session, cancellationToken);
