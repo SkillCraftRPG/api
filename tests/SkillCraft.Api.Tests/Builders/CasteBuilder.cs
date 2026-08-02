@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Features;
@@ -8,7 +9,7 @@ namespace SkillCraft.Api.Builders;
 
 public interface ICasteBuilder
 {
-  ICasteBuilder WithId(Guid id);
+  ICasteBuilder WithId(CasteId casteId);
   ICasteBuilder WithWorld(World? world);
   ICasteBuilder WithName(string name);
   ICasteBuilder WithSummary(string? summary);
@@ -24,9 +25,9 @@ public class CasteBuilder : ICasteBuilder
 {
   private readonly Faker _faker;
 
-  private Feature? _feature = null;
+  private CasteId? _casteId = null;
   private string? _content = null;
-  private Guid? _id = null;
+  private Feature? _feature = null;
   private string _name = "Caste";
   private Skill? _skill = null;
   private string? _summary = null;
@@ -38,9 +39,9 @@ public class CasteBuilder : ICasteBuilder
     _faker = faker ?? new();
   }
 
-  public ICasteBuilder WithId(Guid id)
+  public ICasteBuilder WithId(CasteId casteId)
   {
-    _id = id;
+    _casteId = casteId;
     return this;
   }
 
@@ -89,15 +90,16 @@ public class CasteBuilder : ICasteBuilder
   public Caste Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Caste caste = new(world, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content,
-      Skill = _skill,
-      WealthRoll = _wealthRoll
-    };
-    caste.SetFeature(_feature);
+    ActorId actorId = world.OwnerId.ActorId;
+    Name name = new(_name);
+
+    Caste caste = _casteId.HasValue
+      ? new(_casteId.Value, name, actorId)
+      : new(world, name, actorId);
+
+    caste.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    caste.SetRules(_skill, Roll.TryCreate(_wealthRoll), _feature, actorId);
+
     return caste;
   }
 
@@ -108,6 +110,6 @@ public class CasteBuilder : ICasteBuilder
     .WithContent("L’artisan est un expert d’un procédé de transformation des matières brutes.\n\nIl peut être un boulanger, un forgeron, un orfèvre, un tisserand ou pratiquer tout genre de profession œuvrant dans la transformation des matières brutes.")
     .WithSkill(Skill.Crafting)
     .WithWealthRoll("8d6")
-    .WithFeature(new Feature("Professionnel", "Grâce à ses apprentissages et à ses réalisations, le personnage est membre d’une organisation de professionnels comme lui, ou il connait ces organisations.\n\nS’il ne peut subvenir à ses besoins, il n’aura aucun mal à trouver du travail grâce à ces organisations afin de couvrir minimalement ces [dépenses](/regles/equipement/depenses).\n\nCes organisations possèdent souvent un pouvoir politique important, ce qui peut l’aider à rencontrer des gens importants, à rallier des fidèles à une cause ou à mettre la main sur des matériaux rares.\n\nIl connait également la base du fonctionnement des systèmes économiques auxquels il a participé."))
+    .WithFeature(new Feature(new Name("Professionnel"), Content.TryCreate("Grâce à ses apprentissages et à ses réalisations, le personnage est membre d’une organisation de professionnels comme lui, ou il connait ces organisations.\n\nS’il ne peut subvenir à ses besoins, il n’aura aucun mal à trouver du travail grâce à ces organisations afin de couvrir minimalement ces [dépenses](/regles/equipement/depenses).\n\nCes organisations possèdent souvent un pouvoir politique important, ce qui peut l’aider à rencontrer des gens importants, à rallier des fidèles à une cause ou à mettre la main sur des matériaux rares.\n\nIl connait également la base du fonctionnement des systèmes économiques auxquels il a participé.")))
     .Build();
 }
