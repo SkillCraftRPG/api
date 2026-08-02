@@ -194,8 +194,8 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.Equal(imperial.ResourceId, language.Id);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when creating a language.")]
-  public async Task Given_ScriptNotFound_When_Create_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw ScriptNotFoundException when creating a language.")]
+  public async Task Given_ScriptNotFound_When_Create_Then_ScriptNotFoundException()
   {
     CreateOrReplaceLanguagePayload payload = new()
     {
@@ -206,15 +206,14 @@ public class LanguageIntegrationTests : IntegrationTests
       TypicalSpeakers = "   Humains   "
     };
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload));
+    var exception = await Assert.ThrowsAsync<ScriptNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Script.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
+    Assert.Equal(payload.ScriptId.Value, exception.ScriptId);
     Assert.Equal("ScriptId", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when replacing a language.")]
-  public async Task Given_ScriptNotFound_When_Replace_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw ScriptNotFoundException when replacing a language.")]
+  public async Task Given_ScriptNotFound_When_Replace_Then_ScriptNotFoundException()
   {
     CreateOrReplaceLanguagePayload payload = new()
     {
@@ -225,25 +224,23 @@ public class LanguageIntegrationTests : IntegrationTests
       TypicalSpeakers = "   Humains   "
     };
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.ResourceId));
+    var exception = await Assert.ThrowsAsync<ScriptNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.ResourceId));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Script.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
+    Assert.Equal(payload.ScriptId.Value, exception.ScriptId);
     Assert.Equal("ScriptId", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when updating a language.")]
-  public async Task Given_ScriptNotFound_When_Update_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw ScriptNotFoundException when updating a language.")]
+  public async Task Given_ScriptNotFound_When_Update_Then_ScriptNotFoundException()
   {
     UpdateLanguagePayload payload = new()
     {
       ScriptId = new Optional<Guid?>(Guid.Empty)
     };
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.UpdateAsync(_language.ResourceId, payload));
+    var exception = await Assert.ThrowsAsync<ScriptNotFoundException>(async () => await _languageService.UpdateAsync(_language.ResourceId, payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Script.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
+    Assert.Equal(payload.ScriptId.Value, exception.ScriptId);
     Assert.Equal("ScriptId", exception.PropertyName);
   }
 
