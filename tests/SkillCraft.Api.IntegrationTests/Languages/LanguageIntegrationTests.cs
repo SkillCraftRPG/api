@@ -85,7 +85,7 @@ public class LanguageIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should filter search results by script ID.")]
   public async Task Given_ScriptId_When_Search_Then_Results()
   {
-    Language commun = LanguageBuilder.Common(Faker, Context.World, _renon.Id);
+    Language commun = LanguageBuilder.Common(Faker, Context.World, _renon);
     await _languageRepository.SaveAsync(commun);
 
     SearchLanguagesPayload payload = new()
