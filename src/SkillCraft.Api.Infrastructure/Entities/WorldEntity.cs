@@ -1,6 +1,4 @@
-﻿using SkillCraft.Api.Core.Customizations;
-using SkillCraft.Api.Core.Lineages;
-using SkillCraft.Api.Core.Worlds;
+﻿using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -21,7 +19,7 @@ internal class WorldEntity : AggregateEntity
   public List<EducationEntity> Educations { get; private set; } = [];
   public List<ItemEntity> Items { get; private set; } = [];
   public List<LanguageEntity> Languages { get; private set; } = [];
-  public List<Lineage> Lineages { get; private set; } = [];
+  public List<LineageEntity> Lineages { get; private set; } = [];
   public List<ScriptEntity> Scripts { get; private set; } = [];
   public List<SpellEntity> Spells { get; private set; } = [];
   public List<TalentEntity> Talents { get; private set; } = [];

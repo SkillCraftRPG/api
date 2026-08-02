@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Infrastructure.Db;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -8,7 +7,7 @@ namespace SkillCraft.Api.Infrastructure.Configurations;
 
 internal class LineageLanguage
 {
-  public Lineage? Lineage { get; set; }
+  public LineageEntity? Lineage { get; set; }
   public int LineageId { get; set; }
 
   public LanguageEntity? Language { get; set; }

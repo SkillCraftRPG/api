@@ -5,7 +5,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class LanguageRepository : Logitar.EventSourcing.Repository, ILanguageRepository
+internal class LanguageRepository : Repository, ILanguageRepository
 {
   private readonly GameContext _database;
 

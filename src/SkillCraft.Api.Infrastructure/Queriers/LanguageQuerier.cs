@@ -44,7 +44,7 @@ internal class LanguageQuerier : ILanguageQuerier
   {
     LanguageEntity? language = await _languages.AsNoTracking()
       .Include(x => x.Script)
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return language is null ? null : await MapAsync(language, cancellationToken);
@@ -53,7 +53,7 @@ internal class LanguageQuerier : ILanguageQuerier
   public virtual async Task<SearchResults<LanguageModel>> SearchAsync(SearchLanguagesPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Languages.Table).SelectAll(Db.Languages.Table)
-      .Where(Db.Languages.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Languages.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Languages.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Languages.Name, Db.Languages.Summary);
 

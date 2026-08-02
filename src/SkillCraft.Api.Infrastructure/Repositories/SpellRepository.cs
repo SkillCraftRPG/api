@@ -5,7 +5,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class SpellRepository : Logitar.EventSourcing.Repository, ISpellRepository
+internal class SpellRepository : Repository, ISpellRepository
 {
   private readonly GameContext _database;
 

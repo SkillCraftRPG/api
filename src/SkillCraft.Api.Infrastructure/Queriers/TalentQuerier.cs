@@ -43,7 +43,7 @@ internal class TalentQuerier : ITalentQuerier
   public async Task<TalentModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     TalentEntity? talent = await _talents.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .Include(x => x.RequiredTalent)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -53,7 +53,7 @@ internal class TalentQuerier : ITalentQuerier
   public virtual async Task<SearchResults<TalentModel>> SearchAsync(SearchTalentsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Talents.Table).SelectAll(Db.Talents.Table)
-      .Where(Db.Talents.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Talents.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Talents.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Talents.Name, Db.Talents.Summary);
 

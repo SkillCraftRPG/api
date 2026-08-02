@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
@@ -26,21 +26,6 @@ internal class ScriptQuerier : IScriptQuerier
     _sqlHelper = sqlHelper;
   }
 
-  public async Task<int?> FindKeyAsync(ScriptId id, CancellationToken cancellationToken)
-  {
-    return await _scripts.AsNoTracking()
-      .Where(x => x.StreamId == id.Value)
-      .Select(x => (int?)x.ScriptId)
-      .SingleOrDefaultAsync(cancellationToken);
-  }
-  public async Task<int?> FindKeyAsync(Guid id, CancellationToken cancellationToken)
-  {
-    return await _scripts.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
-      .Select(x => (int?)x.ScriptId)
-      .SingleOrDefaultAsync(cancellationToken);
-  }
-
   public async Task<ScriptModel> ReadAsync(Script script, CancellationToken cancellationToken)
   {
     return await ReadAsync(script.Id, cancellationToken)
@@ -57,7 +42,7 @@ internal class ScriptQuerier : IScriptQuerier
   public async Task<ScriptModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     ScriptEntity? script = await _scripts.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return script is null ? null : await MapAsync(script, cancellationToken);
@@ -66,7 +51,7 @@ internal class ScriptQuerier : IScriptQuerier
   public virtual async Task<SearchResults<ScriptModel>> SearchAsync(SearchScriptsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Scripts.Table).SelectAll(Db.Scripts.Table)
-      .Where(Db.Scripts.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Scripts.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Scripts.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Scripts.Name, Db.Scripts.Summary);
 

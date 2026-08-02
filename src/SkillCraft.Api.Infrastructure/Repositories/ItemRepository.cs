@@ -5,7 +5,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class ItemRepository : Logitar.EventSourcing.Repository, IItemRepository
+internal class ItemRepository : Repository, IItemRepository
 {
   private readonly GameContext _database;
 
