@@ -8,15 +8,15 @@ internal record SearchEducationsQuery(SearchEducationsPayload Payload) : IQuery<
 
 internal class SearchEducationsQueryHandler : IQueryHandler<SearchEducationsQuery, SearchResults<EducationModel>>
 {
-  private readonly IEducationRepository _educationRepository;
+  private readonly IEducationQuerier _educationQuerier;
 
-  public SearchEducationsQueryHandler(IEducationRepository educationRepository)
+  public SearchEducationsQueryHandler(IEducationQuerier educationQuerier)
   {
-    _educationRepository = educationRepository;
+    _educationQuerier = educationQuerier;
   }
 
   public async Task<SearchResults<EducationModel>> HandleAsync(SearchEducationsQuery query, CancellationToken cancellationToken)
   {
-    return await _educationRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _educationQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

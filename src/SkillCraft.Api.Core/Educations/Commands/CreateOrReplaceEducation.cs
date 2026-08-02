@@ -1,6 +1,5 @@
-﻿using Logitar;
-using Logitar.CQRS;
-using SkillCraft.Api.Core.Educations.Events;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Permissions;
@@ -13,17 +12,20 @@ internal record CreateOrReplaceEducationCommand(CreateOrReplaceEducationPayload 
 internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOrReplaceEducationCommand, CreateOrReplaceEducationResult>
 {
   private readonly IContext _context;
+  private readonly IEducationQuerier _educationQuerier;
   private readonly IEducationRepository _educationRepository;
   private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceEducationCommandHandler(
     IContext context,
+    IEducationQuerier educationQuerier,
     IEducationRepository educationRepository,
     IPermissionService permissionService,
     IWorldRepository worldRepository)
   {
     _context = context;
+    _educationQuerier = educationQuerier;
     _educationRepository = educationRepository;
     _permissionService = permissionService;
     _worldRepository = worldRepository;
@@ -34,51 +36,45 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
     CreateOrReplaceEducationPayload payload = command.Payload;
     payload.Validate();
 
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
     Education? education = null;
+    EducationId educationId = EducationId.NewId(worldId);
     if (command.Id.HasValue)
     {
-      education = await _educationRepository.LoadAsync(command.Id.Value, cancellationToken);
+      educationId = new EducationId(worldId, command.Id.Value);
+      education = await _educationRepository.LoadAsync(educationId, cancellationToken);
     }
 
-    Guid userId = _context.UserUid;
+    Name name = new(payload.Name);
+    WealthMultiplier? wealthMultiplier = WealthMultiplier.TryCreate(payload.WealthMultiplier);
+    Feature? feature = payload.Feature is null
+      ? null
+      : new Feature(new Name(payload.Feature.Name), Content.TryCreate(payload.Feature.Content));
 
-    EducationSnapshot? snapshot = null;
+    bool created = false;
     if (education is null)
     {
       World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateEducation, world, cancellationToken);
 
-      education = new Education(world, command.Id, userId);
-      _educationRepository.Add(education);
+      education = new Education(educationId, name, actorId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, education, cancellationToken);
 
-      snapshot = new EducationSnapshot(education);
+      education.Rename(name, actorId);
     }
 
-    education.Name = payload.Name.Trim();
-    education.Summary = payload.Summary?.CleanTrim();
-    education.Content = payload.Content?.CleanTrim();
+    education.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    education.SetRules(payload.Skill, wealthMultiplier, feature, actorId);
 
-    education.Skill = payload.Skill;
-    education.WealthMultiplier = payload.WealthMultiplier;
-    education.SetFeature(payload.Feature is null ? null : new FeatureOld(payload.Feature));
+    await _educationRepository.SaveAsync(education, cancellationToken);
 
-    if (snapshot is not null)
-    {
-      EducationUpdated? record = snapshot.Compare(education);
-      if (record is not null)
-      {
-        education.Update(userId);
-        _educationRepository.Update(education, record);
-      }
-    }
-
-    await _context.SaveChangesAsync(cancellationToken);
-
-    EducationModel model = await _educationRepository.ReadAsync(education, cancellationToken);
-    return new CreateOrReplaceEducationResult(model, Created: snapshot is null);
+    EducationModel model = await _educationQuerier.ReadAsync(education, cancellationToken);
+    return new CreateOrReplaceEducationResult(model, created);
   }
 }
