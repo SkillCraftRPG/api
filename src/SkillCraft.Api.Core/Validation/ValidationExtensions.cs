@@ -113,6 +113,16 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty();
   }
 
+  public static IRuleBuilderOptions<T, double> Price<T>(this IRuleBuilder<T, double> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
+  public static IRuleBuilderOptions<T, double> Weight<T>(this IRuleBuilder<T, double> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
   public static IRuleBuilderOptions<T, int> WealthMultiplier<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(Educations.WealthMultiplier.MinimumValue, Educations.WealthMultiplier.MaximumValue);

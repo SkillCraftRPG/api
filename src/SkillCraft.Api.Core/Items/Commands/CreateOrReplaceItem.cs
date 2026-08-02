@@ -1,6 +1,5 @@
-﻿using Logitar;
-using Logitar.CQRS;
-using SkillCraft.Api.Core.Items.Events;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds;
@@ -12,17 +11,20 @@ internal record CreateOrReplaceItemCommand(CreateOrReplaceItemPayload Payload, G
 internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrReplaceItemCommand, CreateOrReplaceItemResult>
 {
   private readonly IContext _context;
+  private readonly IItemQuerier _itemQuerier;
   private readonly IItemRepository _itemRepository;
   private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceItemCommandHandler(
     IContext context,
+    IItemQuerier itemQuerier,
     IItemRepository itemRepository,
     IPermissionService permissionService,
     IWorldRepository worldRepository)
   {
     _context = context;
+    _itemQuerier = itemQuerier;
     _itemRepository = itemRepository;
     _permissionService = permissionService;
     _worldRepository = worldRepository;
@@ -33,50 +35,41 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     CreateOrReplaceItemPayload payload = command.Payload;
     payload.Validate();
 
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
     Item? item = null;
+    ItemId itemId = ItemId.NewId(worldId);
     if (command.Id.HasValue)
     {
-      item = await _itemRepository.LoadAsync(command.Id.Value, cancellationToken);
+      itemId = new ItemId(worldId, command.Id.Value);
+      item = await _itemRepository.LoadAsync(itemId, cancellationToken);
     }
 
-    Guid userId = _context.UserUid;
+    Name name = new(payload.Name);
 
-    ItemSnapshot? snapshot = null;
+    bool created = false;
     if (item is null)
     {
       World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateItem, world, cancellationToken);
 
-      item = new Item(world, command.Id, userId);
-      _itemRepository.Add(item);
+      item = new Item(itemId, name, actorId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, item, cancellationToken);
 
-      snapshot = new ItemSnapshot(item);
+      item.Rename(name, actorId);
     }
 
-    item.Name = payload.Name.Trim();
-    item.Summary = payload.Summary?.CleanTrim();
-    item.Content = payload.Content?.CleanTrim();
+    item.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    item.SetRules(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), actorId);
 
-    item.Price = payload.Price;
-    item.Weight = payload.Weight;
+    await _itemRepository.SaveAsync(item, cancellationToken);
 
-    if (snapshot is not null)
-    {
-      ItemUpdated? record = snapshot.Compare(item);
-      if (record is not null)
-      {
-        item.Update(userId);
-        _itemRepository.Update(item, record);
-      }
-    }
-
-    await _context.SaveChangesAsync(cancellationToken);
-
-    ItemModel model = await _itemRepository.ReadAsync(item, cancellationToken);
-    return new CreateOrReplaceItemResult(model, Created: snapshot is null);
+    ItemModel model = await _itemQuerier.ReadAsync(item, cancellationToken);
+    return new CreateOrReplaceItemResult(model, created);
   }
 }

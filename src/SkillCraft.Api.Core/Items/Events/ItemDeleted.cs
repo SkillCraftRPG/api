@@ -1,12 +1,5 @@
-﻿namespace SkillCraft.Api.Core.Items.Events;
+﻿using Logitar.EventSourcing;
 
-public class ItemDeleted : DeleteEvent
-{
-  public ItemDeleted() : base()
-  {
-  }
+namespace SkillCraft.Api.Core.Items.Events;
 
-  public ItemDeleted(Item item, Guid userId) : base(item, userId)
-  {
-  }
-}
+public record ItemDeleted : DomainEvent, IDeleteEvent;

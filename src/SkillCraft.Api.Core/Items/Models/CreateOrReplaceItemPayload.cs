@@ -22,8 +22,8 @@ public record CreateOrReplaceItemPayload
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
-      When(x => x.Price.HasValue, () => RuleFor(x => x.Price!.Value).GreaterThan(0));
-      When(x => x.Weight.HasValue, () => RuleFor(x => x.Weight!.Value).GreaterThan(0));
+      When(x => x.Price.HasValue, () => RuleFor(x => x.Price!.Value).Price());
+      When(x => x.Weight.HasValue, () => RuleFor(x => x.Weight!.Value).Weight());
     }
   }
 }

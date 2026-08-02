@@ -8,15 +8,15 @@ internal record SearchItemsQuery(SearchItemsPayload Payload) : IQuery<SearchResu
 
 internal class SearchItemsQueryHandler : IQueryHandler<SearchItemsQuery, SearchResults<ItemModel>>
 {
-  private readonly IItemRepository _itemRepository;
+  private readonly IItemQuerier _itemQuerier;
 
-  public SearchItemsQueryHandler(IItemRepository itemRepository)
+  public SearchItemsQueryHandler(IItemQuerier itemQuerier)
   {
-    _itemRepository = itemRepository;
+    _itemQuerier = itemQuerier;
   }
 
   public async Task<SearchResults<ItemModel>> HandleAsync(SearchItemsQuery query, CancellationToken cancellationToken)
   {
-    return await _itemRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _itemQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }
