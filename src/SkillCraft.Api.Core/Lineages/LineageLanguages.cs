@@ -21,7 +21,7 @@ public class LineageLanguages
 
   public LineageLanguages(Lineage lineage)
   {
-    Ids = lineage.Languages.Select(language => language.Id).ToList().AsReadOnly();
+    Ids = lineage.Languages.Select(language => language.ResourceId).ToList().AsReadOnly();
     Extra = lineage.ExtraLanguages;
     Content = lineage.LanguagesContent;
   }

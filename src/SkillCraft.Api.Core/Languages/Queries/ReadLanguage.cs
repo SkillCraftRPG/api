@@ -7,15 +7,15 @@ internal record ReadLanguageQuery(Guid Id) : IQuery<LanguageModel?>;
 
 internal class ReadLanguageQueryHandler : IQueryHandler<ReadLanguageQuery, LanguageModel?>
 {
-  private readonly ILanguageRepository _languageRepository;
+  private readonly ILanguageQuerier _languageQuerier;
 
-  public ReadLanguageQueryHandler(ILanguageRepository languageRepository)
+  public ReadLanguageQueryHandler(ILanguageQuerier languageQuerier)
   {
-    _languageRepository = languageRepository;
+    _languageQuerier = languageQuerier;
   }
 
   public async Task<LanguageModel?> HandleAsync(ReadLanguageQuery query, CancellationToken cancellationToken)
   {
-    return await _languageRepository.ReadAsync(query.Id, cancellationToken);
+    return await _languageQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

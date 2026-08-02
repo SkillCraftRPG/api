@@ -1,68 +1,97 @@
-﻿using Logitar;
-using SkillCraft.Api.Core.Lineages;
+﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Languages.Events;
+using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Languages;
 
-public class Language : IAuditable, IResource, IVersioned
+public class Language : AggregateRoot, IResource
 {
   public const string ResourceKind = "Language";
 
-  public int LanguageId { get; private set; }
+  public new LanguageId Id => new(base.Id);
+  public WorldId WorldId => Id.WorldId;
+  public Guid ResourceId => Id.ResourceId;
 
-  // TODO(fpion): public WorldEntity? World { get; private set; }
-  public Guid WorldId { get; private set; }
-  public Guid Id { get; private set; }
+  private Name? _name = null;
+  public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
+  public Summary? Summary { get; private set; }
+  public Content? Content { get; private set; }
 
-  public string Name { get; set; } = string.Empty;
-  public string? Summary { get; set; }
-  public string? Content { get; set; }
+  public TypicalSpeakers? TypicalSpeakers { get; private set; }
+  public ScriptId? ScriptId { get; private set; }
 
-  public int? ScriptId { get; private set; }
-  public Guid? ScriptUid { get; private set; }
-  public string? TypicalSpeakers { get; set; }
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
 
-  public long Version { get; private set; }
-  public Guid CreatedBy { get; private set; }
-  public DateTime CreatedOn { get; private set; }
-  public Guid UpdatedBy { get; private set; }
-  public DateTime UpdatedOn { get; private set; }
-
-  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
-
-  public List<Lineage> Lineages { get; private set; } = [];
-
-  public Language(World world, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
-  {
-    // TODO(fpion): World = world;
-    WorldId = world.ResourceId;
-    Id = id ?? Guid.NewGuid();
-
-    Version = 1;
-    CreatedBy = UpdatedBy = userId ?? world.OwnerId.ResourceId;
-    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-  }
-
-  private Language()
+  public Language() : base()
   {
   }
 
-  public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
-
-  public void SetScript(int? scriptId, Guid? scriptUid = null)
+  public Language(World world, Name name, ActorId? actorId = null)
+    : this(LanguageId.NewId(world.Id), name, actorId)
   {
-    ScriptId = scriptId;
-    ScriptUid = scriptUid;
   }
 
-  public void Update(Guid userId, DateTime? updatedOn = null)
+  public Language(LanguageId languageId, Name name, ActorId? actorId = null)
+    : base(languageId.StreamId)
   {
-    Version++;
-    UpdatedBy = userId;
-    UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
+    Raise(new LanguageCreated(name), actorId);
+  }
+  protected virtual void Handle(LanguageCreated @event)
+  {
+    _name = @event.Name;
   }
 
-  public override bool Equals(object? obj) => obj is Language language && language.LanguageId == LanguageId;
-  public override int GetHashCode() => LanguageId.GetHashCode();
-  public override string ToString() => $"{Name} | {GetType()} (LanguageId={LanguageId})";
+  public void Delete(ActorId? actorId = null)
+  {
+    if (!IsDeleted)
+    {
+      Raise(new LanguageDeleted(), actorId);
+    }
+  }
+
+  public void Edit(Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new LanguageEdited(summary, content), actorId);
+    }
+  }
+  protected virtual void Handle(LanguageEdited @event)
+  {
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
+  public void Rename(Name name, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name))
+    {
+      Raise(new LanguageRenamed(name), actorId);
+    }
+  }
+  protected virtual void Handle(LanguageRenamed @event)
+  {
+    _name = @event.Name;
+  }
+
+  public void SetRules(TypicalSpeakers? typicalSpeakers, Script? script, ActorId? actorId = null)
+  {
+    if (script is not null)
+    {
+      WorldMismatchException.ThrowIfMismatch(WorldId, script.WorldId, nameof(script));
+    }
+
+    if (!Equals(TypicalSpeakers, typicalSpeakers) || !Equals(ScriptId, script?.Id))
+    {
+      Raise(new LanguageRulesChanged(typicalSpeakers, script?.Id), actorId);
+    }
+  }
+  protected virtual void Handle(LanguageRulesChanged @event)
+  {
+    TypicalSpeakers = @event.TypicalSpeakers;
+    ScriptId = @event.ScriptId;
+  }
+
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }

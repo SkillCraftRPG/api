@@ -1,4 +1,3 @@
-using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Events;
 
@@ -16,7 +15,7 @@ internal class ScriptEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
-  public List<Language> Languages { get; private set; } = [];
+  public List<LanguageEntity> Languages { get; private set; } = [];
 
   public ScriptEntity(Script script) : base(script)
   {

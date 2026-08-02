@@ -56,9 +56,10 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     IReadOnlyCollection<Language> languages = [];
     if (payload.Languages.Ids.Count > 0)
     {
-      languages = await _languageRepository.LoadAsync(payload.Languages.Ids, cancellationToken);
+      LanguageId[] languageIds = [.. payload.Languages.Ids.Select(id => new LanguageId(_context.WorldId, id))];
+      languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
 
-      HashSet<Guid> missingIds = payload.Languages.Ids.Except(languages.Select(language => language.Id)).ToHashSet();
+      HashSet<Guid> missingIds = payload.Languages.Ids.Except(languages.Select(language => language.ResourceId)).ToHashSet();
       if (missingIds.Count > 0)
       {
         string propertyName = string.Join('.', nameof(payload.Languages), nameof(payload.Languages.Ids));
@@ -73,7 +74,6 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
       await _permissionService.CheckAsync(Actions.CreateLineage, world, cancellationToken);
 
       lineage = new Lineage(world, command.Id, parent, userId);
-      _lineageRepository.Add(lineage);
     }
     else
     {
@@ -98,7 +98,11 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     lineage.SetWeight(payload.Weight);
     lineage.SetAge(payload.Age);
 
-    if (snapshot is not null)
+    if (snapshot is null)
+    {
+      _lineageRepository.Add(lineage);
+    }
+    else
     {
       LineageUpdated? record = snapshot.Compare(lineage);
       if (record is not null)

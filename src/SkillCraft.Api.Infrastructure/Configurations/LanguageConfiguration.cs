@@ -1,16 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SkillCraft.Api.Core.Languages;
-using SkillCraft.Api.Core.Validation;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Db;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class LanguageConfiguration : IEntityTypeConfiguration<Language>
+internal class LanguageConfiguration : AggregateConfiguration<LanguageEntity>, IEntityTypeConfiguration<LanguageEntity>
 {
-  public void Configure(EntityTypeBuilder<Language> builder)
+  public override void Configure(EntityTypeBuilder<LanguageEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.Languages), Schemas.Game);
     builder.HasKey(x => x.LanguageId);
 
@@ -18,21 +19,14 @@ internal class LanguageConfiguration : IEntityTypeConfiguration<Language>
     builder.HasIndex(x => new { x.WorldId, x.Name });
     builder.HasIndex(x => new { x.WorldId, x.ScriptId });
     builder.HasIndex(x => new { x.WorldId, x.Summary });
-    builder.HasIndex(x => new { x.WorldId, x.Version });
-    builder.HasIndex(x => new { x.WorldId, x.CreatedBy });
-    builder.HasIndex(x => new { x.WorldId, x.CreatedOn });
-    builder.HasIndex(x => new { x.WorldId, x.UpdatedBy });
-    builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
-    builder.Ignore(x => x.ScriptUid);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
 
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
-    builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
-
-    //builder.HasOne(x => x.World).WithMany(x => x.Languages)
-    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-    //  .OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne<ScriptEntity>().WithMany(x => x.Languages)
+    builder.HasOne(x => x.World).WithMany(x => x.Languages)
+      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+      .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Script).WithMany(x => x.Languages)
       .HasForeignKey(x => x.ScriptId)
       .OnDelete(DeleteBehavior.Restrict);
   }

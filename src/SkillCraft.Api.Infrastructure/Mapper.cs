@@ -7,6 +7,7 @@ using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Items.Models;
+using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Spells.Models;
 using SkillCraft.Api.Core.Talents.Models;
@@ -103,6 +104,27 @@ internal class Mapper
       Price = source.Price,
       Weight = source.Weight
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public LanguageModel ToLanguage(LanguageEntity source)
+  {
+    LanguageModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      TypicalSpeakers = source.TypicalSpeakers
+    };
+
+    if (source.Script is not null)
+    {
+      destination.Script = ToScript(source.Script);
+    }
 
     MapAggregate(source, destination);
 

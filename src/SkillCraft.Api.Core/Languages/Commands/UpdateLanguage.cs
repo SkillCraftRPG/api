@@ -1,6 +1,5 @@
-﻿using Logitar;
-using Logitar.CQRS;
-using SkillCraft.Api.Core.Languages.Events;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
@@ -13,22 +12,22 @@ internal record UpdateLanguageCommand(Guid Id, UpdateLanguagePayload Payload) : 
 internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageCommand, LanguageModel?>
 {
   private readonly IContext _context;
+  private readonly ILanguageQuerier _languageQuerier;
   private readonly ILanguageRepository _languageRepository;
   private readonly IPermissionService _permissionService;
-  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
 
   public UpdateLanguageCommandHandler(
     IContext context,
+    ILanguageQuerier languageQuerier,
     ILanguageRepository languageRepository,
     IPermissionService permissionService,
-    IScriptQuerier scriptQuerier,
     IScriptRepository scriptRepository)
   {
     _context = context;
+    _languageQuerier = languageQuerier;
     _languageRepository = languageRepository;
     _permissionService = permissionService;
-    _scriptQuerier = scriptQuerier;
     _scriptRepository = scriptRepository;
   }
 
@@ -37,57 +36,49 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     UpdateLanguagePayload payload = command.Payload;
     payload.Validate();
 
-    Language? language = await _languageRepository.LoadAsync(command.Id, cancellationToken);
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
+    LanguageId languageId = new(worldId, command.Id);
+    Language? language = await _languageRepository.LoadAsync(languageId, cancellationToken);
     if (language is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, language, cancellationToken);
 
-    LanguageSnapshot snapshot = new(language);
-
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
     {
-      language.Name = payload.Name.Trim();
-    }
-    if (payload.Summary is not null)
-    {
-      language.Summary = payload.Summary.Value?.CleanTrim();
-    }
-    if (payload.Content is not null)
-    {
-      language.Content = payload.Content.Value?.CleanTrim();
+      language.Rename(name, actorId);
     }
 
-    if (payload.ScriptId is not null)
+    if (payload.Summary is not null || payload.Content is not null)
     {
-      int? scriptKey = null;
-      Guid? scriptUid = null;
-      if (payload.ScriptId.Value.HasValue)
+      language.Edit(
+        payload.Summary is null ? language.Summary : Summary.TryCreate(payload.Summary.Value),
+        payload.Content is null ? language.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
+    }
+
+    if (payload.TypicalSpeakers is not null || payload.ScriptId is not null)
+    {
+      Script? script = null;
+      if (payload.ScriptId is not null && payload.ScriptId.Value.HasValue)
       {
-        ScriptId scriptId = new(_context.WorldId, payload.ScriptId.Value.Value);
-        Script script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
-          ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value.Value, _context.WorldUid), nameof(Language.ScriptId));
-        scriptKey = await _scriptQuerier.FindKeyAsync(script.Id, cancellationToken)
-          ?? throw new InvalidOperationException($"The script entity 'StreamId={script.Id}' was not found.");
-        scriptUid = script.ResourceId;
+        ScriptId scriptId = new(worldId, payload.ScriptId.Value.Value);
+        script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
+          ?? throw new ScriptNotFoundException(scriptId, nameof(payload.ScriptId));
       }
-      language.SetScript(scriptKey, scriptUid);
-    }
-    if (payload.TypicalSpeakers is not null)
-    {
-      language.TypicalSpeakers = payload.TypicalSpeakers.Value?.CleanTrim();
-    }
 
-    LanguageUpdated? record = snapshot.Compare(language);
-    if (record is not null)
-    {
-      language.Update(_context.UserUid);
-      _languageRepository.Update(language, record);
-
-      await _context.SaveChangesAsync(cancellationToken);
+      language.SetRules(
+        payload.TypicalSpeakers is null ? language.TypicalSpeakers : TypicalSpeakers.TryCreate(payload.TypicalSpeakers.Value),
+        script,
+        actorId);
     }
 
-    return await _languageRepository.ReadAsync(language, cancellationToken);
+    await _languageRepository.SaveAsync(language, cancellationToken);
+
+    return await _languageQuerier.ReadAsync(language, cancellationToken);
   }
 }

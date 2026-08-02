@@ -3,7 +3,6 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Features;
-using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Models;
@@ -30,25 +29,42 @@ internal class MapperOld // TODO(fpion): remove this
     }
   }
 
-  public LanguageModel ToLanguage(Language source, ScriptModel? script = null)
+  public LineageModel ToLineage(
+    Lineage source,
+    IReadOnlyDictionary<int, ScriptModel>? scripts = null,
+    IReadOnlyList<LanguageEntity>? languages = null,
+    IReadOnlyList<LanguageEntity>? parentLanguages = null,
+    Mapper? languageMapper = null)
   {
-    LanguageModel destination = new()
+    LanguageModel MapLanguage(LanguageEntity language)
     {
-      Id = source.Id,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content,
-      TypicalSpeakers = source.TypicalSpeakers,
-      Script = script
-    };
+      if (languageMapper is not null)
+      {
+        LanguageModel model = languageMapper.ToLanguage(language);
+        if (language.ScriptId is int key && scripts is not null && scripts.TryGetValue(key, out ScriptModel? script))
+        {
+          model.Script = script;
+        }
+        return model;
+      }
 
-    MapAggregate(source, destination);
+      ScriptModel? scriptModel = null;
+      if (language.ScriptId is int scriptKey && scripts is not null)
+      {
+        scripts.TryGetValue(scriptKey, out scriptModel);
+      }
+      return new LanguageModel
+      {
+        Id = language.Id,
+        Name = language.Name,
+        Summary = language.Summary,
+        Content = language.Content,
+        TypicalSpeakers = language.TypicalSpeakers,
+        Script = scriptModel,
+        Version = language.Version
+      };
+    }
 
-    return destination;
-  }
-
-  public LineageModel ToLineage(Lineage source, IReadOnlyDictionary<int, ScriptModel>? scripts = null)
-  {
     LineageModel destination = new()
     {
       Id = source.Id,
@@ -59,7 +75,7 @@ internal class MapperOld // TODO(fpion): remove this
 
     if (source.Parent is not null)
     {
-      destination.Parent = ToLineage(source.Parent, scripts);
+      destination.Parent = ToLineage(source.Parent, scripts, parentLanguages, null, languageMapper);
     }
 
     foreach (LineageFeature feature in source.Features)
@@ -67,14 +83,9 @@ internal class MapperOld // TODO(fpion): remove this
       destination.Features.Add(ToLineageFeature(feature));
     }
 
-    foreach (Language language in source.Languages)
+    foreach (LanguageEntity language in languages ?? [])
     {
-      ScriptModel? script = null;
-      if (language.ScriptId is int key && scripts is not null)
-      {
-        scripts.TryGetValue(key, out script);
-      }
-      destination.Languages.Granted.Add(ToLanguage(language, script));
+      destination.Languages.Granted.Add(MapLanguage(language));
     }
     destination.Languages.Extra = source.ExtraLanguages;
     destination.Languages.Content = source.LanguagesContent;

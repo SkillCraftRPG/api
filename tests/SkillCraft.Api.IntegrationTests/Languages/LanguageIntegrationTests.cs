@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -15,10 +16,8 @@ public class LanguageIntegrationTests : IntegrationTests
 {
   private readonly ILanguageRepository _languageRepository;
   private readonly ILanguageService _languageService;
-  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
 
-  private int _renonKey;
   private Script _renon = null!;
   private Language _language = null!;
 
@@ -26,7 +25,6 @@ public class LanguageIntegrationTests : IntegrationTests
   {
     _languageRepository = ServiceProvider.GetRequiredService<ILanguageRepository>();
     _languageService = ServiceProvider.GetRequiredService<ILanguageService>();
-    _scriptQuerier = ServiceProvider.GetRequiredService<IScriptQuerier>();
     _scriptRepository = ServiceProvider.GetRequiredService<IScriptRepository>();
   }
 
@@ -36,12 +34,9 @@ public class LanguageIntegrationTests : IntegrationTests
 
     _renon = ScriptBuilder.Renon(Faker, Context.World);
     await _scriptRepository.SaveAsync(_renon);
-    _renonKey = (await _scriptQuerier.FindKeyAsync(_renon.ResourceId))!.Value;
 
     _language = new LanguageBuilder(Faker).WithWorld(Context.World).Build();
-    _languageRepository.Add(_language);
-
-    await Context.SaveChangesAsync();
+    await _languageRepository.SaveAsync(_language);
   }
 
   [Theory(DisplayName = "It should create a new language.")]
@@ -72,11 +67,11 @@ public class LanguageIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, language.Id);
     }
-    Assert.Equal(1, language.Version);
+    Assert.Equal(3, language.Version);
     Assert.Equal(Actor, language.CreatedBy);
     Assert.Equal(DateTime.UtcNow, language.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(language.CreatedBy, language.UpdatedBy);
-    Assert.Equal(language.CreatedOn, language.UpdatedOn);
+    Assert.True(language.CreatedOn < language.UpdatedOn);
 
     Assert.Equal(payload.Name.CleanTrim(), language.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), language.Summary);
@@ -90,9 +85,8 @@ public class LanguageIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should filter search results by script ID.")]
   public async Task Given_ScriptId_When_Search_Then_Results()
   {
-    Language commun = LanguageBuilder.Common(Faker, Context.World, _renonKey, _renon.ResourceId);
-    _languageRepository.Add(commun);
-    await Context.SaveChangesAsync();
+    Language commun = LanguageBuilder.Common(Faker, Context.World, _renon);
+    await _languageRepository.SaveAsync(commun);
 
     SearchLanguagesPayload payload = new()
     {
@@ -103,15 +97,15 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.Equal(1, results.Total);
 
     LanguageModel language = Assert.Single(results.Items);
-    Assert.Equal(commun.Id, language.Id);
+    Assert.Equal(commun.ResourceId, language.Id);
   }
 
   [Fact(DisplayName = "It should read a language by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    LanguageModel? language = await _languageService.ReadAsync(_language.Id);
+    LanguageModel? language = await _languageService.ReadAsync(_language.ResourceId);
     Assert.NotNull(language);
-    Assert.Equal(_language.Id, language.Id);
+    Assert.Equal(_language.ResourceId, language.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing language.")]
@@ -125,7 +119,7 @@ public class LanguageIntegrationTests : IntegrationTests
       ScriptId = _renon.ResourceId,
       TypicalSpeakers = "   Humains   "
     };
-    Guid id = _language.Id;
+    Guid id = _language.ResourceId;
 
     CreateOrReplaceLanguageResult result = await _languageService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -133,9 +127,9 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.NotNull(language);
 
     Assert.Equal(id, language.Id);
-    Assert.Equal(2, language.Version);
-    Assert.Equal(_language.CreatedBy, language.CreatedBy.Id);
-    Assert.Equal(_language.CreatedOn, language.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, language.Version);
+    Assert.Equal(_language.CreatedBy, language.CreatedBy.GetActorId());
+    Assert.Equal(_language.CreatedOn.AsUniversalTime(), language.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, language.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, language.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -165,7 +159,7 @@ public class LanguageIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _languageService.ReadAsync(_language.Id));
+    Assert.Null(await _languageService.ReadAsync(_language.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the language was not found.")]
@@ -180,8 +174,7 @@ public class LanguageIntegrationTests : IntegrationTests
     Language commun = new LanguageBuilder(Faker).WithWorld(Context.World).WithName("Commun").Build();
     Language imperial = new LanguageBuilder(Faker).WithWorld(Context.World).WithName("Impérial").Build();
     Language wisgorne = new LanguageBuilder(Faker).WithWorld(Context.World).WithName("Wisgorne").Build();
-    _languageRepository.Add(commun, imperial, wisgorne);
-    await Context.SaveChangesAsync();
+    await _languageRepository.SaveAsync([commun, imperial, wisgorne]);
 
     SearchLanguagesPayload payload = new()
     {
@@ -191,18 +184,18 @@ public class LanguageIntegrationTests : IntegrationTests
     payload.Search.Operator = SearchOperator.Or;
     payload.Search.Terms.Add(new SearchTerm("%g%"));
     payload.Search.Terms.Add(new SearchTerm("%i%"));
-    payload.Ids.AddRange([Guid.Empty, commun.Id, imperial.Id, wisgorne.Id]);
+    payload.Ids.AddRange([Guid.Empty, commun.ResourceId, imperial.ResourceId, wisgorne.ResourceId]);
     payload.Sort.Add(new LanguageSortOption(LanguageSort.Name, isDescending: true));
 
     SearchResults<LanguageModel> results = await _languageService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     LanguageModel language = Assert.Single(results.Items);
-    Assert.Equal(imperial.Id, language.Id);
+    Assert.Equal(imperial.ResourceId, language.Id);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when creating a language.")]
-  public async Task Given_ScriptNotFound_When_Create_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw ScriptNotFoundException when creating a language.")]
+  public async Task Given_ScriptNotFound_When_Create_Then_ScriptNotFoundException()
   {
     CreateOrReplaceLanguagePayload payload = new()
     {
@@ -213,15 +206,14 @@ public class LanguageIntegrationTests : IntegrationTests
       TypicalSpeakers = "   Humains   "
     };
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload));
+    var exception = await Assert.ThrowsAsync<ScriptNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Script.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
+    Assert.Equal(payload.ScriptId.Value, exception.ScriptId);
     Assert.Equal("ScriptId", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when replacing a language.")]
-  public async Task Given_ScriptNotFound_When_Replace_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw ScriptNotFoundException when replacing a language.")]
+  public async Task Given_ScriptNotFound_When_Replace_Then_ScriptNotFoundException()
   {
     CreateOrReplaceLanguagePayload payload = new()
     {
@@ -232,25 +224,23 @@ public class LanguageIntegrationTests : IntegrationTests
       TypicalSpeakers = "   Humains   "
     };
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.Id));
+    var exception = await Assert.ThrowsAsync<ScriptNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.ResourceId));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Script.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
+    Assert.Equal(payload.ScriptId.Value, exception.ScriptId);
     Assert.Equal("ScriptId", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when updating a language.")]
-  public async Task Given_ScriptNotFound_When_Update_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw ScriptNotFoundException when updating a language.")]
+  public async Task Given_ScriptNotFound_When_Update_Then_ScriptNotFoundException()
   {
     UpdateLanguagePayload payload = new()
     {
       ScriptId = new Optional<Guid?>(Guid.Empty)
     };
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.UpdateAsync(_language.Id, payload));
+    var exception = await Assert.ThrowsAsync<ScriptNotFoundException>(async () => await _languageService.UpdateAsync(_language.ResourceId, payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Script.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
+    Assert.Equal(payload.ScriptId.Value, exception.ScriptId);
     Assert.Equal("ScriptId", exception.PropertyName);
   }
 
@@ -288,7 +278,7 @@ public class LanguageIntegrationTests : IntegrationTests
       TypicalSpeakers = "   Humains   "
     };
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_language.Identifier.ToString(), exception.Resource);
@@ -301,7 +291,7 @@ public class LanguageIntegrationTests : IntegrationTests
 
     UpdateLanguagePayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.UpdateAsync(_language.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _languageService.UpdateAsync(_language.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_language.Identifier.ToString(), exception.Resource);
@@ -310,7 +300,7 @@ public class LanguageIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing language.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _language.Id;
+    Guid id = _language.ResourceId;
     UpdateLanguagePayload payload = new()
     {
       Name = " Commun ",
@@ -324,9 +314,9 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.NotNull(language);
 
     Assert.Equal(id, language.Id);
-    Assert.Equal(2, language.Version);
-    Assert.Equal(_language.CreatedBy, language.CreatedBy.Id);
-    Assert.Equal(_language.CreatedOn, language.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, language.Version);
+    Assert.Equal(_language.CreatedBy, language.CreatedBy.GetActorId());
+    Assert.Equal(_language.CreatedOn.AsUniversalTime(), language.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, language.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, language.UpdatedOn, TimeSpan.FromSeconds(10));
 

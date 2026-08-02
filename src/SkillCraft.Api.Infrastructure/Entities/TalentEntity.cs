@@ -1,4 +1,6 @@
-﻿using SkillCraft.Api.Core;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Talents.Events;
 
@@ -56,6 +58,16 @@ internal class TalentEntity : AggregateEntity
 
     Summary = @event.Summary?.Value;
     Content = @event.Content?.Value;
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (RequiredTalent is not null)
+    {
+      actorIds.AddRange(RequiredTalent.GetActorIds());
+    }
+    return actorIds.AsReadOnly();
   }
 
   public void Rename(TalentRenamed @event)

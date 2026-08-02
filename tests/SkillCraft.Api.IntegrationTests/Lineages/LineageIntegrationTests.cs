@@ -34,7 +34,7 @@ public class LineageIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _celfique = LanguageBuilder.Celfique(Faker, Context.World);
-    _languageRepository.Add(_celfique);
+    await _languageRepository.SaveAsync(_celfique);
 
     _elfe = LineageBuilder.Elfe(Faker, Context.World);
     _lineageRepository.Add(_elfe);
@@ -368,7 +368,7 @@ public class LineageIntegrationTests : IntegrationTests
     Content = "   Les Hauts-Elfes privilégient l’ordre, l’érudition et la stabilité, qu’ils considèrent comme les fondations de toute civilisation durable. Héritiers d’un antique royaume forestier fondé dans l’Ouest de la Sarénie il y a plus de deux millénaires, ils ont développé une culture raffinée où astrologie, magie et savoir occupent une place centrale. Leur expansion vers les Triskîles mena à la fondation de royaumes sur Alnar et Ellesdales, bien que cette dernière région se soit fragmentée au fil des siècles en principautés rivales. Diplomates et marchands influents, les Hauts-Elfes entretiennent généralement de bonnes relations avec les peuples civilisés, mais les ambitions territoriales des Dallois menacent désormais l’équilibre fragile d’Ellesdales. Nés sous des constellations considérées sacrées, ils portent souvent sur eux le symbole de l’étoile ayant marqué leur destinée.   ",
     Languages = new LineageLanguagesPayload
     {
-      Ids = [_celfique.Id],
+      Ids = [_celfique.ResourceId],
       Extra = 1
     },
     Names = new LineageNamesModel
@@ -421,7 +421,7 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.Equal(payload.Languages.Extra, lineage.Languages.Extra);
     Assert.Equal(payload.Languages.Content?.CleanTrim(), lineage.Languages.Content);
     LanguageModel language = Assert.Single(lineage.Languages.Granted);
-    Assert.Equal(_celfique.Id, language.Id);
+    Assert.Equal(_celfique.ResourceId, language.Id);
 
     Assert.Equal(CleanNames(payload.Names.Family), lineage.Names.Family);
     Assert.Equal(CleanNames(payload.Names.Female), lineage.Names.Female);

@@ -8,15 +8,15 @@ internal record SearchLanguagesQuery(SearchLanguagesPayload Payload) : IQuery<Se
 
 internal class SearchLanguagesQueryHandler : IQueryHandler<SearchLanguagesQuery, SearchResults<LanguageModel>>
 {
-  private readonly ILanguageRepository _languageRepository;
+  private readonly ILanguageQuerier _languageQuerier;
 
-  public SearchLanguagesQueryHandler(ILanguageRepository languageRepository)
+  public SearchLanguagesQueryHandler(ILanguageQuerier languageQuerier)
   {
-    _languageRepository = languageRepository;
+    _languageQuerier = languageQuerier;
   }
 
   public async Task<SearchResults<LanguageModel>> HandleAsync(SearchLanguagesQuery query, CancellationToken cancellationToken)
   {
-    return await _languageRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _languageQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }
