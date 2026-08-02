@@ -13,7 +13,7 @@ public class Talent : AggregateRoot, IResource
   public Guid ResourceId => Id.ResourceId;
 
   private TalentTier? _tier = null;
-  public TalentTier Tier => _tier ?? throw new InvalidOperationException("The talent tier has not been initialized.");
+  public TalentTier Tier => _tier ?? throw new InvalidOperationException("The tier has not been initialized.");
 
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
