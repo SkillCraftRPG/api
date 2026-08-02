@@ -11,7 +11,7 @@ public class Lineage : IAuditable, IResource, IVersioned
 
   public int LineageId { get; private set; }
 
-  public World? World { get; private set; }
+  // TODO(fpion): public WorldEntity? World { get; private set; }
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
@@ -72,15 +72,15 @@ public class Lineage : IAuditable, IResource, IVersioned
       throw new InvalidParentLineageException(parent, nameof(Lineage.ParentId));
     }
 
-    World = world;
-    WorldId = world.Id;
+    // TODO(fpion): World = world;
+    WorldId = world.ResourceId;
     Id = id ?? Guid.NewGuid();
 
     Parent = parent;
     ParentId = parent?.LineageId;
 
     Version = 1;
-    CreatedBy = UpdatedBy = userId ?? world.OwnerId;
+    CreatedBy = UpdatedBy = userId ?? world.OwnerId.ResourceId;
     CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
 

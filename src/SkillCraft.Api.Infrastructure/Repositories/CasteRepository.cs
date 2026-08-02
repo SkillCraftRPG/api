@@ -34,7 +34,7 @@ internal class CasteRepository : Repository, ICasteRepository
   public void Remove(Caste caste)
   {
     Database.Castes.Remove(caste);
-    base.RecordChange(new CasteDeleted(caste, _context.UserId));
+    base.RecordChange(new CasteDeleted(caste, _context.UserUid));
   }
   public void Update(Caste caste, CasteUpdated record)
   {

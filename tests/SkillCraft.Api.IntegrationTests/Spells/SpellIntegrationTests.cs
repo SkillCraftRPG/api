@@ -190,7 +190,7 @@ public class SpellIntegrationTests : IntegrationTests
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateSpell, exception.Action);
     Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
   }
@@ -204,7 +204,7 @@ public class SpellIntegrationTests : IntegrationTests
     payload.Tier = _spell.Tier;
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
   }
@@ -217,7 +217,7 @@ public class SpellIntegrationTests : IntegrationTests
     UpdateSpellPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.UpdateAsync(_spell.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
   }

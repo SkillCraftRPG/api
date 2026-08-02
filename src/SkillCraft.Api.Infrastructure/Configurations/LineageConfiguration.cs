@@ -36,9 +36,9 @@ internal class LineageConfiguration : IEntityTypeConfiguration<Lineage>
     builder.Property(x => x.Overweight).HasMaxLength(Constants.RollMaximumLength);
     builder.Property(x => x.Obese).HasMaxLength(Constants.RollMaximumLength);
 
-    builder.HasOne(x => x.World).WithMany(x => x.Lineages)
-      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-      .OnDelete(DeleteBehavior.Restrict);
+    //builder.HasOne(x => x.World).WithMany(x => x.Lineages)
+    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+    //  .OnDelete(DeleteBehavior.Restrict);
     builder.HasMany(x => x.Languages).WithMany(x => x.Lineages).UsingEntity<LineageLanguage>();
   }
 }

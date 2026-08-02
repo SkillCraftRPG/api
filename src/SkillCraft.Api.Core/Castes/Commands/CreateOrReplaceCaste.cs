@@ -40,14 +40,12 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
       caste = await _casteRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
-    Guid worldId = _context.WorldUid;
+    Guid userId = _context.UserUid;
 
     CasteSnapshot? snapshot = null;
     if (caste is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateCaste, world, cancellationToken);
 
       caste = new Caste(world, command.Id, userId);

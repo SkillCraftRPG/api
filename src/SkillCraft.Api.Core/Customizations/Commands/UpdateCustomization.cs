@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Customizations.Models;
@@ -51,7 +51,7 @@ internal class UpdateCustomizationCommandHandler : ICommandHandler<UpdateCustomi
     CustomizationUpdated? record = snapshot.Compare(customization);
     if (record is not null)
     {
-      customization.Update(_context.UserId);
+      customization.Update(_context.UserUid);
       _customizationRepository.Update(customization, record);
 
       await _context.SaveChangesAsync(cancellationToken);

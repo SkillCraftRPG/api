@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Educations.Models;
@@ -64,7 +64,7 @@ internal class UpdateEducationCommandHandler : ICommandHandler<UpdateEducationCo
     EducationUpdated? record = snapshot.Compare(education);
     if (record is not null)
     {
-      education.Update(_context.UserId);
+      education.Update(_context.UserUid);
       _educationRepository.Update(education, record);
 
       await _context.SaveChangesAsync(cancellationToken);

@@ -34,7 +34,7 @@ internal class EducationRepository : Repository, IEducationRepository
   public void Remove(Education education)
   {
     Database.Educations.Remove(education);
-    base.RecordChange(new EducationDeleted(education, _context.UserId));
+    base.RecordChange(new EducationDeleted(education, _context.UserUid));
   }
   public void Update(Education education, EducationUpdated record)
   {

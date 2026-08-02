@@ -5,6 +5,7 @@ using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Actors;
+using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure;
 
@@ -24,7 +25,8 @@ public class TestContext : IContext
   public ActorId? ActorId => User is null ? null : new Actor(User).GetActorId();
 
   public User? User { get; set; }
-  public Guid UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
+  public UserId UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
+  public Guid UserUid => TryGetUserUid() ?? throw new InvalidOperationException("An authenticated user is required.");
 
   public World? World { get; set; }
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
@@ -38,12 +40,13 @@ public class TestContext : IContext
     return customAttributes.AsReadOnly();
   }
 
-  public bool IsWorldOwner() => User is not null && World is not null && World.OwnerId == User.Id;
+  public bool IsWorldOwner() => World is not null && User is not null && World.OwnerId == UserId;
 
   public Guid? TryGetSessionId() => null;
-  public Guid? TryGetUserId() => User?.Id;
-  public WorldId? TryGetWorldId() => World is null ? null : new WorldId(World.Id); // TODO(fpion): refactor
-  public Guid? TryGetWorldUid() => World?.Id;
+  public UserId? TryGetUserId() => User is null ? null : new UserId(new Actor(User).GetActorId());
+  public Guid? TryGetUserUid() => User?.Id;
+  public WorldId? TryGetWorldId() => World?.Id;
+  public Guid? TryGetWorldUid() => World?.ResourceId;
 
   public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
   {

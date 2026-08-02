@@ -53,7 +53,7 @@ public class KeyAlreadyUsedException : ConflictException
     }
   }
 
-  public KeyAlreadyUsedException(IResource resource, Guid conflictId, string attemptedKey, string propertyName)
+  public KeyAlreadyUsedException(IResource resource, Guid conflictId, Key attemptedKey, string propertyName)
     : base(BuildMessage(resource, conflictId, attemptedKey, propertyName))
   {
     ResourceIdentifier identifier = resource.Identifier;
@@ -61,11 +61,11 @@ public class KeyAlreadyUsedException : ConflictException
     ResourceKind = identifier.Kind;
     ResourceId = identifier.Id;
     ConflictId = conflictId;
-    AttemptedKey = attemptedKey;
+    AttemptedKey = attemptedKey.Value;
     PropertyName = propertyName;
   }
 
-  private static string BuildMessage(IResource resource, Guid conflictId, string attemptedKey, string propertyName)
+  private static string BuildMessage(IResource resource, Guid conflictId, Key attemptedKey, string propertyName)
   {
     ResourceIdentifier identifier = resource.Identifier;
     return new ErrorMessageBuilder(ErrorMessage)

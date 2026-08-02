@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Validation;
@@ -26,8 +26,8 @@ internal class SpellConfiguration : IEntityTypeConfiguration<Spell>
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
 
-    builder.HasOne(x => x.World).WithMany(x => x.Spells)
-      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-      .OnDelete(DeleteBehavior.Restrict);
+    //builder.HasOne(x => x.World).WithMany(x => x.Spells)
+    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+    //  .OnDelete(DeleteBehavior.Restrict);
   }
 }

@@ -1,15 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SkillCraft.Api.Core.Validation;
-using SkillCraft.Api.Core.Worlds;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Db;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class WorldConfiguration : IEntityTypeConfiguration<World>
+internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntityTypeConfiguration<WorldEntity>
 {
-  public void Configure(EntityTypeBuilder<World> builder)
+  public override void Configure(EntityTypeBuilder<WorldEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.Worlds), Schemas.Game);
     builder.HasKey(x => x.WorldId);
 
@@ -17,13 +19,8 @@ internal class WorldConfiguration : IEntityTypeConfiguration<World>
     builder.HasIndex(x => x.OwnerId);
     builder.HasIndex(x => x.Key).IsUnique();
     builder.HasIndex(x => x.Name);
-    builder.HasIndex(x => x.Version);
-    builder.HasIndex(x => x.CreatedBy);
-    builder.HasIndex(x => x.CreatedOn);
-    builder.HasIndex(x => x.UpdatedBy);
-    builder.HasIndex(x => x.UpdatedOn);
 
-    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Key.MaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
   }
 }

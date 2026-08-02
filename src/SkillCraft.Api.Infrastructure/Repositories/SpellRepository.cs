@@ -34,7 +34,7 @@ internal class SpellRepository : Repository, ISpellRepository
   public void Remove(Spell spell)
   {
     Database.Spells.Remove(spell);
-    base.RecordChange(new SpellDeleted(spell, _context.UserId));
+    base.RecordChange(new SpellDeleted(spell, _context.UserUid));
   }
   public void Update(Spell spell, SpellUpdated record)
   {

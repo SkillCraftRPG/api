@@ -31,7 +31,7 @@ public class LineageFeatureIntegrationTests : IntegrationTests
     _lineage = LineageBuilder.Elfe(Faker, Context.World);
     _lineageRepository.Add(_lineage);
 
-    _feature = new LineageFeature(_lineage, Context.UserId)
+    _feature = new LineageFeature(_lineage, Context.UserUid)
     {
       Name = "Transe",
       Content = "Le personnage peut remplacer la nuit de sommeil conventionnelle de 8 heures par une transe d’une durée de seulement 4 heures. Compléter cette transe procure les mêmes effets que de compléter une nuit de sommeil. Pendant cette transe, le personnage est en état de conscience partielle, mélangeant rêves éveillés et lucidité détachée. Il demeure partiellement réceptif à son environnement et peut effectuer avec désavantage des tests passifs."
@@ -140,7 +140,7 @@ public class LineageFeatureIntegrationTests : IntegrationTests
     FeatureModel payload = CreateEspritEveillePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceFeatureAsync(_lineage.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
   }
@@ -151,7 +151,7 @@ public class LineageFeatureIntegrationTests : IntegrationTests
     Context.User = new UserBuilder(Faker).Build();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.DeleteFeatureAsync(_lineage.Id, _feature.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
   }
@@ -164,7 +164,7 @@ public class LineageFeatureIntegrationTests : IntegrationTests
     FeatureModel payload = CreateSensAffutesPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceFeatureAsync(_lineage.Id, payload, _feature.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
   }

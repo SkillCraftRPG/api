@@ -19,7 +19,7 @@ internal class ReadAccountProfileQueryHandler : IQueryHandler<ReadAccountProfile
 
   public async Task<ProfileModel> HandleAsync(ReadAccountProfileQuery _, CancellationToken cancellationToken)
   {
-    Guid userId = _context.UserId;
+    Guid userId = _context.UserUid;
     User user = await _userGateway.FindAsync(userId, cancellationToken) ?? throw new InvalidOperationException($"The user 'Id={userId}' was not found.");
     return new ProfileModel(user);
   }

@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Spells;
@@ -9,7 +9,7 @@ public class Spell : IAuditable, IResource, IVersioned
 
   public int SpellId { get; private set; }
 
-  public World? World { get; private set; }
+  // TODO(fpion): public WorldEntity? World { get; private set; }
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
@@ -29,14 +29,14 @@ public class Spell : IAuditable, IResource, IVersioned
 
   public Spell(World world, int tier, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
   {
-    World = world;
-    WorldId = world.Id;
+    // TODO(fpion): World = world;
+    WorldId = world.ResourceId;
     Id = id ?? Guid.NewGuid();
 
     Tier = tier;
 
     Version = 1;
-    CreatedBy = UpdatedBy = userId ?? world.OwnerId;
+    CreatedBy = UpdatedBy = userId ?? world.OwnerId.ResourceId;
     CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
   }
 

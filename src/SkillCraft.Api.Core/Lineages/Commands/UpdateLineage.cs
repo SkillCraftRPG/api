@@ -95,7 +95,7 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     LineageUpdated? record = snapshot.Compare(lineage);
     if (record is not null)
     {
-      lineage.Update(_context.UserId);
+      lineage.Update(_context.UserUid);
       _lineageRepository.Update(lineage, record);
 
       await _context.SaveChangesAsync(cancellationToken);

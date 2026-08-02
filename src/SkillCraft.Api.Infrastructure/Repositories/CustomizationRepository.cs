@@ -34,7 +34,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
   public void Remove(Customization customization)
   {
     Database.Customizations.Remove(customization);
-    base.RecordChange(new CustomizationDeleted(customization, _context.UserId));
+    base.RecordChange(new CustomizationDeleted(customization, _context.UserUid));
   }
   public void Update(Customization customization, CustomizationUpdated record)
   {

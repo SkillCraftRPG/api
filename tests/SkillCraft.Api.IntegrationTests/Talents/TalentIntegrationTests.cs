@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Talents.Models;
@@ -153,7 +154,7 @@ public class TalentIntegrationTests : IntegrationTests
 
     Assert.Equal(id, talent.Id);
     Assert.Equal(5, talent.Version);
-    // TODO(fpion): Assert.Equal(_talent.CreatedBy, talent.CreatedBy.GetActorId());
+    Assert.Equal(_talent.CreatedBy, talent.CreatedBy.GetActorId());
     Assert.Equal(_talent.CreatedOn.AsUniversalTime(), talent.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, talent.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, talent.UpdatedOn, TimeSpan.FromSeconds(10));
@@ -310,7 +311,7 @@ public class TalentIntegrationTests : IntegrationTests
     CreateOrReplaceTalentPayload payload = CreateFormationMartialePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateTalent, exception.Action);
     Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
   }
@@ -323,7 +324,7 @@ public class TalentIntegrationTests : IntegrationTests
     CreateOrReplaceTalentPayload payload = CreateFormationMartialePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.CreateOrReplaceAsync(payload, _talent.ResourceId));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_talent.Identifier.ToString(), exception.Resource);
   }
@@ -336,7 +337,7 @@ public class TalentIntegrationTests : IntegrationTests
     UpdateTalentPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.UpdateAsync(_talent.ResourceId, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_talent.Identifier.ToString(), exception.Resource);
   }
@@ -361,7 +362,7 @@ public class TalentIntegrationTests : IntegrationTests
 
     Assert.Equal(id, talent.Id);
     Assert.Equal(5, talent.Version);
-    // TODO(fpion): Assert.Equal(_talent.CreatedBy, talent.CreatedBy.GetActorId());
+    Assert.Equal(_talent.CreatedBy, talent.CreatedBy.GetActorId());
     Assert.Equal(_talent.CreatedOn.AsUniversalTime(), talent.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, talent.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, talent.UpdatedOn, TimeSpan.FromSeconds(10));

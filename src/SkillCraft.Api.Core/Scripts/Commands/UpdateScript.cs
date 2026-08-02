@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
@@ -51,7 +51,7 @@ internal class UpdateScriptCommandHandler : ICommandHandler<UpdateScriptCommand,
     ScriptUpdated? record = snapshot.Compare(script);
     if (record is not null)
     {
-      script.Update(_context.UserId);
+      script.Update(_context.UserUid);
       _scriptRepository.Update(script, record);
 
       await _context.SaveChangesAsync(cancellationToken);

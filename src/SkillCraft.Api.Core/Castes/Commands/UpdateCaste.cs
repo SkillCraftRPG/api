@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
@@ -65,7 +65,7 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     CasteUpdated? record = snapshot.Compare(caste);
     if (record is not null)
     {
-      caste.Update(_context.UserId);
+      caste.Update(_context.UserUid);
       _casteRepository.Update(caste, record);
 
       await _context.SaveChangesAsync(cancellationToken);

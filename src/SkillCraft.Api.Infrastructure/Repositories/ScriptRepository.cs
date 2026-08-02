@@ -34,7 +34,7 @@ internal class ScriptRepository : Repository, IScriptRepository
   public void Remove(Script script)
   {
     Database.Scripts.Remove(script);
-    base.RecordChange(new ScriptDeleted(script, _context.UserId));
+    base.RecordChange(new ScriptDeleted(script, _context.UserUid));
   }
   public void Update(Script script, ScriptUpdated record)
   {

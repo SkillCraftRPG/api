@@ -1,7 +1,6 @@
 ﻿using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Talents.Events;
-using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
@@ -9,7 +8,7 @@ internal class TalentEntity : AggregateEntity
 {
   public int TalentId { get; private set; }
 
-  public World? World { get; private set; }
+  public WorldEntity? World { get; private set; }
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 

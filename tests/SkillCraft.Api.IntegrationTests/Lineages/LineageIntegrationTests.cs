@@ -295,7 +295,7 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHautElfePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateLineage, exception.Action);
     Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
   }
@@ -308,7 +308,7 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHumainPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
   }
@@ -321,7 +321,7 @@ public class LineageIntegrationTests : IntegrationTests
     UpdateLineagePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.UpdateAsync(_lineage.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
   }

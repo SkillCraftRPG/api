@@ -1,12 +1,5 @@
-﻿namespace SkillCraft.Api.Core.Worlds.Events;
+﻿using Logitar.EventSourcing;
 
-public class WorldDeleted : DeleteEvent
-{
-  public WorldDeleted() : base()
-  {
-  }
+namespace SkillCraft.Api.Core.Worlds.Events;
 
-  public WorldDeleted(World world, Guid userId) : base(world, userId)
-  {
-  }
-}
+public record WorldDeleted : DomainEvent, IDeleteEvent;

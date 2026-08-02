@@ -5,7 +5,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class TalentRepository : Logitar.EventSourcing.Repository, ITalentRepository // TODO(fpion): namespace
+internal class TalentRepository : Logitar.EventSourcing.Repository, ITalentRepository
 {
   private readonly GameContext _database;
 

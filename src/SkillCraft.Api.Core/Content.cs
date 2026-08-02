@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core;
 
@@ -22,7 +23,7 @@ public class Content
   {
     public Validator()
     {
-      RuleFor(x => x.Value).NotEmpty();
+      RuleFor(x => x.Value).Content();
     }
   }
 }

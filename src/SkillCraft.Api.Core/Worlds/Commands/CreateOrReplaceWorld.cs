@@ -1,7 +1,6 @@
-using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Worlds.Events;
 using SkillCraft.Api.Core.Worlds.Models;
 
 namespace SkillCraft.Api.Core.Worlds.Commands;
@@ -12,12 +11,18 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly IWorldQuerier _worldQuerier;
   private readonly IWorldRepository _worldRepository;
 
-  public CreateOrReplaceWorldCommandHandler(IContext context, IPermissionService permissionService, IWorldRepository worldRepository)
+  public CreateOrReplaceWorldCommandHandler(
+    IContext context,
+    IPermissionService permissionService,
+    IWorldQuerier worldQuerier,
+    IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _worldQuerier = worldQuerier;
     _worldRepository = worldRepository;
   }
 
@@ -27,47 +32,39 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     payload.Validate();
 
     World? world = null;
+    WorldId worldId = WorldId.NewId();
     if (command.Id.HasValue)
     {
-      world = await _worldRepository.LoadAsync(command.Id.Value, cancellationToken);
+      worldId = new WorldId(command.Id.Value);
+      world = await _worldRepository.LoadAsync(worldId, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
+    UserId userId = _context.UserId;
+    Key key = new(payload.Key);
 
-    WorldSnapshot? snapshot = null;
+    bool created = false;
     if (world is null)
     {
       await _permissionService.CheckAsync(Actions.CreateWorld, cancellationToken);
 
-      world = new World(userId, command.Id);
-      _worldRepository.Add(world);
+      world = new World(userId, key, worldId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-      snapshot = new WorldSnapshot(world);
+      world.SetKey(key, userId.ActorId);
     }
 
-    world.Key = SlugHelper.Format(payload.Key);
-    world.Name = payload.Name?.CleanTrim();
-    world.Content = payload.Content?.CleanTrim();
+    world.Rename(Name.TryCreate(payload.Name), userId.ActorId);
+    world.Edit(Content.TryCreate(payload.Content), userId.ActorId);
 
-    if (snapshot is not null)
-    {
-      WorldUpdated? record = snapshot.Compare(world);
-      if (record is not null)
-      {
-        world.Update(userId);
-        _worldRepository.Update(world, record);
-      }
-    }
+    await _worldQuerier.EnsureUnicityAsync(world, cancellationToken);
 
-    await _worldRepository.EnsureUnicityAsync(world, cancellationToken);
+    await _worldRepository.SaveAsync(world, cancellationToken);
 
-    await _context.SaveChangesAsync(cancellationToken);
-
-    WorldModel model = await _worldRepository.ReadAsync(world, cancellationToken);
-    return new CreateOrReplaceWorldResult(model, Created: snapshot is null);
+    WorldModel model = await _worldQuerier.ReadAsync(world, cancellationToken);
+    return new CreateOrReplaceWorldResult(model, created);
   }
 }

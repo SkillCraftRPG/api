@@ -1,7 +1,6 @@
-using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Worlds.Events;
 using SkillCraft.Api.Core.Worlds.Models;
 
 namespace SkillCraft.Api.Core.Worlds.Commands;
@@ -12,12 +11,14 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly IWorldQuerier _worldQuerier;
   private readonly IWorldRepository _worldRepository;
 
-  public UpdateWorldCommandHandler(IContext context, IPermissionService permissionService, IWorldRepository worldRepository)
+  public UpdateWorldCommandHandler(IContext context, IPermissionService permissionService, IWorldQuerier worldQuerier, IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _worldQuerier = worldQuerier;
     _worldRepository = worldRepository;
   }
 
@@ -26,39 +27,36 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     UpdateWorldPayload payload = command.Payload;
     payload.Validate();
 
-    World? world = await _worldRepository.LoadAsync(command.Id, cancellationToken);
+    WorldId worldId = new(command.Id);
+    World? world = await _worldRepository.LoadAsync(worldId, cancellationToken);
     if (world is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-    WorldSnapshot snapshot = new(world);
+    ActorId? actorId = _context.ActorId;
 
-    if (!string.IsNullOrWhiteSpace(payload.Key))
+    Key? key = Key.TryCreate(payload.Key);
+    if (key is not null)
     {
-      world.Key = SlugHelper.Format(payload.Key);
+      world.SetKey(key, actorId);
     }
+
     if (payload.Name is not null)
     {
-      world.Name = payload.Name.Value?.CleanTrim();
+      world.Rename(Name.TryCreate(payload.Name.Value), actorId);
     }
+
     if (payload.Content is not null)
     {
-      world.Content = payload.Content.Value?.CleanTrim();
+      world.Edit(Content.TryCreate(payload.Content.Value), actorId);
     }
 
-    WorldUpdated? record = snapshot.Compare(world);
-    if (record is not null)
-    {
-      world.Update(_context.UserId);
-      _worldRepository.Update(world, record);
+    await _worldQuerier.EnsureUnicityAsync(world, cancellationToken);
 
-      await _worldRepository.EnsureUnicityAsync(world, cancellationToken);
+    await _worldRepository.SaveAsync(world, cancellationToken);
 
-      await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    return await _worldRepository.ReadAsync(world, cancellationToken);
+    return await _worldQuerier.ReadAsync(world, cancellationToken);
   }
 }

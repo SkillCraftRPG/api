@@ -35,7 +35,7 @@ internal class DeleteLineageFeatureCommandHandler : ICommandHandler<DeleteLineag
     }
 
     lineage.Features.Remove(feature);
-    lineage.Update(_context.UserId);
+    lineage.Update(_context.UserUid);
     _lineageRepository.Remove(feature);
 
     await _context.SaveChangesAsync(cancellationToken);

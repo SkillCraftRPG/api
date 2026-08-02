@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Worlds;
 

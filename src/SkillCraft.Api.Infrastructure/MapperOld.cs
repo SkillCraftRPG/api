@@ -20,8 +20,6 @@ using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Spells.Models;
 using SkillCraft.Api.Core.Talents.Models;
-using SkillCraft.Api.Core.Worlds;
-using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure;
@@ -264,22 +262,6 @@ internal class MapperOld // TODO(fpion): remove this
     {
       destination.RequiredTalent = ToTalent(source.RequiredTalent);
     }
-
-    MapAggregate(source, destination);
-
-    return destination;
-  }
-
-  public WorldModel ToWorld(World source)
-  {
-    WorldModel destination = new()
-    {
-      Id = source.Id,
-      Owner = FindActor(source.OwnerId),
-      Key = source.Key,
-      Name = source.Name,
-      Content = source.Content
-    };
 
     MapAggregate(source, destination);
 

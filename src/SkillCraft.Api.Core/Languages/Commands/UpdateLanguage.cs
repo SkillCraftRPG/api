@@ -73,7 +73,7 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
     LanguageUpdated? record = snapshot.Compare(language);
     if (record is not null)
     {
-      language.Update(_context.UserId);
+      language.Update(_context.UserUid);
       _languageRepository.Update(language, record);
 
       await _context.SaveChangesAsync(cancellationToken);

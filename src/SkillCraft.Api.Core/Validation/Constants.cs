@@ -1,6 +1,6 @@
 ﻿namespace SkillCraft.Api.Core.Validation;
 
-public static class Constants
+public static class Constants // TODO(fpion): remove this
 {
   public const int NameMaximumLength = 100;
   public const int RollMaximumLength = 10;

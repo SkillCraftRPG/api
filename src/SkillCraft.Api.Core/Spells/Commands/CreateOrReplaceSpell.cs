@@ -39,14 +39,12 @@ internal class CreateOrReplaceSpellCommandHandler : ICommandHandler<CreateOrRepl
       spell = await _spellRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
-    Guid worldId = _context.WorldUid;
+    Guid userId = _context.UserUid;
 
     SpellSnapshot? snapshot = null;
     if (spell is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateSpell, world, cancellationToken);
 
       spell = new Spell(world, payload.Tier, command.Id, userId);

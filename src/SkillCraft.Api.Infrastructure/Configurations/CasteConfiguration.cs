@@ -32,8 +32,8 @@ internal class CasteConfiguration : IEntityTypeConfiguration<Caste>
     builder.Property(x => x.WealthRoll).HasMaxLength(Constants.RollMaximumLength);
     builder.Property(x => x.FeatureName).HasMaxLength(Constants.NameMaximumLength);
 
-    builder.HasOne(x => x.World).WithMany(x => x.Castes)
-      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-      .OnDelete(DeleteBehavior.Restrict);
+    //builder.HasOne(x => x.World).WithMany(x => x.Castes)
+    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+    //  .OnDelete(DeleteBehavior.Restrict);
   }
 }
