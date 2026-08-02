@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Features;
@@ -8,14 +9,14 @@ namespace SkillCraft.Api.Builders;
 
 public interface IEducationBuilder
 {
-  IEducationBuilder WithId(Guid id);
+  IEducationBuilder WithId(EducationId educationId);
   IEducationBuilder WithWorld(World? world);
   IEducationBuilder WithName(string name);
   IEducationBuilder WithSummary(string? summary);
   IEducationBuilder WithContent(string? content);
   IEducationBuilder WithSkill(Skill? skill);
   IEducationBuilder WithWealthMultiplier(int? wealthMultiplier);
-  IEducationBuilder WithFeature(FeatureOld? feature);
+  IEducationBuilder WithFeature(Feature? feature);
 
   Education Build();
 }
@@ -24,9 +25,9 @@ public class EducationBuilder : IEducationBuilder
 {
   private readonly Faker _faker;
 
-  private FeatureOld? _feature = null;
   private string? _content = null;
-  private Guid? _id = null;
+  private EducationId? _educationId = null;
+  private Feature? _feature = null;
   private string _name = "Education";
   private Skill? _skill = null;
   private string? _summary = null;
@@ -38,9 +39,9 @@ public class EducationBuilder : IEducationBuilder
     _faker = faker ?? new();
   }
 
-  public IEducationBuilder WithId(Guid id)
+  public IEducationBuilder WithId(EducationId educationId)
   {
-    _id = id;
+    _educationId = educationId;
     return this;
   }
 
@@ -80,7 +81,7 @@ public class EducationBuilder : IEducationBuilder
     return this;
   }
 
-  public IEducationBuilder WithFeature(FeatureOld? feature)
+  public IEducationBuilder WithFeature(Feature? feature)
   {
     _feature = feature;
     return this;
@@ -89,15 +90,16 @@ public class EducationBuilder : IEducationBuilder
   public Education Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Education education = new(world, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content,
-      Skill = _skill,
-      WealthMultiplier = _wealthMultiplier
-    };
-    education.SetFeature(_feature);
+    ActorId actorId = world.OwnerId.ActorId;
+    Name name = new(_name);
+
+    Education education = _educationId.HasValue
+      ? new(_educationId.Value, name, actorId)
+      : new(world, name, actorId);
+
+    education.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    education.SetRules(_skill, WealthMultiplier.TryCreate(_wealthMultiplier), _feature, actorId);
+
     return education;
   }
 
@@ -108,6 +110,6 @@ public class EducationBuilder : IEducationBuilder
     .WithContent("Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.")
     .WithSkill(Skill.Orientation)
     .WithWealthMultiplier(10)
-    .WithFeature(new FeatureOld("Conseiller avisé", "La nature calme et analytique du personnage lui permet d’être reconnu rapidement pour son jugement sûr.\n\nIl peut ajouter un bonus égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1) à ses [tests](/regles/competences/tests) d’[Intuition](/regles/competences/intuition) ou d’[Investigation](/regles/competences/investigation) effectués afin de comprendre un plan, évaluer un risque ou choisir la meilleure approche de manière objective.\n\nÉgalement, il ajoute également ce bonus à ses tests de [Diplomatie](/regles/competences/diplomatie) effectués afin de convaincre un individue rationnel."))
+    .WithFeature(new Feature(new Name("Conseiller avisé"), Content.TryCreate("La nature calme et analytique du personnage lui permet d’être reconnu rapidement pour son jugement sûr.\n\nIl peut ajouter un bonus égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1) à ses [tests](/regles/competences/tests) d’[Intuition](/regles/competences/intuition) ou d’[Investigation](/regles/competences/investigation) effectués afin de comprendre un plan, évaluer un risque ou choisir la meilleure approche de manière objective.\n\nÉgalement, il ajoute également ce bonus à ses tests de [Diplomatie](/regles/competences/diplomatie) effectués afin de convaincre un individue rationnel.")))
     .Build();
 }

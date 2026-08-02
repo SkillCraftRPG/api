@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
@@ -29,8 +30,7 @@ public class EducationIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _education = new EducationBuilder(Faker).WithWorld(Context.World).Build();
-    _educationRepository.Add(_education);
-    await Context.SaveChangesAsync();
+    await _educationRepository.SaveAsync(_education);
   }
 
   [Theory(DisplayName = "It should create a new education.")]
@@ -54,11 +54,11 @@ public class EducationIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, education.Id);
     }
-    Assert.Equal(1, education.Version);
+    Assert.Equal(3, education.Version);
     Assert.Equal(Actor, education.CreatedBy);
     Assert.Equal(DateTime.UtcNow, education.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(education.CreatedBy, education.UpdatedBy);
-    Assert.Equal(education.CreatedOn, education.UpdatedOn);
+    Assert.True(education.CreatedOn < education.UpdatedOn);
 
     AssertJudicieux(payload, education);
   }
@@ -67,8 +67,7 @@ public class EducationIntegrationTests : IntegrationTests
   public async Task Given_Skill_When_Search_Then_Results()
   {
     Education judicieux = EducationBuilder.Judicieux(Faker, Context.World);
-    _educationRepository.Add(judicieux);
-    await Context.SaveChangesAsync();
+    await _educationRepository.SaveAsync(judicieux);
 
     SearchEducationsPayload payload = new()
     {
@@ -79,22 +78,22 @@ public class EducationIntegrationTests : IntegrationTests
     Assert.Equal(1, results.Total);
 
     EducationModel education = Assert.Single(results.Items);
-    Assert.Equal(judicieux.Id, education.Id);
+    Assert.Equal(judicieux.ResourceId, education.Id);
   }
 
   [Fact(DisplayName = "It should read an education by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    EducationModel? education = await _educationService.ReadAsync(_education.Id);
+    EducationModel? education = await _educationService.ReadAsync(_education.ResourceId);
     Assert.NotNull(education);
-    Assert.Equal(_education.Id, education.Id);
+    Assert.Equal(_education.ResourceId, education.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing education.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceEducationPayload payload = CreateJudicieuxPayload();
-    Guid id = _education.Id;
+    Guid id = _education.ResourceId;
 
     CreateOrReplaceEducationResult result = await _educationService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -102,9 +101,9 @@ public class EducationIntegrationTests : IntegrationTests
     Assert.NotNull(education);
 
     Assert.Equal(id, education.Id);
-    Assert.Equal(2, education.Version);
-    Assert.Equal(_education.CreatedBy, education.CreatedBy.Id);
-    Assert.Equal(_education.CreatedOn, education.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, education.Version);
+    Assert.Equal(_education.CreatedBy, education.CreatedBy.GetActorId());
+    Assert.Equal(_education.CreatedOn.AsUniversalTime(), education.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, education.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, education.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -128,7 +127,7 @@ public class EducationIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _educationService.ReadAsync(_education.Id));
+    Assert.Null(await _educationService.ReadAsync(_education.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the education was not found.")]
@@ -143,8 +142,7 @@ public class EducationIntegrationTests : IntegrationTests
     Education classique = new EducationBuilder(Faker).WithWorld(Context.World).WithName("Classique").Build();
     Education judicieux = EducationBuilder.Judicieux(Faker, Context.World);
     Education rebelle = new EducationBuilder(Faker).WithWorld(Context.World).WithName("Rebelle").Build();
-    _educationRepository.Add(classique, judicieux, rebelle);
-    await Context.SaveChangesAsync();
+    await _educationRepository.SaveAsync([classique, judicieux, rebelle]);
 
     SearchEducationsPayload payload = new()
     {
@@ -152,14 +150,14 @@ public class EducationIntegrationTests : IntegrationTests
       Limit = 1
     };
     payload.Search.Terms.Add(new SearchTerm("%c%"));
-    payload.Ids.AddRange([Guid.Empty, classique.Id, judicieux.Id, rebelle.Id]);
+    payload.Ids.AddRange([Guid.Empty, classique.ResourceId, judicieux.ResourceId, rebelle.ResourceId]);
     payload.Sort.Add(new EducationSortOption(EducationSort.Name));
 
     SearchResults<EducationModel> results = await _educationService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     EducationModel education = Assert.Single(results.Items);
-    Assert.Equal(judicieux.Id, education.Id);
+    Assert.Equal(judicieux.ResourceId, education.Id);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating an education.")]
@@ -182,7 +180,7 @@ public class EducationIntegrationTests : IntegrationTests
 
     CreateOrReplaceEducationPayload payload = CreateJudicieuxPayload();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.CreateOrReplaceAsync(payload, _education.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.CreateOrReplaceAsync(payload, _education.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_education.Identifier.ToString(), exception.Resource);
@@ -195,7 +193,7 @@ public class EducationIntegrationTests : IntegrationTests
 
     UpdateEducationPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.UpdateAsync(_education.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.UpdateAsync(_education.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_education.Identifier.ToString(), exception.Resource);
@@ -204,7 +202,7 @@ public class EducationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing education.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _education.Id;
+    Guid id = _education.ResourceId;
     CreateOrReplaceEducationPayload create = CreateJudicieuxPayload();
     UpdateEducationPayload payload = new()
     {
@@ -220,9 +218,9 @@ public class EducationIntegrationTests : IntegrationTests
     Assert.NotNull(education);
 
     Assert.Equal(id, education.Id);
-    Assert.Equal(2, education.Version);
-    Assert.Equal(_education.CreatedBy, education.CreatedBy.Id);
-    Assert.Equal(_education.CreatedOn, education.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, education.Version);
+    Assert.Equal(_education.CreatedBy, education.CreatedBy.GetActorId());
+    Assert.Equal(_education.CreatedOn.AsUniversalTime(), education.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, education.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, education.UpdatedOn, TimeSpan.FromSeconds(10));
 
