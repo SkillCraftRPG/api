@@ -55,7 +55,7 @@ public class ResourceIdentifier
     return new ResourceIdentifier(kind, id, worldId);
   }
 
-  public override bool Equals(object? obj) => obj is ResourceIdentifier resource && resource._value == _value;
+  public override bool Equals(object? obj) => obj is ResourceIdentifier identifier && identifier._value == _value;
   public override int GetHashCode() => _value.GetHashCode();
   public override string ToString() => _value;
 }
