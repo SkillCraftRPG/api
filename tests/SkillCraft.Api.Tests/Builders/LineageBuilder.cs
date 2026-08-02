@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
@@ -9,13 +10,13 @@ namespace SkillCraft.Api.Builders;
 
 public interface ILineageBuilder
 {
-  ILineageBuilder WithId(Guid id);
+  ILineageBuilder WithId(LineageId lineageId);
   ILineageBuilder WithWorld(World? world);
   ILineageBuilder WithParent(Lineage? parent);
   ILineageBuilder WithName(string name);
   ILineageBuilder WithSummary(string? summary);
   ILineageBuilder WithContent(string? content);
-  ILineageBuilder WithLanguages(IEnumerable<Language>? languages = null, int extra = 0, string? content = null);
+  ILineageBuilder WithLanguages(IEnumerable<LanguageId>? languageIds = null, int extra = 0, string? content = null);
   ILineageBuilder WithNames(
     IEnumerable<string>? family = null,
     IEnumerable<string>? female = null,
@@ -46,9 +47,9 @@ public class LineageBuilder : ILineageBuilder
   private IEnumerable<string> _femaleNames = [];
   private string? _height = null;
   private bool _hover = false;
-  private Guid? _id = null;
+  private LineageId? _lineageId = null;
   private string? _languagesContent = null;
-  private IEnumerable<Language> _languages = [];
+  private IEnumerable<LanguageId> _languageIds = [];
   private IEnumerable<string> _maleNames = [];
   private string? _malnutrition = null;
   private int? _mature = null;
@@ -73,9 +74,9 @@ public class LineageBuilder : ILineageBuilder
     _faker = faker ?? new();
   }
 
-  public ILineageBuilder WithId(Guid id)
+  public ILineageBuilder WithId(LineageId lineageId)
   {
-    _id = id;
+    _lineageId = lineageId;
     return this;
   }
 
@@ -109,9 +110,9 @@ public class LineageBuilder : ILineageBuilder
     return this;
   }
 
-  public ILineageBuilder WithLanguages(IEnumerable<Language>? languages = null, int extra = 0, string? content = null)
+  public ILineageBuilder WithLanguages(IEnumerable<LanguageId>? languageIds = null, int extra = 0, string? content = null)
   {
-    _languages = languages ?? [];
+    _languageIds = languageIds ?? [];
     _extraLanguages = extra;
     _languagesContent = content;
     return this;
@@ -174,18 +175,30 @@ public class LineageBuilder : ILineageBuilder
   public Lineage Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Lineage lineage = new(world, _id, _parent)
+    ActorId actorId = world.OwnerId.ActorId;
+    Name name = new(_name);
+
+    Lineage lineage = _lineageId.HasValue
+      ? new(_lineageId.Value, name, _parent, actorId)
+      : new(world, name, _parent, actorId);
+
+    lineage.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+
+    Dictionary<string, IReadOnlyCollection<string>> custom = new();
+    foreach (NameCategory category in _customNames)
     {
-      Name = _name,
-      Summary = _summary,
-      Content = _content
-    };
-    lineage.SetLanguages(_languages, _extraLanguages, _languagesContent);
-    lineage.SetNames(_familyNames, _femaleNames, _maleNames, _unisexNames, _customNames, _namesContent);
-    lineage.SetSpeeds(new LineageSpeeds(_walk, _climb, _swim, _fly, _hover, _burrow));
-    lineage.SetSize(new LineageSize(_sizeCategory, _height));
-    lineage.SetWeight(new LineageWeight(_malnutrition, _skinny, _normalWeight, _overweight, _obese));
-    lineage.SetAge(new LineageAge(_teenager, _adult, _mature, _venerable));
+      custom[category.Category] = category.Values;
+    }
+
+    lineage.SetLanguages(new LineageLanguages([.. _languageIds], _extraLanguages, Content.TryCreate(_languagesContent)), actorId);
+    lineage.SetNames(new LineageNames([.. _familyNames], [.. _femaleNames], [.. _maleNames], [.. _unisexNames], custom, Content.TryCreate(_namesContent)), actorId);
+    lineage.SetSpeeds(new LineageSpeeds(_walk, _climb, _swim, _fly, _hover, _burrow), actorId);
+    lineage.SetTraits(
+      new LineageSize(_sizeCategory, Roll.TryCreate(_height)),
+      new LineageWeight(Roll.TryCreate(_malnutrition), Roll.TryCreate(_skinny), Roll.TryCreate(_normalWeight), Roll.TryCreate(_overweight), Roll.TryCreate(_obese)),
+      new LineageAge(_teenager, _adult, _mature, _venerable),
+      actorId);
+
     return lineage;
   }
 
@@ -221,7 +234,7 @@ public class LineageBuilder : ILineageBuilder
     .WithName("Haut-Elfe")
     .WithSummary("Héritiers stellaires de royaumes elfiques raffinés et érudits.")
     .WithContent("Les Hauts-Elfes privilégient l’ordre, l’érudition et la stabilité, qu’ils considèrent comme les fondations de toute civilisation durable. Héritiers d’un antique royaume forestier fondé dans l’Ouest de la Sarénie il y a plus de deux millénaires, ils ont développé une culture raffinée où astrologie, magie et savoir occupent une place centrale. Leur expansion vers les Triskîles mena à la fondation de royaumes sur Alnar et Ellesdales, bien que cette dernière région se soit fragmentée au fil des siècles en principautés rivales. Diplomates et marchands influents, les Hauts-Elfes entretiennent généralement de bonnes relations avec les peuples civilisés, mais les ambitions territoriales des Dallois menacent désormais l’équilibre fragile d’Ellesdales. Nés sous des constellations considérées sacrées, ils portent souvent sur eux le symbole de l’étoile ayant marqué leur destinée.")
-    .WithLanguages(celfique is null ? null : [celfique], extra: 1)
+    .WithLanguages(celfique is null ? null : [celfique.Id], extra: 1)
     .WithNames(
       family: ["Adlegor", "Charimon", "Galanodel", "Kaendere", "Liadon", "Morwen", "Nodir", "Raelden", "Sonomir", "Talath"],
       female: ["Althaea", "Ceanoise", "Elenna", "Leshanna", "Magilin", "Naeva", "Onoraid", "Sariel", "Tibenna", "Valanthe"],

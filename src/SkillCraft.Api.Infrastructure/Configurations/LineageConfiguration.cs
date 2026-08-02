@@ -2,16 +2,17 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillCraft.Api.Core;
-using SkillCraft.Api.Core.Lineages;
-using SkillCraft.Api.Core.Validation;
 using SkillCraft.Api.Infrastructure.Db;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class LineageConfiguration : IEntityTypeConfiguration<Lineage>
+internal class LineageConfiguration : AggregateConfiguration<LineageEntity>, IEntityTypeConfiguration<LineageEntity>
 {
-  public void Configure(EntityTypeBuilder<Lineage> builder)
+  public override void Configure(EntityTypeBuilder<LineageEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.Lineages), Schemas.Game);
     builder.HasKey(x => x.LineageId);
 
@@ -20,26 +21,23 @@ internal class LineageConfiguration : IEntityTypeConfiguration<Lineage>
     builder.HasIndex(x => new { x.WorldId, x.Name });
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.SizeCategory });
-    builder.HasIndex(x => new { x.WorldId, x.Version });
-    builder.HasIndex(x => new { x.WorldId, x.CreatedBy });
-    builder.HasIndex(x => new { x.WorldId, x.CreatedOn });
-    builder.HasIndex(x => new { x.WorldId, x.UpdatedBy });
-    builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
-    builder.Ignore(x => x.Languages);
-
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
-    builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
     builder.Property(x => x.SizeCategory).HasMaxLength(16).HasConversion(new EnumToStringConverter<SizeCategory>());
-    builder.Property(x => x.HeightRoll).HasMaxLength(Constants.RollMaximumLength);
-    builder.Property(x => x.Malnutrition).HasMaxLength(Constants.RollMaximumLength);
-    builder.Property(x => x.Skinny).HasMaxLength(Constants.RollMaximumLength);
-    builder.Property(x => x.NormalWeight).HasMaxLength(Constants.RollMaximumLength);
-    builder.Property(x => x.Overweight).HasMaxLength(Constants.RollMaximumLength);
-    builder.Property(x => x.Obese).HasMaxLength(Constants.RollMaximumLength);
+    builder.Property(x => x.HeightRoll).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Malnutrition).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Skinny).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.NormalWeight).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Overweight).HasMaxLength(Roll.MaximumLength);
+    builder.Property(x => x.Obese).HasMaxLength(Roll.MaximumLength);
 
-    //builder.HasOne(x => x.World).WithMany(x => x.Lineages)
-    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-    //  .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.World).WithMany(x => x.Lineages)
+      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+      .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Parent).WithMany(x => x.Children)
+      .HasForeignKey(x => x.ParentId)
+      .OnDelete(DeleteBehavior.Restrict);
+    builder.HasMany(x => x.Languages).WithMany(x => x.Lineages).UsingEntity<LineageLanguageEntity>();
   }
 }

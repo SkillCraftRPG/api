@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SkillCraft.Api.Core.Lineages;
-using SkillCraft.Api.Core.Validation;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Db;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class LineageFeatureConfiguration : IEntityTypeConfiguration<LineageFeature>
+internal class LineageFeatureConfiguration : IEntityTypeConfiguration<LineageFeatureEntity>
 {
-  public void Configure(EntityTypeBuilder<LineageFeature> builder)
+  public void Configure(EntityTypeBuilder<LineageFeatureEntity> builder)
   {
     builder.ToTable(nameof(GameContext.LineageFeatures), Schemas.Game);
     builder.HasKey(x => x.LineageFeatureId);
@@ -20,7 +20,7 @@ internal class LineageFeatureConfiguration : IEntityTypeConfiguration<LineageFea
     builder.HasIndex(x => new { x.LineageId, x.UpdatedBy });
     builder.HasIndex(x => new { x.LineageId, x.UpdatedOn });
 
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
 
     builder.HasOne(x => x.Lineage).WithMany(x => x.Features)
       .HasForeignKey(x => x.LineageId).HasPrincipalKey(x => x.LineageId)

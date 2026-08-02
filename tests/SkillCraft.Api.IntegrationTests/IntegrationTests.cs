@@ -91,8 +91,7 @@ public abstract class IntegrationTests : IAsyncLifetime
       Infrastructure.Db.Scripts.Table,
       Infrastructure.Db.Spells.Table,
       Infrastructure.Db.Customizations.Table,
-      Infrastructure.Db.Worlds.Table,
-      Infrastructure.Db.History.Table
+      Infrastructure.Db.Worlds.Table
     ];
     foreach (TableId table in tables)
     {

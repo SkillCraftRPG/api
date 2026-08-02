@@ -21,233 +21,6 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SkillCraft.Api.Core.Lineages.Lineage", b =>
-                {
-                    b.Property<int>("LineageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineageId"));
-
-                    b.Property<int?>("Adult")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Burrow")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Climb")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomNames")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ExtraLanguages")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FamilyNames")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FemaleNames")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("Fly")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("HeightRoll")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<bool>("Hover")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("LanguagesContent")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MaleNames")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Malnutrition")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<int?>("Mature")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("NamesContent")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NormalWeight")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("Obese")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("Overweight")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SizeCategory")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<string>("Skinny")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("Summary")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int?>("Swim")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Teenager")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UnisexNames")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Venerable")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("Version")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("Walk")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("WorldEntityWorldId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("WorldId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("LineageId");
-
-                    b.HasIndex("ParentId");
-
-                    b.HasIndex("WorldEntityWorldId");
-
-                    b.HasIndex("WorldId", "CreatedBy");
-
-                    b.HasIndex("WorldId", "CreatedOn");
-
-                    b.HasIndex("WorldId", "Id")
-                        .IsUnique();
-
-                    b.HasIndex("WorldId", "Name");
-
-                    b.HasIndex("WorldId", "ParentId");
-
-                    b.HasIndex("WorldId", "SizeCategory");
-
-                    b.HasIndex("WorldId", "Summary");
-
-                    b.HasIndex("WorldId", "UpdatedBy");
-
-                    b.HasIndex("WorldId", "UpdatedOn");
-
-                    b.HasIndex("WorldId", "Version");
-
-                    b.ToTable("Lineages", "Game");
-                });
-
-            modelBuilder.Entity("SkillCraft.Api.Core.Lineages.LineageFeature", b =>
-                {
-                    b.Property<int>("LineageFeatureId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineageFeatureId"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("LineageId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("LineageFeatureId");
-
-                    b.HasIndex("LineageId", "CreatedBy");
-
-                    b.HasIndex("LineageId", "CreatedOn");
-
-                    b.HasIndex("LineageId", "Id")
-                        .IsUnique();
-
-                    b.HasIndex("LineageId", "Name");
-
-                    b.HasIndex("LineageId", "UpdatedBy");
-
-                    b.HasIndex("LineageId", "UpdatedOn");
-
-                    b.ToTable("LineageFeatures", "Game");
-                });
-
-            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Configurations.LineageLanguage", b =>
-                {
-                    b.Property<int>("LineageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("LanguageId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("LineageId", "LanguageId");
-
-                    b.HasIndex("LanguageId");
-
-                    b.ToTable("LineageLanguages", "Game");
-                });
-
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CasteEntity", b =>
                 {
                     b.Property<int>("CasteId")
@@ -677,6 +450,238 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.ToTable("Languages", "Game");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
+                {
+                    b.Property<int>("LineageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineageId"));
+
+                    b.Property<int?>("Adult")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Burrow")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Climb")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomNames")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ExtraLanguages")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FamilyNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FemaleNames")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Fly")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("HeightRoll")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<bool>("Hover")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LanguagesContent")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MaleNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Malnutrition")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("Mature")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NamesContent")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalWeight")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Obese")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Overweight")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SizeCategory")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Skinny")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("Swim")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Teenager")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UnisexNames")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Venerable")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Walk")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorldId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LineageId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.HasIndex("WorldId", "ParentId");
+
+                    b.HasIndex("WorldId", "SizeCategory");
+
+                    b.HasIndex("WorldId", "Summary");
+
+                    b.ToTable("Lineages", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageFeatureEntity", b =>
+                {
+                    b.Property<int>("LineageFeatureId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineageFeatureId"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LineageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("LineageFeatureId");
+
+                    b.HasIndex("LineageId", "CreatedBy");
+
+                    b.HasIndex("LineageId", "CreatedOn");
+
+                    b.HasIndex("LineageId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("LineageId", "Name");
+
+                    b.HasIndex("LineageId", "UpdatedBy");
+
+                    b.HasIndex("LineageId", "UpdatedOn");
+
+                    b.ToTable("LineageFeatures", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageLanguageEntity", b =>
+                {
+                    b.Property<int>("LineageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LineageId", "LanguageId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("LineageLanguages", "Game");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ScriptEntity", b =>
                 {
                     b.Property<int>("ScriptId")
@@ -1001,107 +1006,6 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.ToTable("Worlds", "Game");
                 });
 
-            modelBuilder.Entity("SkillCraft.Api.Infrastructure.HistoryRecord", b =>
-                {
-                    b.Property<int>("HistoryRecordId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("HistoryRecordId"));
-
-                    b.Property<string>("EventData")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime>("OccurredOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ResourceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ResourceKind")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("Version")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("WorldId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("HistoryRecordId");
-
-                    b.HasIndex("EventId")
-                        .IsUnique();
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("OccurredOn");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Version");
-
-                    b.HasIndex("WorldId", "ResourceKind", "ResourceId");
-
-                    b.ToTable("History", (string)null);
-                });
-
-            modelBuilder.Entity("SkillCraft.Api.Core.Lineages.Lineage", b =>
-                {
-                    b.HasOne("SkillCraft.Api.Core.Lineages.Lineage", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId");
-
-                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", null)
-                        .WithMany("Lineages")
-                        .HasForeignKey("WorldEntityWorldId");
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("SkillCraft.Api.Core.Lineages.LineageFeature", b =>
-                {
-                    b.HasOne("SkillCraft.Api.Core.Lineages.Lineage", "Lineage")
-                        .WithMany("Features")
-                        .HasForeignKey("LineageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lineage");
-                });
-
-            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Configurations.LineageLanguage", b =>
-                {
-                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SkillCraft.Api.Core.Lineages.Lineage", "Lineage")
-                        .WithMany()
-                        .HasForeignKey("LineageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Language");
-
-                    b.Navigation("Lineage");
-                });
-
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CasteEntity", b =>
                 {
                     b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
@@ -1169,6 +1073,51 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Lineages")
+                        .HasForeignKey("WorldId")
+                        .HasPrincipalKey("Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageFeatureEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", "Lineage")
+                        .WithMany("Features")
+                        .HasForeignKey("LineageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lineage");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageLanguageEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", null)
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", null)
+                        .WithMany()
+                        .HasForeignKey("LineageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ScriptEntity", b =>
                 {
                     b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
@@ -1212,7 +1161,7 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
-            modelBuilder.Entity("SkillCraft.Api.Core.Lineages.Lineage", b =>
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
                 {
                     b.Navigation("Children");
 

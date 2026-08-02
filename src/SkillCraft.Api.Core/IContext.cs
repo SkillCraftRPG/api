@@ -9,9 +9,7 @@ public interface IContext
 {
   ActorId? ActorId { get; }
   UserId UserId { get; }
-  Guid UserUid { get; } // TODO(fpion): deprecate
   WorldId WorldId { get; }
-  Guid WorldUid { get; } // TODO(fpion): deprecate
 
   IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes();
 
@@ -19,9 +17,5 @@ public interface IContext
 
   Guid? TryGetSessionId();
   UserId? TryGetUserId();
-  Guid? TryGetUserUid(); // TODO(fpion): deprecate
   WorldId? TryGetWorldId();
-  Guid? TryGetWorldUid(); // TODO(fpion): deprecate
-
-  Task<int> SaveChangesAsync(CancellationToken cancellationToken = default); // TODO(fpion): deprecate
 }

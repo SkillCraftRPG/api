@@ -18,4 +18,8 @@ public record LineageAgeModel : ILineageAge
     Mature = mature;
     Venerable = venerable;
   }
+
+  public LineageAgeModel(ILineageAge age) : this(age.Teenager, age.Adult, age.Mature, age.Venerable)
+  {
+  }
 }

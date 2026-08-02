@@ -5,7 +5,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class ScriptRepository : Logitar.EventSourcing.Repository, IScriptRepository
+internal class ScriptRepository : Repository, IScriptRepository
 {
   private readonly GameContext _database;
 

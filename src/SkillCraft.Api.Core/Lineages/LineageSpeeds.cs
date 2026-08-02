@@ -21,12 +21,8 @@ public record LineageSpeeds : ILineageSpeeds
   public bool Hover { get; }
   public int? Burrow { get; }
 
-  public LineageSpeeds()
-  {
-  }
-
   [JsonConstructor]
-  public LineageSpeeds(int? walk, int? climb, int? swim, int? fly, bool hover, int? burrow)
+  public LineageSpeeds(int? walk = null, int? climb = null, int? swim = null, int? fly = null, bool hover = false, int? burrow = null)
   {
     Walk = walk;
     Climb = climb;
@@ -34,9 +30,10 @@ public record LineageSpeeds : ILineageSpeeds
     Fly = fly;
     Hover = hover;
     Burrow = burrow;
+    new LineageSpeedsValidator().ValidateAndThrow(this);
   }
 
-  public LineageSpeeds(Lineage lineage) : this(lineage.Walk, lineage.Climb, lineage.Swim, lineage.Fly, lineage.Hover, lineage.Burrow)
+  public LineageSpeeds(ILineageSpeeds speeds) : this(speeds.Walk, speeds.Climb, speeds.Swim, speeds.Fly, speeds.Hover, speeds.Burrow)
   {
   }
 }

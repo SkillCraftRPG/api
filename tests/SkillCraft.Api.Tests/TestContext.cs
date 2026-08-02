@@ -26,11 +26,11 @@ public class TestContext : IContext
 
   public User? User { get; set; }
   public UserId UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
-  public Guid UserUid => TryGetUserUid() ?? throw new InvalidOperationException("An authenticated user is required.");
 
   public World? World { get; set; }
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
-  public Guid WorldUid => TryGetWorldUid() ?? throw new InvalidOperationException("A world is required.");
+  public Guid WorldUid => WorldId.ResourceId;
+  public Guid UserUid => UserId.ResourceId;
 
   public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes()
   {
@@ -44,9 +44,7 @@ public class TestContext : IContext
 
   public Guid? TryGetSessionId() => null;
   public UserId? TryGetUserId() => User is null ? null : new UserId(new Actor(User).GetActorId());
-  public Guid? TryGetUserUid() => User?.Id;
   public WorldId? TryGetWorldId() => World?.Id;
-  public Guid? TryGetWorldUid() => World?.ResourceId;
 
   public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
   {

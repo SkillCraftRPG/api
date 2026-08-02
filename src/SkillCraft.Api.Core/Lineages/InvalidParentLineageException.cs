@@ -38,14 +38,14 @@ public class InvalidParentLineageException : DomainException
   public InvalidParentLineageException(Lineage parent, string propertyName)
     : base(BuildMessage(parent, propertyName))
   {
-    WorldId = parent.WorldId;
-    ParentId = parent.Id;
+    WorldId = parent.WorldId.ResourceId;
+    ParentId = parent.ResourceId;
     PropertyName = propertyName;
   }
 
   private static string BuildMessage(Lineage parent, string propertyName) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(WorldId), parent.WorldId)
-    .AddData(nameof(ParentId), parent.Id)
+    .AddData(nameof(WorldId), parent.WorldId.ResourceId)
+    .AddData(nameof(ParentId), parent.ResourceId)
     .AddData(nameof(PropertyName), propertyName)
     .Build();
 }

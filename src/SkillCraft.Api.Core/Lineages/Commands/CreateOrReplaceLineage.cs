@@ -1,7 +1,6 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages;
-using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds;
@@ -14,6 +13,7 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
 {
   private readonly IContext _context;
   private readonly ILanguageRepository _languageRepository;
+  private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
@@ -21,12 +21,14 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
   public CreateOrReplaceLineageCommandHandler(
     IContext context,
     ILanguageRepository languageRepository,
+    ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService,
     IWorldRepository worldRepository)
   {
     _context = context;
     _languageRepository = languageRepository;
+    _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
     _worldRepository = worldRepository;
@@ -37,84 +39,62 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     CreateOrReplaceLineagePayload payload = command.Payload;
     payload.Validate();
 
-    Lineage? lineage = null;
-    if (command.Id.HasValue)
-    {
-      lineage = await _lineageRepository.LoadAsync(command.Id.Value, cancellationToken);
-    }
-
-    Guid userId = _context.UserUid;
-    Guid worldId = _context.WorldUid;
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
 
     Lineage? parent = null;
     if (payload.ParentId.HasValue)
     {
-      parent = await _lineageRepository.LoadAsync(payload.ParentId.Value, cancellationToken)
-        ?? throw new ResourceNotFoundException(new ResourceIdentifier(Lineage.ResourceKind, payload.ParentId.Value, worldId), nameof(payload.ParentId));
+      LineageId parentId = new(worldId, payload.ParentId.Value);
+      parent = await _lineageRepository.LoadAsync(parentId, cancellationToken)
+        ?? throw new LineageNotFoundException(parentId, nameof(payload.ParentId));
     }
 
-    IReadOnlyCollection<Language> languages = [];
-    if (payload.Languages.Ids.Count > 0)
+    Lineage? lineage = null;
+    LineageId lineageId = LineageId.NewId(worldId);
+    if (command.Id.HasValue)
     {
-      LanguageId[] languageIds = [.. payload.Languages.Ids.Select(id => new LanguageId(_context.WorldId, id))];
-      languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
-
-      HashSet<Guid> missingIds = payload.Languages.Ids.Except(languages.Select(language => language.ResourceId)).ToHashSet();
-      if (missingIds.Count > 0)
-      {
-        string propertyName = string.Join('.', nameof(payload.Languages), nameof(payload.Languages.Ids));
-        throw new LanguagesNotFoundException(worldId, missingIds, propertyName);
-      }
+      lineageId = new LineageId(worldId, command.Id.Value);
+      lineage = await _lineageRepository.LoadAsync(lineageId, cancellationToken);
     }
 
-    LineageSnapshot? snapshot = null;
+    Name name = new(payload.Name);
+
+    bool created = false;
     if (lineage is null)
     {
       World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateLineage, world, cancellationToken);
 
-      lineage = new Lineage(world, command.Id, parent, userId);
+      lineage = new Lineage(lineageId, name, parent, actorId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, lineage, cancellationToken);
 
-      if (parent?.Id != lineage.Parent?.Id)
-      {
-        throw new ImmutablePropertyException<Guid?>(lineage, lineage.Parent?.Id, parent?.Id, nameof(Lineage.ParentId));
-      }
-
-      snapshot = new LineageSnapshot(lineage);
+      lineage.Rename(name, actorId);
     }
 
-    lineage.Name = payload.Name.Trim();
-    lineage.Summary = payload.Summary?.CleanTrim();
-    lineage.Content = payload.Content?.CleanTrim();
+    lineage.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
-    lineage.SetLanguages(languages, payload.Languages.Extra, payload.Languages.Content);
-    lineage.SetNames(payload.Names.Family, payload.Names.Female, payload.Names.Male, payload.Names.Unisex, payload.Names.Custom, payload.Names.Content);
-    lineage.SetSpeeds(payload.Speeds);
-    lineage.SetSize(payload.Size);
-    lineage.SetWeight(payload.Weight);
-    lineage.SetAge(payload.Age);
+    LineageLanguages languages = await LineageHelper.GetLanguagesAsync(_languageRepository, worldId, payload.Languages, cancellationToken);
+    lineage.SetLanguages(languages, actorId);
 
-    if (snapshot is null)
-    {
-      _lineageRepository.Add(lineage);
-    }
-    else
-    {
-      LineageUpdated? record = snapshot.Compare(lineage);
-      if (record is not null)
-      {
-        lineage.Update(userId);
-        _lineageRepository.Update(lineage, record);
-      }
-    }
+    LineageNames names = LineageHelper.GetNames(payload.Names);
+    lineage.SetNames(names, actorId);
 
-    await _context.SaveChangesAsync(cancellationToken);
+    LineageSpeeds speeds = new(payload.Speeds);
+    lineage.SetSpeeds(speeds, actorId);
 
-    LineageModel model = await _lineageRepository.ReadAsync(lineage, cancellationToken);
-    return new CreateOrReplaceLineageResult(model, Created: snapshot is null);
+    LineageSize size = LineageHelper.GetSize(payload.Size);
+    LineageWeight weight = LineageHelper.GetWeight(payload.Weight);
+    LineageAge age = new(payload.Age);
+    lineage.SetTraits(size, weight, age, actorId);
+
+    await _lineageRepository.SaveAsync(lineage, cancellationToken);
+
+    LineageModel model = await _lineageQuerier.ReadAsync(lineage, cancellationToken);
+    return new CreateOrReplaceLineageResult(model, created);
   }
 }

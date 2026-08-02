@@ -35,25 +35,25 @@ public class LanguagesNotFoundException : NotFoundException
     }
   }
 
-  public LanguagesNotFoundException(Guid worldId, IEnumerable<Guid> languageIds, string propertyName)
-    : base(BuildMessage(worldId, languageIds, propertyName))
+  public LanguagesNotFoundException(IEnumerable<LanguageId> languageIds, string propertyName)
+    : base(BuildMessage(languageIds, propertyName))
   {
-    WorldId = worldId;
-    LanguageIds = languageIds.ToHashSet();
+    WorldId = languageIds.Select(id => id.WorldId).Distinct().Single().ResourceId;
+    LanguageIds = languageIds.Select(id => id.ResourceId).Distinct().ToList().AsReadOnly();
     PropertyName = propertyName;
   }
 
-  private static string BuildMessage(Guid worldId, IEnumerable<Guid> languageIds, string propertyName)
+  private static string BuildMessage(IEnumerable<LanguageId> languageIds, string propertyName)
   {
     StringBuilder message = new();
     message.AppendLine(ErrorMessage);
-    message.Append(nameof(WorldId)).Append(": ").Append(worldId).AppendLine();
+    message.Append(nameof(WorldId)).Append(": ").Append(languageIds.Select(id => id.WorldId).Distinct().Single().ResourceId).AppendLine();
     if (languageIds.Any())
     {
       message.Append(nameof(LanguageIds)).Append(':').AppendLine();
-      foreach (Guid languageId in languageIds.Distinct())
+      foreach (LanguageId languageId in languageIds.Distinct())
       {
-        message.Append(" - ").Append(languageId).AppendLine();
+        message.Append(" - ").Append(languageId.ResourceId).AppendLine();
       }
     }
     message.Append(nameof(PropertyName)).Append(": ").Append(propertyName).AppendLine();

@@ -42,7 +42,7 @@ internal class ItemQuerier : IItemQuerier
   public async Task<ItemModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     ItemEntity? item = await _items.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return item is null ? null : await MapAsync(item, cancellationToken);
@@ -51,7 +51,7 @@ internal class ItemQuerier : IItemQuerier
   public virtual async Task<SearchResults<ItemModel>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Items.Table).SelectAll(Db.Items.Table)
-      .Where(Db.Items.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Items.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Items.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Items.Name, Db.Items.Summary);
 

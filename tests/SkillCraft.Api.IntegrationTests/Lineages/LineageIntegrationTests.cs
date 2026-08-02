@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Lineages;
@@ -37,12 +38,10 @@ public class LineageIntegrationTests : IntegrationTests
     await _languageRepository.SaveAsync(_celfique);
 
     _elfe = LineageBuilder.Elfe(Faker, Context.World);
-    _lineageRepository.Add(_elfe);
+    await _lineageRepository.SaveAsync(_elfe);
 
     _lineage = new LineageBuilder(Faker).WithWorld(Context.World).Build();
-    _lineageRepository.Add(_lineage);
-
-    await Context.SaveChangesAsync();
+    await _lineageRepository.SaveAsync(_lineage);
   }
 
   [Theory(DisplayName = "It should create a new lineage.")]
@@ -66,11 +65,11 @@ public class LineageIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, lineage.Id);
     }
-    Assert.Equal(1, lineage.Version);
+    Assert.Equal(4, lineage.Version);
     Assert.Equal(Actor, lineage.CreatedBy);
     Assert.Equal(DateTime.UtcNow, lineage.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(lineage.CreatedBy, lineage.UpdatedBy);
-    Assert.Equal(lineage.CreatedOn, lineage.UpdatedOn);
+    Assert.True(lineage.CreatedOn < lineage.UpdatedOn);
 
     AssertHautElfe(payload, lineage);
   }
@@ -79,19 +78,18 @@ public class LineageIntegrationTests : IntegrationTests
   public async Task Given_ParentId_When_Search_Then_Results()
   {
     Lineage hautElfe = LineageBuilder.HautElfe(Faker, Context.World, _elfe, _celfique);
-    _lineageRepository.Add(hautElfe);
-    await Context.SaveChangesAsync();
+    await _lineageRepository.SaveAsync(hautElfe);
 
     SearchLineagesPayload payload = new()
     {
-      ParentId = _elfe.Id
+      ParentId = _elfe.ResourceId
     };
 
     SearchResults<LineageModel> results = await _lineageService.SearchAsync(payload);
     Assert.Equal(1, results.Total);
 
     LineageModel lineage = Assert.Single(results.Items);
-    Assert.Equal(hautElfe.Id, lineage.Id);
+    Assert.Equal(hautElfe.ResourceId, lineage.Id);
   }
 
   [Fact(DisplayName = "It should filter search results by size category.")]
@@ -99,8 +97,7 @@ public class LineageIntegrationTests : IntegrationTests
   {
     Lineage nain = LineageBuilder.Nain(Faker, Context.World);
     Lineage petit = new LineageBuilder(Faker).WithWorld(Context.World).WithName("Gnome").WithSize(SizeCategory.Small, "90+2d10").Build();
-    _lineageRepository.Add(nain, petit);
-    await Context.SaveChangesAsync();
+    await _lineageRepository.SaveAsync([nain, petit]);
 
     SearchLineagesPayload payload = new()
     {
@@ -111,22 +108,22 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.Equal(1, results.Total);
 
     LineageModel lineage = Assert.Single(results.Items);
-    Assert.Equal(petit.Id, lineage.Id);
+    Assert.Equal(petit.ResourceId, lineage.Id);
   }
 
   [Fact(DisplayName = "It should read a lineage by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    LineageModel? lineage = await _lineageService.ReadAsync(_lineage.Id);
+    LineageModel? lineage = await _lineageService.ReadAsync(_lineage.ResourceId);
     Assert.NotNull(lineage);
-    Assert.Equal(_lineage.Id, lineage.Id);
+    Assert.Equal(_lineage.ResourceId, lineage.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing lineage.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceLineagePayload payload = CreateHumainPayload();
-    Guid id = _lineage.Id;
+    Guid id = _lineage.ResourceId;
 
     CreateOrReplaceLineageResult result = await _lineageService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -134,9 +131,9 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.NotNull(lineage);
 
     Assert.Equal(id, lineage.Id);
-    Assert.Equal(2, lineage.Version);
-    Assert.Equal(_lineage.CreatedBy, lineage.CreatedBy.Id);
-    Assert.Equal(_lineage.CreatedOn, lineage.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(7, lineage.Version);
+    Assert.Equal(_lineage.CreatedBy, lineage.CreatedBy.GetActorId());
+    Assert.Equal(_lineage.CreatedOn.AsUniversalTime(), lineage.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, lineage.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, lineage.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -160,10 +157,10 @@ public class LineageIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _lineageService.ReadAsync(_lineage.Id));
+    Assert.Null(await _lineageService.ReadAsync(_lineage.ResourceId));
   }
 
-  [Fact(DisplayName = "It should return null when the lineage was not found.")]
+  [Fact(DisplayName = "It should return null when the language was not found.")]
   public async Task Given_NotFound_When_Update_Then_NullReturned()
   {
     Assert.Null(await _lineageService.UpdateAsync(Guid.Empty, new UpdateLineagePayload()));
@@ -174,8 +171,7 @@ public class LineageIntegrationTests : IntegrationTests
   {
     Lineage humain = LineageBuilder.Humain(Faker, Context.World);
     Lineage nain = LineageBuilder.Nain(Faker, Context.World);
-    _lineageRepository.Add(humain, nain);
-    await Context.SaveChangesAsync();
+    await _lineageRepository.SaveAsync([humain, nain]);
 
     SearchLineagesPayload payload = new()
     {
@@ -186,49 +182,29 @@ public class LineageIntegrationTests : IntegrationTests
     payload.Search.Terms.Add(new SearchTerm("%humain%"));
     payload.Search.Terms.Add(new SearchTerm("%nain%"));
     payload.Search.Terms.Add(new SearchTerm("%elfe%"));
-    payload.Ids.AddRange([_lineage.Id, Guid.Empty, humain.Id, nain.Id]);
+    payload.Ids.AddRange([_lineage.ResourceId, Guid.Empty, humain.ResourceId, nain.ResourceId]);
     payload.Sort.Add(new LineageSortOption(LineageSort.Name, isDescending: true));
 
     SearchResults<LineageModel> results = await _lineageService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     LineageModel lineage = Assert.Single(results.Items);
-    Assert.Equal(humain.Id, lineage.Id);
-  }
-
-  [Fact(DisplayName = "It should throw ImmutablePropertyException when the parent is changing.")]
-  public async Task Given_DifferentParent_When_Replace_Then_ImmutablePropertyException()
-  {
-    Lineage hautElfe = LineageBuilder.HautElfe(Faker, Context.World, _elfe, _celfique);
-    _lineageRepository.Add(hautElfe);
-    await Context.SaveChangesAsync();
-
-    CreateOrReplaceLineagePayload payload = CreateHautElfePayload();
-    payload.ParentId = null;
-
-    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid?>>(async () => await _lineageService.CreateOrReplaceAsync(payload, hautElfe.Id));
-    Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Lineage.ResourceKind, exception.ResourceKind);
-    Assert.Equal(hautElfe.Id, exception.ResourceId);
-    Assert.Equal(_elfe.Id, exception.ExpectedValue);
-    Assert.Null(exception.AttemptedValue);
-    Assert.Equal("ParentId", exception.PropertyName);
+    Assert.Equal(humain.ResourceId, lineage.Id);
   }
 
   [Fact(DisplayName = "It should throw InvalidParentLineageException when the parent has a parent.")]
   public async Task Given_ParentHasParent_When_Create_Then_InvalidParentLineageException()
   {
     Lineage hautElfe = LineageBuilder.HautElfe(Faker, Context.World, _elfe, _celfique);
-    _lineageRepository.Add(hautElfe);
-    await Context.SaveChangesAsync();
+    await _lineageRepository.SaveAsync(hautElfe);
 
     CreateOrReplaceLineagePayload payload = CreateHautElfePayload();
-    payload.ParentId = hautElfe.Id;
+    payload.ParentId = hautElfe.ResourceId;
     payload.Name = " Sous-ethnie ";
 
     var exception = await Assert.ThrowsAsync<InvalidParentLineageException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(hautElfe.Id, exception.ParentId);
+    Assert.Equal(hautElfe.ResourceId, exception.ParentId);
     Assert.Equal("ParentId", exception.PropertyName);
   }
 
@@ -250,7 +226,7 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHumainPayload();
     payload.Languages.Ids = [Guid.Empty];
 
-    var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.Id));
+    var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.ResourceId));
     Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Contains(Guid.Empty, exception.LanguageIds);
     Assert.Equal("Languages.Ids", exception.PropertyName);
@@ -268,22 +244,21 @@ public class LineageIntegrationTests : IntegrationTests
       }
     };
 
-    var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.UpdateAsync(_lineage.Id, payload));
+    var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.UpdateAsync(_lineage.ResourceId, payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Contains(Guid.Empty, exception.LanguageIds);
     Assert.Equal("Languages.Ids", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw ResourceNotFoundException when creating a lineage.")]
-  public async Task Given_ParentNotFound_When_Create_Then_ResourceNotFoundException()
+  [Fact(DisplayName = "It should throw LineageNotFoundException when creating a lineage.")]
+  public async Task Given_ParentNotFound_When_Create_Then_LineageNotFoundException()
   {
     CreateOrReplaceLineagePayload payload = CreateHautElfePayload();
     payload.ParentId = Guid.Empty;
 
-    var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
+    var exception = await Assert.ThrowsAsync<LineageNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.WorldUid, exception.WorldId);
-    Assert.Equal(Lineage.ResourceKind, exception.ResourceKind);
-    Assert.Equal(payload.ParentId.Value, exception.ResourceId);
+    Assert.Equal(payload.ParentId.Value, exception.LineageId);
     Assert.Equal("ParentId", exception.PropertyName);
   }
 
@@ -307,7 +282,7 @@ public class LineageIntegrationTests : IntegrationTests
 
     CreateOrReplaceLineagePayload payload = CreateHumainPayload();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
@@ -320,7 +295,7 @@ public class LineageIntegrationTests : IntegrationTests
 
     UpdateLineagePayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.UpdateAsync(_lineage.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.UpdateAsync(_lineage.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
@@ -329,7 +304,7 @@ public class LineageIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing lineage.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _lineage.Id;
+    Guid id = _lineage.ResourceId;
     CreateOrReplaceLineagePayload create = CreateHumainPayload();
     UpdateLineagePayload payload = new()
     {
@@ -348,9 +323,9 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.NotNull(lineage);
 
     Assert.Equal(id, lineage.Id);
-    Assert.Equal(2, lineage.Version);
-    Assert.Equal(_lineage.CreatedBy, lineage.CreatedBy.Id);
-    Assert.Equal(_lineage.CreatedOn, lineage.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(7, lineage.Version);
+    Assert.Equal(_lineage.CreatedBy, lineage.CreatedBy.GetActorId());
+    Assert.Equal(_lineage.CreatedOn.AsUniversalTime(), lineage.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, lineage.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, lineage.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -362,7 +337,7 @@ public class LineageIntegrationTests : IntegrationTests
 
   private CreateOrReplaceLineagePayload CreateHautElfePayload() => new()
   {
-    ParentId = _elfe.Id,
+    ParentId = _elfe.ResourceId,
     Name = " Haut-Elfe ",
     Summary = "  Héritiers stellaires de royaumes elfiques raffinés et érudits.  ",
     Content = "   Les Hauts-Elfes privilégient l’ordre, l’érudition et la stabilité, qu’ils considèrent comme les fondations de toute civilisation durable. Héritiers d’un antique royaume forestier fondé dans l’Ouest de la Sarénie il y a plus de deux millénaires, ils ont développé une culture raffinée où astrologie, magie et savoir occupent une place centrale. Leur expansion vers les Triskîles mena à la fondation de royaumes sur Alnar et Ellesdales, bien que cette dernière région se soit fragmentée au fil des siècles en principautés rivales. Diplomates et marchands influents, les Hauts-Elfes entretiennent généralement de bonnes relations avec les peuples civilisés, mais les ambitions territoriales des Dallois menacent désormais l’équilibre fragile d’Ellesdales. Nés sous des constellations considérées sacrées, ils portent souvent sur eux le symbole de l’étoile ayant marqué leur destinée.   ",

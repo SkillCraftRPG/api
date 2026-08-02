@@ -7,15 +7,15 @@ internal record ReadLineageQuery(Guid Id) : IQuery<LineageModel?>;
 
 internal class ReadLineageQueryHandler : IQueryHandler<ReadLineageQuery, LineageModel?>
 {
-  private readonly ILineageRepository _lineageRepository;
+  private readonly ILineageQuerier _lineageQuerier;
 
-  public ReadLineageQueryHandler(ILineageRepository lineageRepository)
+  public ReadLineageQueryHandler(ILineageQuerier lineageQuerier)
   {
-    _lineageRepository = lineageRepository;
+    _lineageQuerier = lineageQuerier;
   }
 
   public async Task<LineageModel?> HandleAsync(ReadLineageQuery query, CancellationToken cancellationToken)
   {
-    return await _lineageRepository.ReadAsync(query.Id, cancellationToken);
+    return await _lineageQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

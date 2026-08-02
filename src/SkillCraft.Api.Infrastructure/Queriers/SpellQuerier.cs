@@ -42,7 +42,7 @@ internal class SpellQuerier : ISpellQuerier
   public async Task<SpellModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     SpellEntity? spell = await _spells.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return spell is null ? null : await MapAsync(spell, cancellationToken);
@@ -51,7 +51,7 @@ internal class SpellQuerier : ISpellQuerier
   public virtual async Task<SearchResults<SpellModel>> SearchAsync(SearchSpellsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Spells.Table).SelectAll(Db.Spells.Table)
-      .Where(Db.Spells.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Spells.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Spells.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Spells.Name, Db.Spells.Summary);
 

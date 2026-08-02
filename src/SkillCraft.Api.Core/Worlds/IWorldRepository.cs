@@ -5,7 +5,7 @@ public interface IWorldRepository
   Task<World?> LoadAsync(WorldId id, CancellationToken cancellationToken = default);
   Task<IReadOnlyCollection<World>> LoadAsync(IEnumerable<WorldId> ids, CancellationToken cancellationToken = default);
 
-  Task<World> LoadFromContextAsync(CancellationToken cancellationToken = default);
+  Task<World> LoadFromContextAsync(CancellationToken cancellationToken = default); // TODO(fpion): remove this
 
   Task SaveAsync(World world, CancellationToken cancellationToken = default);
   Task SaveAsync(IEnumerable<World> worlds, CancellationToken cancellationToken = default);

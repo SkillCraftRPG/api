@@ -42,7 +42,7 @@ internal class EducationQuerier : IEducationQuerier
   public async Task<EducationModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     EducationEntity? education = await _educations.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return education is null ? null : await MapAsync(education, cancellationToken);
@@ -51,7 +51,7 @@ internal class EducationQuerier : IEducationQuerier
   public virtual async Task<SearchResults<EducationModel>> SearchAsync(SearchEducationsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Educations.Table).SelectAll(Db.Educations.Table)
-      .Where(Db.Educations.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Educations.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Educations.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Educations.Name, Db.Educations.Summary, Db.Educations.FeatureName);
 

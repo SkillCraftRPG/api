@@ -42,7 +42,7 @@ internal class CustomizationQuerier : ICustomizationQuerier
   public async Task<CustomizationModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     CustomizationEntity? customization = await _customizations.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return customization is null ? null : await MapAsync(customization, cancellationToken);
@@ -51,7 +51,7 @@ internal class CustomizationQuerier : ICustomizationQuerier
   public virtual async Task<SearchResults<CustomizationModel>> SearchAsync(SearchCustomizationsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Customizations.Table).SelectAll(Db.Customizations.Table)
-      .Where(Db.Customizations.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Customizations.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Customizations.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Customizations.Name, Db.Customizations.Summary);
 

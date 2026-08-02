@@ -23,7 +23,7 @@ internal class SignOutAccountCommandHandler : ICommandHandler<SignOutAccountComm
 
   public async Task<bool> HandleAsync(SignOutAccountCommand command, CancellationToken cancellationToken)
   {
-    Guid userId = _context.UserUid;
+    UserId userId = _context.UserId;
 
     if (command.SessionId.HasValue)
     {
@@ -32,7 +32,7 @@ internal class SignOutAccountCommandHandler : ICommandHandler<SignOutAccountComm
       {
         return false;
       }
-      else if (session.User.Id != userId)
+      else if (session.User.Id != userId.ResourceId)
       {
         throw new PermissionDeniedException(userId, "SignOut", new ResourceIdentifier("Session", command.SessionId.Value));
       }
@@ -41,7 +41,7 @@ internal class SignOutAccountCommandHandler : ICommandHandler<SignOutAccountComm
     }
     else
     {
-      await _userGateway.SignOutAsync(userId, cancellationToken);
+      await _userGateway.SignOutAsync(userId.ResourceId, cancellationToken);
     }
 
     return true;

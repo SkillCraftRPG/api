@@ -42,7 +42,7 @@ internal class CasteQuerier : ICasteQuerier
   public async Task<CasteModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     CasteEntity? caste = await _castes.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return caste is null ? null : await MapAsync(caste, cancellationToken);
@@ -51,7 +51,7 @@ internal class CasteQuerier : ICasteQuerier
   public virtual async Task<SearchResults<CasteModel>> SearchAsync(SearchCastesPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Castes.Table).SelectAll(Db.Castes.Table)
-      .Where(Db.Castes.WorldId, Operators.IsEqualTo(_context.WorldUid))
+      .Where(Db.Castes.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Castes.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Castes.Name, Db.Castes.Summary, Db.Castes.FeatureName);
 
