@@ -145,7 +145,7 @@ public class SpellIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
-    Spell flammeSacree = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Flamme sacr�e").Build();
+    Spell flammeSacree = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Flamme sacrée").Build();
     Spell miracle = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Miracle").Build();
     Spell mirage = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Mirage").Build();
     await _spellRepository.SaveAsync([flammeSacree, miracle, mirage]);
@@ -254,7 +254,7 @@ public class SpellIntegrationTests : IntegrationTests
   {
     Tier = 1,
     Name = " Protection contre la magie ",
-    Summary = "  D�tection, dissipation et interruption des effets magiques adverses.  ",
-    Content = "   Pouvoir d�fensif et utilitaire permettant de d�tecter la magie, dissiper les effets surnaturels actifs et interrompre les incantations ennemies en r�action.   "
+    Summary = "  Détection, dissipation et interruption des effets magiques adverses.  ",
+    Content = "   Pouvoir défensif et utilitaire permettant de détecter la magie, dissiper les effets surnaturels actifs et interrompre les incantations ennemies en réaction.   "
   };
 }

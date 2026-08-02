@@ -383,8 +383,8 @@ public class TalentIntegrationTests : IntegrationTests
   {
     Tier = 0,
     Name = " Formation martiale ",
-    Summary = "  Accorde la ma�trise des armes et armures moyennes en combat.  ",
-    Content = "   Le personnage acquiert les capacit�s suivantes :\n\n- Il est [form�](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de m�l�e.\n- Il est [form�](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et � l�utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu�il d�gaine ou rengaine une arme, il peut en faire de m�me avec un bouclier en [action libre](/regles/combat/deroulement/tour).   ",
+    Summary = "  Accorde la maîtrise des armes et armures moyennes en combat.  ",
+    Content = "   Le personnage acquiert les capacités suivantes :\n\n- Il est [formé](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de mêlée.\n- Il est [formé](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et à l’utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu’il dégaine ou rengaine une arme, il peut en faire de même avec un bouclier en [action libre](/regles/combat/deroulement/tour).   ",
     AllowMultiplePurchases = false,
     Skill = Skill.Melee,
     RequiredTalentId = _melee.ResourceId

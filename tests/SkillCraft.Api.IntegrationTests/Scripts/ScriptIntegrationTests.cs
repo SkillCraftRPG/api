@@ -212,9 +212,9 @@ public class ScriptIntegrationTests : IntegrationTests
 
   private static CreateOrReplaceScriptPayload CreateRenonPayload() => new()
   {
-    Name = " R�non ",
-    Summary = "  Alphabet unifi� et standardis�, utilis� par le Commun et l�Imp�rial.  ",
-    Content = "   L�alphabet R�non est un syst�me d��criture alphab�tique commun � l�ensemble du monde R�non, utilis� aussi bien pour le [Commun](/regles/langues/commun) que pour l�[Imp�rial](/regles/langues/imperial). H�rit� de l��criture de l�ancien empire occidental, il a �t� progressivement standardis� afin d�assurer une lecture claire et coh�rente sur tout le territoire. �crit de gauche � droite, il repose sur une relation g�n�ralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a �volu� des formes monumentales vers des �critures plus cursives et livresques, et il admet diff�rents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
+    Name = " Rénon ",
+    Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
+    Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
   };
 
   private static void AssertRenon(CreateOrReplaceScriptPayload payload, ScriptModel script)

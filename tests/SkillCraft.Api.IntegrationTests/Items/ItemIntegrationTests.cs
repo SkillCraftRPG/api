@@ -239,9 +239,9 @@ public class ItemIntegrationTests : IntegrationTests
 
   private static CreateOrReplaceItemPayload CreateCordePayload() => new()
   {
-    Name = " Corde (15 m�tres) ",
-    Summary = "  Corde de chanvre de 15 m�tres, 2 points de Vitalit�.  ",
-    Content = "   Une corde de chanvre dot�e de 2 points de Vitalit�. On peut la briser en r�ussissant un test d�Athl�tisme de difficult� �lev�e. La longueur standard est de 15 m�tres.   ",
+    Name = " Corde (15 mètres) ",
+    Summary = "  Corde de chanvre de 15 mètres, 2 points de Vitalité.  ",
+    Content = "   Une corde de chanvre dotée de 2 points de Vitalité. On peut la briser en réussissant un test d’Athlétisme de difficulté élevée. La longueur standard est de 15 mètres.   ",
     Price = 1,
     Weight = 5
   };
