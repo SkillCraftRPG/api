@@ -15,7 +15,7 @@ public readonly struct CasteId
   {
     StreamId = streamId;
 
-    Resource resource = Resource.Parse(streamId.Value);
+    ResourceIdentifier resource = ResourceIdentifier.Parse(streamId.Value);
     WorldId = resource.WorldId ?? throw new ArgumentException("A world is required.", nameof(streamId));
     ResourceId = resource.Id;
   }
@@ -26,7 +26,7 @@ public readonly struct CasteId
 
   public CasteId(WorldId worldId, Guid resourceId)
   {
-    Resource resource = new(Caste.ResourceKind, resourceId, worldId);
+    ResourceIdentifier resource = new(Caste.ResourceKind, resourceId, worldId);
     StreamId = new StreamId(resource.ToString());
 
     WorldId = worldId;

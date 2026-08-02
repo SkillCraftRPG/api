@@ -20,7 +20,7 @@ public class Item : AggregateRoot, IResource
   public Price? Price { get; private set; }
   public Weight? Weight { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Item() : base()
   {

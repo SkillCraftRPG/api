@@ -3,25 +3,30 @@ using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core;
 
-public class ResourceIdentifier // TODO(fpion): deprecate this
+public class ResourceIdentifier
 {
   private const char Separator = '|';
   private const char ResourceSeparator = ':';
 
   private readonly string _value;
 
-  public Guid? WorldId { get; }
+  public WorldId? WorldId { get; }
   public string Kind { get; }
   public Guid Id { get; }
 
-  public ResourceIdentifier(string kind, Guid id, Guid? worldId = null)
+  public ResourceIdentifier(string kind, Guid id, WorldId? worldId = null)
   {
+    if (string.IsNullOrWhiteSpace(kind))
+    {
+      throw new ArgumentException("The kind is required.", nameof(kind));
+    }
+
     WorldId = worldId;
     Kind = kind.Trim();
     Id = id;
 
-    string value = string.Join(ResourceSeparator, kind, Convert.ToBase64String(id.ToByteArray()).ToUriSafeBase64());
-    _value = worldId.HasValue ? string.Join(Separator, new ResourceIdentifier(World.ResourceKind, worldId.Value), value) : value;
+    string resource = string.Join(ResourceSeparator, kind, Convert.ToBase64String(id.ToByteArray()).ToUriSafeBase64());
+    _value = WorldId.HasValue ? string.Join(Separator, WorldId.Value, resource) : resource;
   }
 
   public static ResourceIdentifier Parse(string value, string? expectedKind = null)
@@ -32,7 +37,7 @@ public class ResourceIdentifier // TODO(fpion): deprecate this
       throw new ArgumentException($"The value '{value}' is not a valid resource identifier.", nameof(value));
     }
 
-    Guid? worldId = values.Length == 2 ? ResourceIdentifier.Parse(values.First(), World.ResourceKind).Id : null;
+    WorldId? worldId = values.Length == 2 ? new(values.First()) : null;
 
     string[] parts = values.Last().Split(ResourceSeparator);
     if (parts.Length != 2)

@@ -24,7 +24,7 @@ public class Talent : AggregateRoot, IResource
   public Skill? Skill { get; private set; }
   public TalentId? RequiredTalentId { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Talent() : base()
   {

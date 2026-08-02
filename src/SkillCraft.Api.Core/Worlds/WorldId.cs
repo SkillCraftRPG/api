@@ -13,7 +13,7 @@ public readonly struct WorldId
   {
     StreamId = streamId;
 
-    Resource resource = Resource.Parse(streamId.Value, World.ResourceKind);
+    ResourceIdentifier resource = ResourceIdentifier.Parse(streamId.Value, World.ResourceKind);
     ResourceId = resource.Id;
   }
 
@@ -23,7 +23,7 @@ public readonly struct WorldId
 
   public WorldId(Guid resourceId)
   {
-    Resource resource = new(World.ResourceKind, resourceId);
+    ResourceIdentifier resource = new(World.ResourceKind, resourceId);
     StreamId = new StreamId(resource.ToString());
 
     ResourceId = resourceId;

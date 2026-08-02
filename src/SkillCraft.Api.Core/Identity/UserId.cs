@@ -23,11 +23,11 @@ public readonly struct UserId
     }
     else if (values.Length == 2)
     {
-      Resource realm = Resource.Parse(values.First(), ActorExtensions.RealmKind);
+      ResourceIdentifier realm = ResourceIdentifier.Parse(values.First(), ActorExtensions.RealmKind);
       RealmId = realm.Id;
     }
 
-    Resource resource = Resource.Parse(values.Last(), ActorType.User.ToString());
+    ResourceIdentifier resource = ResourceIdentifier.Parse(values.Last(), ActorType.User.ToString());
     ResourceId = resource.Id;
   }
 
@@ -37,8 +37,8 @@ public readonly struct UserId
 
   public UserId(Guid resourceId, Guid? realmId = null)
   {
-    Resource? realm = realmId.HasValue ? new(ActorExtensions.RealmKind, realmId.Value) : null;
-    Resource resource = new(ActorType.User.ToString(), resourceId);
+    ResourceIdentifier? realm = realmId.HasValue ? new(ActorExtensions.RealmKind, realmId.Value) : null;
+    ResourceIdentifier resource = new(ActorType.User.ToString(), resourceId);
     string value = realm is null ? resource.ToString() : string.Join(ActorExtensions.Separator, realm, resource);
     ActorId = new ActorId(value);
 

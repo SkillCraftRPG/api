@@ -57,7 +57,7 @@ public class ImmutablePropertyException<T> : DomainException
     : base(BuildMessage(resource, expectedValue, attemptedValue, propertyName))
   {
     ResourceIdentifier identifier = resource.Identifier;
-    WorldId = identifier.WorldId;
+    WorldId = identifier.WorldId?.ResourceId;
     ResourceKind = identifier.Kind;
     ResourceId = identifier.Id;
     ExpectedValue = expectedValue;
@@ -69,7 +69,7 @@ public class ImmutablePropertyException<T> : DomainException
   {
     ResourceIdentifier identifier = resource.Identifier;
     return new ErrorMessageBuilder(ErrorMessage)
-      .AddData(nameof(WorldId), identifier.WorldId, "<null>")
+      .AddData(nameof(WorldId), identifier.WorldId?.ResourceId, "<null>")
       .AddData(nameof(ResourceKind), identifier.Kind)
       .AddData(nameof(ResourceId), identifier.Id)
       .AddData(nameof(ExpectedValue), expectedValue, "<null>")

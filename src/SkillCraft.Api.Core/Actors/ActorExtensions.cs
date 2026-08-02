@@ -16,9 +16,9 @@ public static class ActorExtensions
       throw new ArgumentException($"The value '{id}' is not a valid actor identifier.", nameof(id));
     }
 
-    Resource? realm = values.Length == 2 ? Resource.Parse(values.First(), RealmKind) : null;
+    ResourceIdentifier? realm = values.Length == 2 ? ResourceIdentifier.Parse(values.First(), RealmKind) : null;
 
-    Resource actor = Resource.Parse(values.Last());
+    ResourceIdentifier actor = ResourceIdentifier.Parse(values.Last());
     if (!Enum.TryParse(actor.Kind, out ActorType type) || !Enum.IsDefined(type))
     {
       throw new ArgumentException($"The actor type '{actor.Kind}' is not valid.", nameof(id));
@@ -34,8 +34,8 @@ public static class ActorExtensions
 
   public static ActorId GetActorId(this Actor actor)
   {
-    Resource? realm = actor.RealmId.HasValue ? new Resource(RealmKind, actor.RealmId.Value) : null;
-    Resource resource = new(actor.Type.ToString(), actor.Id);
+    ResourceIdentifier? realm = actor.RealmId.HasValue ? new ResourceIdentifier(RealmKind, actor.RealmId.Value) : null;
+    ResourceIdentifier resource = new(actor.Type.ToString(), actor.Id);
     string value = realm is null ? resource.ToString() : string.Join(Separator, realm, resource);
     return new ActorId(value);
   }

@@ -21,7 +21,7 @@ public class Language : AggregateRoot, IResource
   public TypicalSpeakers? TypicalSpeakers { get; private set; }
   public ScriptId? ScriptId { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Language() : base()
   {
