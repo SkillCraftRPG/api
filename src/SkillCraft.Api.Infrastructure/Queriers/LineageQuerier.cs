@@ -37,9 +37,7 @@ internal class LineageQuerier : ILineageQuerier
   {
     LineageEntity? lineage = await _lineages.AsNoTracking().AsSplitQuery()
       .Where(x => x.StreamId == id.Value)
-      .Include(x => x.Features)
       .Include(x => x.Languages).ThenInclude(x => x.Script)
-      .Include(x => x.Parent).ThenInclude(x => x!.Features)
       .Include(x => x.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -49,9 +47,7 @@ internal class LineageQuerier : ILineageQuerier
   {
     LineageEntity? lineage = await _lineages.AsNoTracking().AsSplitQuery()
       .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
-      .Include(x => x.Features)
       .Include(x => x.Languages).ThenInclude(x => x.Script)
-      .Include(x => x.Parent).ThenInclude(x => x!.Features)
       .Include(x => x.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -83,8 +79,7 @@ internal class LineageQuerier : ILineageQuerier
       builder.Where(Db.Lineages.SizeCategory, Operators.IsEqualTo(payload.SizeCategory.Value.ToString()));
     }
 
-    IQueryable<LineageEntity> query = _lineages.FromQuery(builder).AsNoTracking().AsSplitQuery()
-      .Include(x => x.Features)
+    IQueryable<LineageEntity> query = _lineages.FromQuery(builder).AsNoTracking()
       .Include(x => x.Languages).ThenInclude(x => x.Script);
 
     long total = await query.LongCountAsync(cancellationToken);

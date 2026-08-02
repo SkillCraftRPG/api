@@ -1,5 +1,6 @@
 ﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -77,6 +78,9 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     }
 
     lineage.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+
+    IEnumerable<Feature> features = payload.Features.Select(feature => FeatureHelper.Create(feature.Name, feature.Content));
+    lineage.SetFeatures(features, actorId);
 
     LineageLanguages languages = await LineageHelper.GetLanguagesAsync(_languageRepository, worldId, payload.Languages, cancellationToken);
     lineage.SetLanguages(languages, actorId);

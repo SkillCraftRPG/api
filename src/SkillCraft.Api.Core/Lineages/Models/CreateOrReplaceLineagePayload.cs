@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Lineages.Models;
@@ -11,6 +12,7 @@ public record CreateOrReplaceLineagePayload
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
+  public List<FeatureModel> Features { get; set; } = [];
   public LineageLanguagesPayload Languages { get; set; } = new();
   public LineageNamesModel Names { get; set; } = new();
   public LineageSpeedsModel Speeds { get; set; } = new();
@@ -28,6 +30,7 @@ public record CreateOrReplaceLineagePayload
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
+      RuleForEach(x => x.Features).SetValidator(new FeatureValidator());
       RuleFor(x => x.Languages).SetValidator(new LineageLanguagesValidator());
       RuleFor(x => x.Names).SetValidator(new LineageNamesValidator());
       RuleFor(x => x.Speeds).SetValidator(new LineageSpeedsValidator());

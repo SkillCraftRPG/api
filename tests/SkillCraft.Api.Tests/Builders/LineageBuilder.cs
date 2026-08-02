@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Models;
@@ -16,6 +17,7 @@ public interface ILineageBuilder
   ILineageBuilder WithName(string name);
   ILineageBuilder WithSummary(string? summary);
   ILineageBuilder WithContent(string? content);
+  ILineageBuilder WithFeatures(IEnumerable<Feature>? features);
   ILineageBuilder WithLanguages(IEnumerable<LanguageId>? languageIds = null, int extra = 0, string? content = null);
   ILineageBuilder WithNames(
     IEnumerable<string>? family = null,
@@ -41,6 +43,7 @@ public class LineageBuilder : ILineageBuilder
   private int? _climb = null;
   private string? _content = null;
   private IEnumerable<NameCategory> _customNames = [];
+  private IEnumerable<Feature> _features = [];
   private int _extraLanguages = 0;
   private int? _fly = null;
   private IEnumerable<string> _familyNames = [];
@@ -107,6 +110,12 @@ public class LineageBuilder : ILineageBuilder
   public ILineageBuilder WithContent(string? content)
   {
     _content = content;
+    return this;
+  }
+
+  public ILineageBuilder WithFeatures(IEnumerable<Feature>? features)
+  {
+    _features = features ?? [];
     return this;
   }
 
@@ -183,6 +192,7 @@ public class LineageBuilder : ILineageBuilder
       : new(world, name, _parent, actorId);
 
     lineage.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    lineage.SetFeatures(_features, actorId);
 
     Dictionary<string, IReadOnlyCollection<string>> custom = new();
     foreach (NameCategory category in _customNames)
@@ -207,6 +217,7 @@ public class LineageBuilder : ILineageBuilder
     .WithName("Humain")
     .WithSummary("Espèce adaptable et ambitieuse héritière d’un empire fragmenté.")
     .WithContent("Les humains représentent le commun des mortels. Répandus aux quatre coins du monde, ils s’adaptent avec aisance aux climats, aux cultures et aux bouleversements qui façonnent les civilisations. Héritiers d’un vaste empire ayant autrefois dominé la majeure partie de l’Ouespéro, ils vivent désormais au sein d’une mosaïque de royaumes, de cités libres et d’empires revendiquant un héritage souvent contesté. Leur culture mêle traditions impériales, foi organisée et anciennes coutumes guerrières, tandis que leur courte espérance de vie nourrit leur ambition et leur désir d’accomplissement. Perçus comme éphémères mais résilients, ils occupent une place centrale dans les alliances, les conflits et les échanges du monde connu.")
+    .WithFeatures(HumainFeatures())
     .WithLanguages(extra: 2)
     .WithNames(content: "Les humains portent généralement un prénom et un nom de famille.")
     .WithSpeeds(walk: 6)
@@ -220,6 +231,7 @@ public class LineageBuilder : ILineageBuilder
     .WithName("Elfe")
     .WithSummary("Peuple ancien et longévif héritier d’une civilisation engloutie.")
     .WithContent("Les Elfes sont des êtres longévifs originaires d’Erdimar, un ancien continent aujourd’hui associé aux ruines d’une civilisation engloutie par un déluge oublié. Arrivés en Ouespéro après avoir traversé Hyperborée et les Gelvas il y a plusieurs millénaires, ils y fondèrent de vastes royaumes dont les vestiges parsèment encore l’Ouest et le Centre du continent, particulièrement dans l’archipel des Triskîles. Connus pour leur silhouette élancée, leurs sens aiguisés et leur maîtrise des arts occultes, ils entretiennent un profond attachement aux traditions, à la mémoire et à l’ordre naturel. Leur lente démographie les pousse à préserver des bastions anciens plutôt qu’à étendre rapidement leurs territoires, ce qui nourrit leur rivalité historique avec les [Nains](/regles/especes/nain) et leur haine farouche des [Orques](/regles/especes/orque), qu’ils considèrent comme des Elfes corrompus.")
+    .WithFeatures(ElfeFeatures())
     .WithLanguages(extra: 1)
     .WithNames(content: "Les Elfes portent généralement un prénom et un nom de famille.")
     .WithSpeeds(walk: 6)
@@ -246,6 +258,7 @@ public class LineageBuilder : ILineageBuilder
     .WithName("Nain")
     .WithSummary("Peuple montagnard ancien, fier et résilient de la Tyrgie.")
     .WithContent("Les Nains sont un peuple ancien ayant régné durant cinq millénaires sur la Tyrgie, principalement autour des chaînes montagneuses de l’Échine. Trapus, robustes et adaptés à la vie souterraine, ils ont bâti d’immenses royaumes de pierre dont les vestiges marquent encore le continent. Leur culture valorise la forge, les serments, les lignées et le devoir envers la communauté, chaque individu étant appelé à maîtriser plusieurs savoir-faire afin de soutenir son clan. Les légendes divergent quant à leurs origines : certains les disent issus des Géants, d’autres façonnés par les Grands Dragons, tandis que plusieurs soutiennent qu’ils ne sont que le produit d’une longue adaptation aux montagnes. Malgré la chute de leurs derniers royaumes il y a près de mille ans, les Nains demeurent fiers, résilients et profondément méfiants envers leurs ennemis ancestraux.")
+    .WithFeatures(NainFeatures())
     .WithLanguages(extra: 1)
     .WithNames(content: "Les Nains habitent en clans rassemblant les membres d’une même famille. Lorsqu’un Nain naît, les aînés du clan lui assignent un prénom et il adopte le nom de famille du clan. Ces noms appartiennent au clan, si bien que lorsqu’un individu déshonore son clan, ses noms peuvent lui être retirés. Il est ensuite interdit à l’individu de porter ces noms par les lois sacrées naines.")
     .WithSpeeds(walk: 5)
@@ -253,4 +266,26 @@ public class LineageBuilder : ILineageBuilder
     .WithWeight("22+1d4", "26+1d6", "32+1d8", "40+1d8", "48+1d10")
     .WithAge(15, 50, 150, 350)
     .Build();
+
+  public static IReadOnlyCollection<Feature> HumainFeatures() =>
+  [
+    new(new Name("Apprentissage accéléré"), Content.TryCreate("Le personnage débute avec 4 points d’[Apprentissage](/regles/statistiques/apprentissage) supplémentaires. Il acquiert également 1 point d’Apprentissage supplémentaire chaque fois que son [tiers](/regles/personnages/progression/tiers) augmente.")),
+    new(new Name("Aspect"), Content.TryCreate("Le personnage acquiert gratuitement le talent [Entraînement I](/regles/talents/entrainement-i).")),
+    new(new Name("Versatilité"), Content.TryCreate("Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) deux [talents](/regles/talents) le [formant](/regles/competences/formation) pour une [compétence](/regles/competences)."))
+  ];
+
+  public static IReadOnlyCollection<Feature> ElfeFeatures() =>
+  [
+    new(new Name("Esprit éveillé"), Content.TryCreate("Le personnage ne peut être endormi de manière surnaturelle et il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [jets de sauvegarde](/regles/competences/tests/sauvegarde) contre les [charmes](/regles/combat/conditions/charme). Il peut également s’[harmoniser](/regles/magie/artefacts/harmonisation) à un [artefact magique](/regles/magie/artefacts) supplémentaire.")),
+    new(new Name("Sens affûtés"), Content.TryCreate("Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) les talents [Orientation](/regles/talents/orientation) et [Perception](/regles/talents/perception).")),
+    new(new Name("Transe"), Content.TryCreate("Le personnage peut remplacer la [nuit de sommeil](/regles/aventure/repos/sommeil) conventionnelle de [8 heures](/regles/aventure/temps) par une transe d’une durée de seulement 4 heures. Compléter cette transe procure les mêmes effets que de compléter une nuit de sommeil. Pendant cette transe, le personnage est en état de conscience partielle, mélangeant rêves éveillés et lucidité détachée. Il demeure partiellement réceptif à son [environnement](/regles/aventure/environnement) et peut effectuer avec [désavantage](/regles/competences/tests/avantage-desavantage) des [tests passifs](/regles/competences/tests/passif)."))
+  ];
+
+  public static IReadOnlyCollection<Feature> NainFeatures() =>
+  [
+    new(new Name("Débrouillard"), Content.TryCreate("Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) le talent [Artisanat](/regles/talents/artisanat).")),
+    new(new Name("Épaules larges"), Content.TryCreate("Le personnage se voit conférer un bonus permanent (50 %) à sa [Charge](/regles/statistiques/charge).")),
+    new(new Name("Métabolisme nain"), Content.TryCreate("Le personnage se voit conférer un bonus à son [seuil de tolérance à l’alcool](/regles/aventure/environnement/alcoolemie) égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1).")),
+    new(new Name("Vision nocturne"), Content.TryCreate("Le personnage acquiert une [vision dans le noir](/regles/aventure/environnement/vision) à une distance de 18 mètres."))
+  ];
 }

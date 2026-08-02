@@ -1,6 +1,7 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 
@@ -21,6 +22,8 @@ internal class LineageEntity : AggregateEntity
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
+
+  public string? Features { get; private set; }
 
   public int ExtraLanguages { get; private set; }
   public string? LanguagesContent { get; private set; }
@@ -53,7 +56,6 @@ internal class LineageEntity : AggregateEntity
   public int? Mature { get; private set; }
   public int? Venerable { get; private set; }
 
-  public List<LineageFeatureEntity> Features { get; private set; } = [];
   public List<LanguageEntity> Languages { get; private set; } = [];
 
   public LineageEntity(Lineage lineage, int? parentId, IEnumerable<LanguageEntity> languages) : base(lineage)
@@ -96,10 +98,6 @@ internal class LineageEntity : AggregateEntity
     {
       actorIds.AddRange(Parent.GetActorIds());
     }
-    foreach (LineageFeatureEntity feature in Features)
-    {
-      actorIds.AddRange(feature.GetActorIds());
-    }
     foreach (LanguageEntity language in Languages)
     {
       actorIds.AddRange(language.GetActorIds());
@@ -112,6 +110,13 @@ internal class LineageEntity : AggregateEntity
     base.Update(@event);
 
     Name = @event.Name.Value;
+  }
+
+  public void SetFeatures(LineageFeaturesChanged @event)
+  {
+    base.Update(@event);
+
+    Features = EncodeFeatures(@event.Features);
   }
 
   public void SetLanguages(IEnumerable<LanguageEntity> languages, LineageLanguagesChanged @event)
@@ -154,6 +159,8 @@ internal class LineageEntity : AggregateEntity
     Name = lineage.Name.Value;
     Summary = lineage.Summary?.Value;
     Content = lineage.Content?.Value;
+
+    Features = EncodeFeatures(lineage.Features);
 
     ExtraLanguages = lineage.Languages.Extra;
     LanguagesContent = lineage.Languages.Content?.Value;
@@ -202,12 +209,26 @@ internal class LineageEntity : AggregateEntity
     Venerable = age.Venerable;
   }
 
-  public static IReadOnlyCollection<string> DecodeNames(string? names) =>
-    (names is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(names)) ?? [];
+  public static IReadOnlyCollection<string> DecodeNames(string? names)
+  {
+    return (names is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(names)) ?? [];
+  }
 
-  public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> DecodeCustomNames(string? custom) =>
-    (custom is null ? null : JsonSerializer.Deserialize<IReadOnlyDictionary<string, IReadOnlyCollection<string>>>(custom))
-    ?? new Dictionary<string, IReadOnlyCollection<string>>().AsReadOnly();
+  public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> DecodeCustomNames(string? custom)
+  {
+    return (custom is null ? null : JsonSerializer.Deserialize<IReadOnlyDictionary<string, IReadOnlyCollection<string>>>(custom))
+      ?? new Dictionary<string, IReadOnlyCollection<string>>().AsReadOnly();
+  }
+
+  public static IReadOnlyDictionary<string, string?> DecodeFeatures(string? features)
+  {
+    return (features is null ? null : JsonSerializer.Deserialize<IReadOnlyDictionary<string, string?>>(features))
+      ?? new Dictionary<string, string?>().AsReadOnly();
+  }
+
+  private static string? EncodeFeatures(IEnumerable<Feature> features) => features.Any()
+    ? JsonSerializer.Serialize(features.ToDictionary(feature => feature.Name.Value, feature => feature.Content?.Value))
+    : null;
 
   private static string? EncodeNames(IEnumerable<string> names) => names.Any() ? JsonSerializer.Serialize(names) : null;
 

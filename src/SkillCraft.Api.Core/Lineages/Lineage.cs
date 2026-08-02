@@ -1,4 +1,5 @@
 ﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
@@ -20,7 +21,8 @@ public class Lineage : AggregateRoot, IResource
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
-  // TODO(fpion): Features
+  private readonly List<Feature> _features = [];
+  public IReadOnlyCollection<Feature> Features => _features.AsReadOnly();
   public LineageLanguages Languages { get; private set; } = new();
   public LineageNames Names { get; private set; } = new();
   public LineageSpeeds Speeds { get; private set; } = new();
@@ -87,6 +89,26 @@ public class Lineage : AggregateRoot, IResource
   protected virtual void Handle(LineageRenamed @event)
   {
     _name = @event.Name;
+  }
+
+  public void SetFeatures(IEnumerable<Feature> features, ActorId? actorId = null)
+  {
+    IReadOnlyCollection<Feature> cleaned = features
+      .GroupBy(feature => feature.Name)
+      .Select(group => group.Last())
+      .OrderBy(feature => feature.Name.Value)
+      .ToList()
+      .AsReadOnly();
+
+    if (!Features.SequenceEqual(cleaned))
+    {
+      Raise(new LineageFeaturesChanged(cleaned), actorId);
+    }
+  }
+  protected virtual void Handle(LineageFeaturesChanged @event)
+  {
+    _features.Clear();
+    _features.AddRange(@event.Features);
   }
 
   public void SetLanguages(LineageLanguages languages, ActorId? actorId = null)

@@ -56,9 +56,7 @@ internal class LineageRepository : Repository, ILineageRepository
       .Where(x => languageIds.Contains(x.StreamId))
       .ToArrayAsync(cancellationToken);
 
-    LineageEntity? entity = await _database.Lineages
-      .Include(x => x.Features)
-      .SingleOrDefaultAsync(x => x.StreamId == lineage.Id.Value, cancellationToken);
+    LineageEntity? entity = await _database.Lineages.SingleOrDefaultAsync(x => x.StreamId == lineage.Id.Value, cancellationToken);
     if (entity is null)
     {
       entity = new LineageEntity(lineage, parentId, languages);
