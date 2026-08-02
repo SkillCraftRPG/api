@@ -147,9 +147,10 @@ internal class Mapper
       destination.Parent = ToLineage(source.Parent);
     }
 
-    foreach (LineageFeatureEntity feature in source.Features)
+    IReadOnlyDictionary<string, string?> features = LineageEntity.DecodeFeatures(source.Features);
+    foreach (KeyValuePair<string, string?> feature in features)
     {
-      destination.Features.Add(ToLineageFeature(feature));
+      destination.Features.Add(new FeatureModel(feature.Key, feature.Value));
     }
 
     foreach (LanguageEntity language in source.Languages)
@@ -191,16 +192,6 @@ internal class Mapper
 
     return destination;
   }
-  private LineageFeatureModel ToLineageFeature(LineageFeatureEntity feature) => new()
-  {
-    Id = feature.Id,
-    Name = feature.Name,
-    Content = feature.Content,
-    CreatedBy = FindActor(feature.CreatedBy),
-    CreatedOn = feature.CreatedOn.AsUniversalTime(),
-    UpdatedBy = FindActor(feature.UpdatedBy),
-    UpdatedOn = feature.UpdatedOn.AsUniversalTime()
-  };
 
   public ScriptModel ToScript(ScriptEntity source)
   {

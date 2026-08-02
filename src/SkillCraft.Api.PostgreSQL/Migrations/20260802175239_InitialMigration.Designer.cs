@@ -11,8 +11,8 @@ using SkillCraft.Api.Infrastructure;
 namespace SkillCraft.Api.PostgreSQL.Migrations
 {
     [DbContext(typeof(GameContext))]
-    [Migration("20260802164106_LineageEventSourcingFix")]
-    partial class LineageEventSourcingFix
+    [Migration("20260802175239_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -489,6 +489,9 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Property<string>("FamilyNames")
                         .HasColumnType("text");
 
+                    b.Property<string>("Features")
+                        .HasColumnType("text");
+
                     b.Property<string>("FemaleNames")
                         .HasColumnType("text");
 
@@ -616,58 +619,6 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.HasIndex("WorldId", "Summary");
 
                     b.ToTable("Lineages", "Game");
-                });
-
-            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageFeatureEntity", b =>
-                {
-                    b.Property<int>("LineageFeatureId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineageFeatureId"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("LineageId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("LineageFeatureId");
-
-                    b.HasIndex("LineageId", "CreatedBy");
-
-                    b.HasIndex("LineageId", "CreatedOn");
-
-                    b.HasIndex("LineageId", "Id")
-                        .IsUnique();
-
-                    b.HasIndex("LineageId", "Name");
-
-                    b.HasIndex("LineageId", "UpdatedBy");
-
-                    b.HasIndex("LineageId", "UpdatedOn");
-
-                    b.ToTable("LineageFeatures", "Game");
                 });
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageLanguageEntity", b =>
@@ -1095,17 +1046,6 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
-            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageFeatureEntity", b =>
-                {
-                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", "Lineage")
-                        .WithMany("Features")
-                        .HasForeignKey("LineageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lineage");
-                });
-
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageLanguageEntity", b =>
                 {
                     b.HasOne("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", null)
@@ -1167,8 +1107,6 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
                 {
                     b.Navigation("Children");
-
-                    b.Navigation("Features");
                 });
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ScriptEntity", b =>

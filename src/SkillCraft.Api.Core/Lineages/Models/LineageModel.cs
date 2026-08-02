@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using SkillCraft.Api.Core.Features;
 
 namespace SkillCraft.Api.Core.Lineages.Models;
 
@@ -8,7 +9,7 @@ public class LineageModel : Aggregate
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
-  public List<LineageFeatureModel> Features { get; set; } = [];
+  public List<FeatureModel> Features { get; set; } = [];
   public LineageLanguagesModel Languages { get; set; } = new();
   public LineageNamesModel Names { get; set; } = new();
   public LineageSpeedsModel Speeds { get; set; } = new();

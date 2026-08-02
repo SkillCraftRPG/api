@@ -15,7 +15,6 @@ public class GameContext : DbContext
   internal DbSet<ItemEntity> Items => Set<ItemEntity>();
   internal DbSet<LanguageEntity> Languages => Set<LanguageEntity>();
   internal DbSet<LineageEntity> Lineages => Set<LineageEntity>();
-  internal DbSet<LineageFeatureEntity> LineageFeatures => Set<LineageFeatureEntity>();
   internal DbSet<LineageLanguageEntity> LineageLanguages => Set<LineageLanguageEntity>();
   internal DbSet<ScriptEntity> Scripts => Set<ScriptEntity>();
   internal DbSet<SpellEntity> Spells => Set<SpellEntity>();
