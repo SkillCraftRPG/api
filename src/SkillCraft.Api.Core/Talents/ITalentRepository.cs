@@ -1,19 +1,10 @@
-using Krakenar.Contracts.Search;
-using SkillCraft.Api.Core.Talents.Events;
-using SkillCraft.Api.Core.Talents.Models;
-
-namespace SkillCraft.Api.Core.Talents;
+﻿namespace SkillCraft.Api.Core.Talents;
 
 public interface ITalentRepository
 {
-  void Add(params Talent[] talents);
-  void Remove(Talent talent);
-  void Update(Talent talent, TalentUpdated record);
+  Task<Talent?> LoadAsync(TalentId id, CancellationToken cancellationToken = default);
+  Task<IReadOnlyCollection<Talent>> LoadAsync(IEnumerable<TalentId> ids, CancellationToken cancellationToken = default);
 
-  Task<Talent?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
-
-  Task<TalentModel> ReadAsync(Talent talent, CancellationToken cancellationToken = default);
-  Task<TalentModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
-
-  Task<SearchResults<TalentModel>> SearchAsync(SearchTalentsPayload payload, CancellationToken cancellationToken = default);
+  Task SaveAsync(Talent talent, CancellationToken cancellationToken = default);
+  Task SaveAsync(IEnumerable<Talent> talents, CancellationToken cancellationToken = default);
 }

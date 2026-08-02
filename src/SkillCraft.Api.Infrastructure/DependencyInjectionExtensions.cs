@@ -1,4 +1,6 @@
 ﻿using Logitar.CQRS;
+using Logitar.EventSourcing.EntityFrameworkCore.Relational;
+using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
@@ -15,6 +17,7 @@ using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
 using SkillCraft.Api.Infrastructure.Caching;
 using SkillCraft.Api.Infrastructure.Identity;
+using SkillCraft.Api.Infrastructure.Queriers;
 using SkillCraft.Api.Infrastructure.Repositories;
 
 namespace SkillCraft.Api.Infrastructure;
@@ -27,9 +30,13 @@ public static class DependencyInjectionExtensions
     CacheService.Register(services);
 
     return services
+      .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
       .AddSingleton(serviceProvider => ClientAppSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => TokensSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton<IEventSerializer, EventSerializer>()
+      .AddScoped<IEventBus, EventBus>()
       .AddIdentityGateways()
+      .AddQueriers()
       .AddRepositories()
       .AddTransient<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>();
   }
@@ -44,6 +51,12 @@ public static class DependencyInjectionExtensions
       .AddSingleton<ISessionGateway, SessionGateway>()
       .AddSingleton<ITokenGateway, TokenGateway>()
       .AddSingleton<IUserGateway, UserGateway>();
+  }
+
+  private static IServiceCollection AddQueriers(this IServiceCollection services)
+  {
+    return services
+      .AddScoped<ITalentQuerier, TalentQuerier>();
   }
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)

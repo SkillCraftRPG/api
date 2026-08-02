@@ -1,7 +1,10 @@
 ﻿using Bogus;
 using Krakenar.Contracts;
+using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure;
 
@@ -18,11 +21,14 @@ public class TestContext : IContext
 
   public GameContext? Database { get; set; }
 
+  public ActorId? ActorId => User is null ? null : new Actor(User).GetActorId();
+
   public User? User { get; set; }
   public Guid UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
 
   public World? World { get; set; }
-  public Guid WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
+  public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
+  public Guid WorldUid => TryGetWorldUid() ?? throw new InvalidOperationException("A world is required.");
 
   public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes()
   {
@@ -36,7 +42,8 @@ public class TestContext : IContext
 
   public Guid? TryGetSessionId() => null;
   public Guid? TryGetUserId() => User?.Id;
-  public Guid? TryGetWorldId() => World?.Id;
+  public WorldId? TryGetWorldId() => World is null ? null : new WorldId(World.Id); // TODO(fpion): refactor
+  public Guid? TryGetWorldUid() => World?.Id;
 
   public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
   {

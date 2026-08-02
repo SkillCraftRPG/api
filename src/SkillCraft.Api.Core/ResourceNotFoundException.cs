@@ -3,7 +3,7 @@ using Logitar;
 
 namespace SkillCraft.Api.Core;
 
-public class ResourceNotFoundException : NotFoundException
+public class ResourceNotFoundException : NotFoundException // TODO(fpion): remove this
 {
   private const string ErrorMessage = "The specified resource was not found.";
 

@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
@@ -34,6 +35,7 @@ public static class DependencyInjectionExtensions
     WorldService.Register(services);
 
     return services
+      .AddLogitarEventSourcing()
       .AddSingleton(serviceProvider => RetrySettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddTransient<ICommandBus, CommandBus>()
       .AddTransient<IQueryBus, QueryBus>();

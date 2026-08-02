@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +44,7 @@ internal class EducationRepository : Repository, IEducationRepository
 
   public async Task<Education?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Educations.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+    return await Database.Educations.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<EducationModel> ReadAsync(Education education, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ internal class EducationRepository : Repository, IEducationRepository
   public async Task<EducationModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Education? education = await Database.Educations.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
 
     return education is null ? null : await MapAsync(education, cancellationToken);
@@ -63,7 +63,7 @@ internal class EducationRepository : Repository, IEducationRepository
   public virtual async Task<SearchResults<EducationModel>> SearchAsync(SearchEducationsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Educations.Table).SelectAll(Db.Educations.Table)
-      .Where(Db.Educations.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Educations.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Educations.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Educations.Name, Db.Educations.Summary, Db.Educations.FeatureName);
 
@@ -116,7 +116,7 @@ internal class EducationRepository : Repository, IEducationRepository
   {
     IEnumerable<Guid> userIds = educations.SelectMany(education => education.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return educations.Select(mapper.ToEducation).ToList().AsReadOnly();
   }

@@ -40,7 +40,7 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     ItemSnapshot? snapshot = null;
     if (item is null)

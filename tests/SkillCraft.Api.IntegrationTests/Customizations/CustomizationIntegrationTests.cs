@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -175,7 +175,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<CustomizationKind>>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.Id));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Customization.ResourceKind, exception.ResourceKind);
     Assert.Equal(_customization.Id, exception.ResourceId);
     Assert.Equal(_customization.Kind, exception.ExpectedValue);

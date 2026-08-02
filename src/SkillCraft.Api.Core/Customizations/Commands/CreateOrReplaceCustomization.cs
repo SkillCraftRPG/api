@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Customizations.Events;
 using SkillCraft.Api.Core.Customizations.Models;
@@ -40,7 +40,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     CustomizationSnapshot? snapshot = null;
     if (customization is null)

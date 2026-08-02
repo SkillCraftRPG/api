@@ -44,7 +44,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
 
   public async Task<Customization?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Customizations.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+    return await Database.Customizations.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<CustomizationModel> ReadAsync(Customization customization, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
   public async Task<CustomizationModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Customization? customization = await Database.Customizations.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
 
     return customization is null ? null : await MapAsync(customization, cancellationToken);
@@ -63,7 +63,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
   public virtual async Task<SearchResults<CustomizationModel>> SearchAsync(SearchCustomizationsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Customizations.Table).SelectAll(Db.Customizations.Table)
-      .Where(Db.Customizations.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Customizations.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Customizations.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Customizations.Name, Db.Customizations.Summary);
 
@@ -116,7 +116,7 @@ internal class CustomizationRepository : Repository, ICustomizationRepository
   {
     IEnumerable<Guid> userIds = customizations.SelectMany(customization => customization.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return customizations.Select(mapper.ToCustomization).ToList().AsReadOnly();
   }

@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Spells.Events;
@@ -40,7 +40,7 @@ internal class CreateOrReplaceSpellCommandHandler : ICommandHandler<CreateOrRepl
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     SpellSnapshot? snapshot = null;
     if (spell is null)

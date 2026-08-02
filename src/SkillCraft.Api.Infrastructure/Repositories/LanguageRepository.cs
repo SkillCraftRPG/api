@@ -46,13 +46,13 @@ internal class LanguageRepository : Repository, ILanguageRepository
   {
     return await Database.Languages
       .Include(x => x.Script)
-      .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+      .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
   public async Task<IReadOnlyCollection<Language>> LoadAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
   {
     return (await Database.Languages
       .Include(x => x.Script)
-      .Where(x => ids.Contains(x.Id) && x.WorldId == _context.WorldId)
+      .Where(x => ids.Contains(x.Id) && x.WorldId == _context.WorldUid)
       .ToListAsync(cancellationToken)).AsReadOnly();
   }
 
@@ -63,7 +63,7 @@ internal class LanguageRepository : Repository, ILanguageRepository
   public async Task<LanguageModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Language? language = await Database.Languages.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .Include(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -73,7 +73,7 @@ internal class LanguageRepository : Repository, ILanguageRepository
   public virtual async Task<SearchResults<LanguageModel>> SearchAsync(SearchLanguagesPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Languages.Table).SelectAll(Db.Languages.Table)
-      .Where(Db.Languages.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Languages.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Languages.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Languages.Name, Db.Languages.Summary);
 
@@ -128,7 +128,7 @@ internal class LanguageRepository : Repository, ILanguageRepository
   {
     IEnumerable<Guid> userIds = languages.SelectMany(language => language.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return languages.Select(mapper.ToLanguage).ToList().AsReadOnly();
   }

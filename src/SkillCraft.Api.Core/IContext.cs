@@ -1,11 +1,15 @@
 ﻿using Krakenar.Contracts;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core;
 
 public interface IContext
 {
+  ActorId? ActorId { get; }
   Guid UserId { get; }
-  Guid WorldId { get; }
+  WorldId WorldId { get; }
+  Guid WorldUid { get; } // TODO(fpion): deprecate
 
   IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes();
 
@@ -13,7 +17,8 @@ public interface IContext
 
   Guid? TryGetSessionId();
   Guid? TryGetUserId();
-  Guid? TryGetWorldId();
+  WorldId? TryGetWorldId();
+  Guid? TryGetWorldUid(); // TODO(fpion): deprecate
 
-  Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+  Task<int> SaveChangesAsync(CancellationToken cancellationToken = default); // TODO(fpion): deprecate
 }

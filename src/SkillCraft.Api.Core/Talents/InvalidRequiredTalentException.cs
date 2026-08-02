@@ -1,10 +1,12 @@
 ﻿using Krakenar.Contracts;
 using Logitar;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents;
 
 public class InvalidRequiredTalentException : DomainException
 {
+  public const string PropertyName = nameof(Talent.RequiredTalentId);
   private const string ErrorMessage = "The required talent tier must be less than or equal to the requiring talent tier.";
 
   public Guid WorldId
@@ -32,11 +34,6 @@ public class InvalidRequiredTalentException : DomainException
     get => (int)Data[nameof(RequiredTalentTier)]!;
     private set => Data[nameof(RequiredTalentTier)] = value;
   }
-  public string PropertyName
-  {
-    get => (string)Data[nameof(PropertyName)]!;
-    private set => Data[nameof(PropertyName)] = value;
-  }
 
   public override Error Error
   {
@@ -56,20 +53,27 @@ public class InvalidRequiredTalentException : DomainException
   public InvalidRequiredTalentException(Talent requiringTalent, Talent requiredTalent)
     : base(BuildMessage(requiringTalent, requiredTalent))
   {
-    WorldId = new HashSet<Guid>([requiringTalent.WorldId, requiredTalent.WorldId]).Single();
-    RequiringTalentId = requiringTalent.Id;
-    RequiredTalentId = requiredTalent.Id;
-    RequiringTalentTier = requiringTalent.Tier;
-    RequiredTalentTier = requiredTalent.Tier;
-    PropertyName = nameof(Talent.RequiredTalentId);
+    WorldId = new HashSet<WorldId>([requiringTalent.WorldId, requiredTalent.WorldId]).Single().ResourceId;
+    RequiringTalentId = requiringTalent.ResourceId;
+    RequiredTalentId = requiredTalent.ResourceId;
+    RequiringTalentTier = requiringTalent.Tier.Value;
+    RequiredTalentTier = requiredTalent.Tier.Value;
+  }
+
+  public static void ThrowIfNotValid(Talent requiringTalent, Talent requiredTalent)
+  {
+    if (requiringTalent.Tier.Value < requiredTalent.Tier.Value)
+    {
+      throw new InvalidRequiredTalentException(requiringTalent, requiredTalent);
+    }
   }
 
   private static string BuildMessage(Talent requiringTalent, Talent requiredTalent) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(WorldId), new HashSet<Guid>([requiringTalent.WorldId, requiredTalent.WorldId]).Single())
-    .AddData(nameof(RequiringTalentId), requiringTalent.Id)
-    .AddData(nameof(RequiredTalentId), requiredTalent.Id)
+    .AddData(nameof(WorldId), new HashSet<WorldId>([requiringTalent.WorldId, requiredTalent.WorldId]).Single().ResourceId)
+    .AddData(nameof(RequiringTalentId), requiringTalent.ResourceId)
+    .AddData(nameof(RequiredTalentId), requiredTalent.ResourceId)
     .AddData(nameof(RequiringTalentTier), requiringTalent.Tier)
     .AddData(nameof(RequiredTalentTier), requiredTalent.Tier)
-    .AddData(nameof(PropertyName), nameof(Talent.RequiredTalentId))
+    .AddData(nameof(PropertyName), PropertyName)
     .Build();
 }

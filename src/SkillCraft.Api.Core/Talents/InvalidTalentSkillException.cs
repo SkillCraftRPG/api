@@ -22,11 +22,6 @@ public class InvalidTalentSkillException : DomainException
     get => (Skill)Data[nameof(AttemptedSkill)]!;
     private set => Data[nameof(AttemptedSkill)] = value;
   }
-  public string PropertyName
-  {
-    get => (string)Data[nameof(PropertyName)]!;
-    private set => Data[nameof(PropertyName)] = value;
-  }
 
   public override Error Error
   {
@@ -36,7 +31,6 @@ public class InvalidTalentSkillException : DomainException
       error.Data[nameof(WorldId)] = WorldId;
       error.Data[nameof(TalentId)] = TalentId;
       error.Data[nameof(AttemptedSkill)] = AttemptedSkill;
-      error.Data[nameof(PropertyName)] = PropertyName;
       return error;
     }
   }
@@ -44,16 +38,14 @@ public class InvalidTalentSkillException : DomainException
   public InvalidTalentSkillException(Talent talent, Skill attemptedSkill)
     : base(BuildMessage(talent, attemptedSkill))
   {
-    WorldId = talent.WorldId;
-    TalentId = talent.Id;
+    WorldId = talent.WorldId.ResourceId;
+    TalentId = talent.ResourceId;
     AttemptedSkill = attemptedSkill;
-    PropertyName = nameof(Talent.Skill);
   }
 
   private static string BuildMessage(Talent talent, Skill attemptedSkill) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(WorldId), talent.WorldId)
-    .AddData(nameof(TalentId), talent.Id)
+    .AddData(nameof(WorldId), talent.WorldId.ResourceId)
+    .AddData(nameof(TalentId), talent.ResourceId)
     .AddData(nameof(AttemptedSkill), attemptedSkill)
-    .AddData(nameof(PropertyName), nameof(Talent.Skill))
     .Build();
 }

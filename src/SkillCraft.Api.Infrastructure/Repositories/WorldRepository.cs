@@ -63,6 +63,11 @@ internal class WorldRepository : Repository, IWorldRepository
     return await Database.Worlds.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
   }
 
+  public async Task<World> LoadFromContextAsync(CancellationToken cancellationToken)
+  {
+    return await LoadAsync(_context.WorldUid, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={_context.WorldUid}' was not found.");
+  }
+
   public async Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken)
   {
     return await ReadAsync(world.Id, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={world.Id}' was not found.");
@@ -140,7 +145,7 @@ internal class WorldRepository : Repository, IWorldRepository
   {
     IEnumerable<Guid> userIds = worlds.SelectMany(world => world.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return worlds.Select(mapper.ToWorld).ToList().AsReadOnly();
   }

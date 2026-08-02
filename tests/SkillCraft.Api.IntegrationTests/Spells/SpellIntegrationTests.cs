@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -174,7 +174,7 @@ public class SpellIntegrationTests : IntegrationTests
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<int>>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.Id));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Spell.ResourceKind, exception.ResourceKind);
     Assert.Equal(_spell.Id, exception.ResourceId);
     Assert.Equal(_spell.Tier, exception.ExpectedValue);

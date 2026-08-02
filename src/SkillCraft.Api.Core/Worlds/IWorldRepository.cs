@@ -16,6 +16,8 @@ public interface IWorldRepository
 
   Task<World?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
 
+  Task<World> LoadFromContextAsync(CancellationToken cancellationToken = default);
+
   Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken = default);
   Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken = default);

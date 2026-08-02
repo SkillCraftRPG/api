@@ -1,8 +1,8 @@
-using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Talents.Models;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents.Commands;
 
@@ -12,12 +12,18 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ITalentQuerier _talentQuerier;
   private readonly ITalentRepository _talentRepository;
 
-  public UpdateTalentCommandHandler(IContext context, IPermissionService permissionService, ITalentRepository talentRepository)
+  public UpdateTalentCommandHandler(
+    IContext context,
+    IPermissionService permissionService,
+    ITalentQuerier talentQuerier,
+    ITalentRepository talentRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _talentQuerier = talentQuerier;
     _talentRepository = talentRepository;
   }
 
@@ -26,56 +32,50 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
     UpdateTalentPayload payload = command.Payload;
     payload.Validate();
 
-    Talent? talent = await _talentRepository.LoadAsync(command.Id, cancellationToken);
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
+    TalentId talentId = new(worldId, command.Id);
+    Talent? talent = await _talentRepository.LoadAsync(talentId, cancellationToken);
     if (talent is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, talent, cancellationToken);
 
-    TalentSnapshot snapshot = new(talent);
-
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
     {
-      talent.Name = payload.Name.Trim();
-    }
-    if (payload.Summary is not null)
-    {
-      talent.Summary = payload.Summary.Value?.CleanTrim();
-    }
-    if (payload.Content is not null)
-    {
-      talent.Content = payload.Content.Value?.CleanTrim();
+      talent.Rename(name, actorId);
     }
 
-    if (payload.AllowMultiplePurchases.HasValue)
+    if (payload.Summary is not null || payload.Content is not null)
     {
-      talent.SetAllowMultiplePurchases(payload.AllowMultiplePurchases.Value);
+      talent.Edit(
+        payload.Summary is null ? talent.Summary : Summary.TryCreate(payload.Summary.Value),
+        payload.Content is null ? talent.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
     }
-    if (payload.Skill is not null)
+
+    if (payload.AllowMultiplePurchases.HasValue || payload.Skill is not null)
     {
-      talent.SetSkill(payload.Skill.Value);
+      talent.SetRules(payload.AllowMultiplePurchases ?? talent.AllowMultiplePurchases, payload.Skill?.Value ?? talent.Skill, actorId);
     }
+
     if (payload.RequiredTalentId is not null)
     {
       Talent? requiredTalent = null;
       if (payload.RequiredTalentId.Value.HasValue)
       {
-        requiredTalent = await _talentRepository.LoadAsync(payload.RequiredTalentId.Value.Value, cancellationToken)
-          ?? throw new ResourceNotFoundException(new ResourceIdentifier(Talent.ResourceKind, payload.RequiredTalentId.Value.Value, _context.WorldId), nameof(Talent.RequiredTalentId));
+        TalentId requiredTalentId = new(worldId, payload.RequiredTalentId.Value.Value);
+        requiredTalent = await _talentRepository.LoadAsync(requiredTalentId, cancellationToken)
+          ?? throw new TalentNotFoundException(requiredTalentId, nameof(payload.RequiredTalentId));
       }
-      talent.SetRequiredTalent(requiredTalent);
+      talent.SetRequirements(requiredTalent, actorId);
     }
 
-    TalentUpdated? record = snapshot.Compare(talent);
-    if (record is not null)
-    {
-      talent.Update(_context.UserId);
-      _talentRepository.Update(talent, record);
+    await _talentRepository.SaveAsync(talent, cancellationToken);
 
-      await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    return await _talentRepository.ReadAsync(talent, cancellationToken);
+    return await _talentQuerier.ReadAsync(talent, cancellationToken);
   }
 }

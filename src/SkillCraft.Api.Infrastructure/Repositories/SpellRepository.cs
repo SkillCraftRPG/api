@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +44,7 @@ internal class SpellRepository : Repository, ISpellRepository
 
   public async Task<Spell?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Spells.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+    return await Database.Spells.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<SpellModel> ReadAsync(Spell spell, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ internal class SpellRepository : Repository, ISpellRepository
   public async Task<SpellModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Spell? spell = await Database.Spells.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
 
     return spell is null ? null : await MapAsync(spell, cancellationToken);
@@ -63,7 +63,7 @@ internal class SpellRepository : Repository, ISpellRepository
   public virtual async Task<SearchResults<SpellModel>> SearchAsync(SearchSpellsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Spells.Table).SelectAll(Db.Spells.Table)
-      .Where(Db.Spells.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Spells.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Spells.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Spells.Name, Db.Spells.Summary);
 
@@ -116,7 +116,7 @@ internal class SpellRepository : Repository, ISpellRepository
   {
     IEnumerable<Guid> userIds = spells.SelectMany(spell => spell.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return spells.Select(mapper.ToSpell).ToList().AsReadOnly();
   }

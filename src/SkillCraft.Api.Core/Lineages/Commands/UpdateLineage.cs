@@ -66,7 +66,7 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
         if (missingIds.Count > 0)
         {
           string propertyName = string.Join('.', nameof(payload.Languages), nameof(payload.Languages.Ids));
-          throw new LanguagesNotFoundException(_context.WorldId, missingIds, propertyName);
+          throw new LanguagesNotFoundException(_context.WorldUid, missingIds, propertyName);
         }
       }
       lineage.SetLanguages(languages, payload.Languages.Extra, payload.Languages.Content);

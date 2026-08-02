@@ -44,7 +44,7 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     Lineage? parent = null;
     if (payload.ParentId.HasValue)
