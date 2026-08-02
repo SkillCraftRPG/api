@@ -4,11 +4,13 @@ using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Configurations;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
@@ -17,12 +19,19 @@ internal class LineageRepository : Repository, ILineageRepository
 {
   private readonly IActorService _actorService;
   private readonly IContext _context;
+  private readonly ILanguageRepository _languageRepository;
   private readonly ISqlHelper _sqlHelper;
 
-  public LineageRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper) : base(game)
+  public LineageRepository(
+    IActorService actorService,
+    IContext context,
+    GameContext game,
+    ILanguageRepository languageRepository,
+    ISqlHelper sqlHelper) : base(game)
   {
     _actorService = actorService;
     _context = context;
+    _languageRepository = languageRepository;
     _sqlHelper = sqlHelper;
   }
 
@@ -31,6 +40,7 @@ internal class LineageRepository : Repository, ILineageRepository
     foreach (Lineage lineage in lineages)
     {
       Database.Lineages.Add(lineage);
+      SyncLanguages(lineage);
       base.RecordChange(new LineageCreated(lineage));
     }
   }
@@ -52,6 +62,7 @@ internal class LineageRepository : Repository, ILineageRepository
   public void Update(Lineage lineage, LineageUpdated record)
   {
     Database.Lineages.Update(lineage);
+    SyncLanguages(lineage);
     base.RecordChange(record);
   }
   public void Update(LineageFeature feature, LineageFeatureUpdated record)
@@ -62,11 +73,15 @@ internal class LineageRepository : Repository, ILineageRepository
 
   public async Task<Lineage?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Lineages
+    Lineage? lineage = await Database.Lineages
       .Include(x => x.Features)
-      .Include(x => x.Languages)
       .Include(x => x.Parent)
       .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
+    if (lineage is not null)
+    {
+      await HydrateLanguagesAsync([lineage], cancellationToken);
+    }
+    return lineage;
   }
 
   public async Task<LineageModel> ReadAsync(Lineage lineage, CancellationToken cancellationToken)
@@ -78,9 +93,7 @@ internal class LineageRepository : Repository, ILineageRepository
     Lineage? lineage = await Database.Lineages.AsNoTracking().AsSplitQuery()
       .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .Include(x => x.Features)
-      .Include(x => x.Languages)
       .Include(x => x.Parent).ThenInclude(x => x!.Features)
-      .Include(x => x.Parent).ThenInclude(x => x!.Languages)
       .SingleOrDefaultAsync(cancellationToken);
 
     return lineage is null ? null : await MapAsync(lineage, cancellationToken);
@@ -147,6 +160,67 @@ internal class LineageRepository : Repository, ILineageRepository
     return new SearchResults<LineageModel>(items, total);
   }
 
+  private void SyncLanguages(Lineage lineage)
+  {
+    List<LineageLanguage> existing = lineage.LineageId > 0
+      ? Database.LineageLanguages.Where(x => x.LineageId == lineage.LineageId).ToList()
+      : Database.LineageLanguages.Local.Where(x => ReferenceEquals(x.Lineage, lineage)).ToList();
+    Database.LineageLanguages.RemoveRange(existing);
+
+    foreach (Language language in lineage.Languages)
+    {
+      LanguageEntity entity = Database.Languages.Local.FirstOrDefault(x => x.StreamId == language.Id.Value)
+        ?? Database.Languages.SingleOrDefault(x => x.StreamId == language.Id.Value)
+        ?? throw new InvalidOperationException($"The language entity 'StreamId={language.Id}' was not found.");
+
+      Database.LineageLanguages.Add(new LineageLanguage
+      {
+        Lineage = lineage,
+        Language = entity
+      });
+    }
+  }
+
+  private async Task HydrateLanguagesAsync(IEnumerable<Lineage> lineages, CancellationToken cancellationToken)
+  {
+    Lineage[] lineageList = [.. lineages];
+    int[] lineageIds = [.. lineageList.Select(lineage => lineage.LineageId).Where(id => id > 0)];
+    if (lineageIds.Length < 1)
+    {
+      return;
+    }
+
+    var links = await (
+      from link in Database.LineageLanguages.AsNoTracking()
+      join language in Database.Languages.AsNoTracking() on link.LanguageId equals language.LanguageId
+      where lineageIds.Contains(link.LineageId)
+      select new { link.LineageId, language.StreamId }).ToListAsync(cancellationToken);
+
+    Dictionary<int, List<LanguageId>> languageIdsByLineage = links
+      .GroupBy(x => x.LineageId)
+      .ToDictionary(group => group.Key, group => group.Select(x => new LanguageId(x.StreamId)).ToList());
+
+    LanguageId[] allLanguageIds = [.. languageIdsByLineage.Values.SelectMany(ids => ids).Distinct()];
+    Dictionary<string, Language> languages = allLanguageIds.Length < 1
+      ? []
+      : (await _languageRepository.LoadAsync(allLanguageIds, cancellationToken)).ToDictionary(language => language.Id.Value);
+
+    foreach (Lineage lineage in lineageList)
+    {
+      lineage.Languages.Clear();
+      if (languageIdsByLineage.TryGetValue(lineage.LineageId, out List<LanguageId>? ids))
+      {
+        foreach (LanguageId id in ids)
+        {
+          if (languages.TryGetValue(id.Value, out Language? language))
+          {
+            lineage.Languages.Add(language);
+          }
+        }
+      }
+    }
+  }
+
   private async Task<LineageModel> MapAsync(Lineage lineage, CancellationToken cancellationToken)
   {
     return (await MapAsync([lineage], cancellationToken)).Single();
@@ -154,22 +228,58 @@ internal class LineageRepository : Repository, ILineageRepository
   private async Task<IReadOnlyCollection<LineageModel>> MapAsync(IEnumerable<Lineage> lineages, CancellationToken cancellationToken)
   {
     Lineage[] lineageList = [.. lineages];
-    Dictionary<int, ScriptModel> scripts = await LoadScriptsAsync(lineageList, cancellationToken);
+    Dictionary<int, List<LanguageEntity>> languagesByLineageId = await LoadLanguageEntitiesAsync(lineageList, cancellationToken);
+    Dictionary<int, ScriptModel> scripts = await LoadScriptsAsync(languagesByLineageId.Values.SelectMany(x => x), cancellationToken);
 
     IEnumerable<Guid> userIds = lineageList.SelectMany(lineage => lineage.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
     MapperOld mapper = new(actors);
 
-    return lineageList.Select(lineage => mapper.ToLineage(lineage, scripts)).ToList().AsReadOnly();
+    IEnumerable<ActorId> languageActorIds = languagesByLineageId.Values.SelectMany(languages => languages.SelectMany(language => language.GetActorIds()));
+    IReadOnlyDictionary<ActorId, Actor> languageActors = await _actorService.FindAsync(languageActorIds, cancellationToken);
+    Mapper languageMapper = new(languageActors);
+
+    return lineageList.Select(lineage =>
+    {
+      IReadOnlyList<LanguageEntity> languages = languagesByLineageId.GetValueOrDefault(lineage.LineageId) ?? [];
+      IReadOnlyList<LanguageEntity>? parentLanguages = lineage.Parent is null
+        ? null
+        : languagesByLineageId.GetValueOrDefault(lineage.Parent.LineageId);
+      return mapper.ToLineage(lineage, scripts, languages, parentLanguages, languageMapper);
+    }).ToList().AsReadOnly();
   }
 
-  private async Task<Dictionary<int, ScriptModel>> LoadScriptsAsync(IEnumerable<Lineage> lineages, CancellationToken cancellationToken)
+  private async Task<Dictionary<int, List<LanguageEntity>>> LoadLanguageEntitiesAsync(IEnumerable<Lineage> lineages, CancellationToken cancellationToken)
   {
-    int[] keys = [.. lineages
-      .SelectMany(lineage => lineage.Languages.Concat(lineage.Parent?.Languages ?? []))
-      .Where(language => language.ScriptId.HasValue)
-      .Select(language => language.ScriptId!.Value)
-      .Distinct()];
+    Lineage[] lineageList = [.. lineages];
+    HashSet<int> lineageIds = [.. lineageList.Select(lineage => lineage.LineageId)];
+    foreach (Lineage lineage in lineageList)
+    {
+      if (lineage.Parent is not null)
+      {
+        lineageIds.Add(lineage.Parent.LineageId);
+      }
+    }
+    lineageIds.Remove(0);
+    if (lineageIds.Count < 1)
+    {
+      return [];
+    }
+
+    var links = await (
+      from link in Database.LineageLanguages.AsNoTracking()
+      join language in Database.Languages.AsNoTracking().Include(x => x.Script) on link.LanguageId equals language.LanguageId
+      where lineageIds.Contains(link.LineageId)
+      select new { link.LineageId, Language = language }).ToListAsync(cancellationToken);
+
+    return links
+      .GroupBy(x => x.LineageId)
+      .ToDictionary(group => group.Key, group => group.Select(x => x.Language).ToList());
+  }
+
+  private async Task<Dictionary<int, ScriptModel>> LoadScriptsAsync(IEnumerable<LanguageEntity> languages, CancellationToken cancellationToken)
+  {
+    int[] keys = [.. languages.Where(language => language.ScriptId.HasValue).Select(language => language.ScriptId!.Value).Distinct()];
     if (keys.Length < 1)
     {
       return [];

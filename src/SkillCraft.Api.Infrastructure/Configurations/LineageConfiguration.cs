@@ -26,6 +26,8 @@ internal class LineageConfiguration : IEntityTypeConfiguration<Lineage>
     builder.HasIndex(x => new { x.WorldId, x.UpdatedBy });
     builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
+    builder.Ignore(x => x.Languages);
+
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
     builder.Property(x => x.SizeCategory).HasMaxLength(16).HasConversion(new EnumToStringConverter<SizeCategory>());
@@ -39,6 +41,5 @@ internal class LineageConfiguration : IEntityTypeConfiguration<Lineage>
     //builder.HasOne(x => x.World).WithMany(x => x.Lineages)
     //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
     //  .OnDelete(DeleteBehavior.Restrict);
-    builder.HasMany(x => x.Languages).WithMany(x => x.Lineages).UsingEntity<LineageLanguage>();
   }
 }
