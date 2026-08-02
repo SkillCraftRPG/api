@@ -1,5 +1,4 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Features;
@@ -49,7 +48,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
     }
 
     Name name = new(payload.Name);
-    Roll? wealthRoll = Roll.TryCreate(payload.WealthRoll?.CleanTrim()?.ToLowerInvariant());
+    Roll? wealthRoll = Roll.TryCreate(payload.WealthRoll);
     Feature? feature = payload.Feature is null
       ? null
       : new Feature(new Name(payload.Feature.Name), Content.TryCreate(payload.Feature.Content));

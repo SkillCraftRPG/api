@@ -1,5 +1,4 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Features;
@@ -62,9 +61,7 @@ internal class UpdateCasteCommandHandler : ICommandHandler<UpdateCasteCommand, C
     if (payload.Skill is not null || payload.WealthRoll is not null || payload.Feature is not null)
     {
       Skill? skill = payload.Skill is null ? caste.Skill : payload.Skill.Value;
-      Roll? wealthRoll = payload.WealthRoll is null
-        ? caste.WealthRoll
-        : Roll.TryCreate(payload.WealthRoll.Value?.CleanTrim()?.ToLowerInvariant());
+      Roll? wealthRoll = payload.WealthRoll is null ? caste.WealthRoll : Roll.TryCreate(payload.WealthRoll.Value);
       Feature? feature = payload.Feature is null
         ? caste.Feature
         : payload.Feature.Value is null
