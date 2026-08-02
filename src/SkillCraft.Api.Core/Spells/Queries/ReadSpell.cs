@@ -7,15 +7,15 @@ internal record ReadSpellQuery(Guid Id) : IQuery<SpellModel?>;
 
 internal class ReadSpellQueryHandler : IQueryHandler<ReadSpellQuery, SpellModel?>
 {
-  private readonly ISpellRepository _spellRepository;
+  private readonly ISpellQuerier _spellQuerier;
 
-  public ReadSpellQueryHandler(ISpellRepository spellRepository)
+  public ReadSpellQueryHandler(ISpellQuerier spellQuerier)
   {
-    _spellRepository = spellRepository;
+    _spellQuerier = spellQuerier;
   }
 
   public async Task<SpellModel?> HandleAsync(ReadSpellQuery query, CancellationToken cancellationToken)
   {
-    return await _spellRepository.ReadAsync(query.Id, cancellationToken);
+    return await _spellQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

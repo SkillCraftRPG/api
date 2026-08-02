@@ -1,8 +1,8 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Spells.Events;
 using SkillCraft.Api.Core.Spells.Models;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Spells.Commands;
 
@@ -12,12 +12,18 @@ internal class UpdateSpellCommandHandler : ICommandHandler<UpdateSpellCommand, S
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ISpellQuerier _spellQuerier;
   private readonly ISpellRepository _spellRepository;
 
-  public UpdateSpellCommandHandler(IContext context, IPermissionService permissionService, ISpellRepository spellRepository)
+  public UpdateSpellCommandHandler(
+    IContext context,
+    IPermissionService permissionService,
+    ISpellQuerier spellQuerier,
+    ISpellRepository spellRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _spellQuerier = spellQuerier;
     _spellRepository = spellRepository;
   }
 
@@ -26,37 +32,33 @@ internal class UpdateSpellCommandHandler : ICommandHandler<UpdateSpellCommand, S
     UpdateSpellPayload payload = command.Payload;
     payload.Validate();
 
-    Spell? spell = await _spellRepository.LoadAsync(command.Id, cancellationToken);
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
+    SpellId spellId = new(worldId, command.Id);
+    Spell? spell = await _spellRepository.LoadAsync(spellId, cancellationToken);
     if (spell is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, spell, cancellationToken);
 
-    SpellSnapshot snapshot = new(spell);
-
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
     {
-      spell.Name = payload.Name.Trim();
-    }
-    if (payload.Summary is not null)
-    {
-      spell.Summary = payload.Summary.Value?.CleanTrim();
-    }
-    if (payload.Content is not null)
-    {
-      spell.Content = payload.Content.Value?.CleanTrim();
+      spell.Rename(name, actorId);
     }
 
-    SpellUpdated? record = snapshot.Compare(spell);
-    if (record is not null)
+    if (payload.Summary is not null || payload.Content is not null)
     {
-      spell.Update(_context.UserUid);
-      _spellRepository.Update(spell, record);
-
-      await _context.SaveChangesAsync(cancellationToken);
+      spell.Edit(
+        payload.Summary is null ? spell.Summary : Summary.TryCreate(payload.Summary.Value),
+        payload.Content is null ? spell.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
     }
 
-    return await _spellRepository.ReadAsync(spell, cancellationToken);
+    await _spellRepository.SaveAsync(spell, cancellationToken);
+
+    return await _spellQuerier.ReadAsync(spell, cancellationToken);
   }
 }
