@@ -1,12 +1,15 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Spells;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Builders;
 
 public interface ISpellBuilder
 {
-  ISpellBuilder WithId(Guid id);
+  ISpellBuilder WithId(SpellId spellId);
   ISpellBuilder WithWorld(World? world);
   ISpellBuilder WithTier(int tier);
   ISpellBuilder WithName(string name);
@@ -21,8 +24,8 @@ public class SpellBuilder : ISpellBuilder
   private readonly Faker _faker;
 
   private string? _content = null;
-  private Guid? _id = null;
   private string _name = "Spell";
+  private SpellId? _spellId = null;
   private string? _summary = null;
   private int _tier = 0;
   private World? _world = null;
@@ -32,9 +35,9 @@ public class SpellBuilder : ISpellBuilder
     _faker = faker ?? new();
   }
 
-  public ISpellBuilder WithId(Guid id)
+  public ISpellBuilder WithId(SpellId spellId)
   {
-    _id = id;
+    _spellId = spellId;
     return this;
   }
 
@@ -71,12 +74,17 @@ public class SpellBuilder : ISpellBuilder
   public Spell Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Spell(world, _tier, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content
-    };
+    ActorId actorId = world.OwnerId.ActorId;
+    TalentTier tier = new(_tier);
+    Name name = new(_name);
+
+    Spell spell = _spellId.HasValue
+      ? new(_spellId.Value, tier, name, actorId)
+      : new(world, tier, name, actorId);
+
+    spell.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+
+    return spell;
   }
 
   public static Spell ProtectionContreLaMagie(Faker? faker = null, World? world = null) => new SpellBuilder(faker)

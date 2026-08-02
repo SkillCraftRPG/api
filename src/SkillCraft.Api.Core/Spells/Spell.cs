@@ -1,59 +1,80 @@
-﻿using Logitar;
+﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Spells.Events;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Spells;
 
-public class Spell : IAuditable, IResource, IVersioned
+public class Spell : AggregateRoot, IResource
 {
   public const string ResourceKind = "Spell";
 
-  public int SpellId { get; private set; }
+  public new SpellId Id => new(base.Id);
+  public WorldId WorldId => Id.WorldId;
+  public Guid ResourceId => Id.ResourceId;
 
-  // TODO(fpion): public WorldEntity? World { get; private set; }
-  public Guid WorldId { get; private set; }
-  public Guid Id { get; private set; }
+  private TalentTier? _tier = null;
+  public TalentTier Tier => _tier ?? throw new InvalidOperationException("The tier has not been initialized.");
 
-  public int Tier { get; private set; }
+  private Name? _name = null;
+  public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
+  public Summary? Summary { get; private set; }
+  public Content? Content { get; private set; }
 
-  public string Name { get; set; } = string.Empty;
-  public string? Summary { get; set; }
-  public string? Content { get; set; }
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
 
-  public long Version { get; private set; }
-  public Guid CreatedBy { get; private set; }
-  public DateTime CreatedOn { get; private set; }
-  public Guid UpdatedBy { get; private set; }
-  public DateTime UpdatedOn { get; private set; }
-
-  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
-
-  public Spell(World world, int tier, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
-  {
-    // TODO(fpion): World = world;
-    WorldId = world.ResourceId;
-    Id = id ?? Guid.NewGuid();
-
-    Tier = tier;
-
-    Version = 1;
-    CreatedBy = UpdatedBy = userId ?? world.OwnerId.ResourceId;
-    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-  }
-
-  private Spell()
+  public Spell() : base()
   {
   }
 
-  public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
-
-  public void Update(Guid userId, DateTime? updatedOn = null)
+  public Spell(World world, TalentTier tier, Name name, ActorId? actorId = null)
+    : this(SpellId.NewId(world.Id), tier, name, actorId)
   {
-    Version++;
-    UpdatedBy = userId;
-    UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
   }
 
-  public override bool Equals(object? obj) => obj is Spell spell && spell.SpellId == SpellId;
-  public override int GetHashCode() => SpellId.GetHashCode();
-  public override string ToString() => $"{Name} | {GetType()} (SpellId={SpellId})";
+  public Spell(SpellId spellId, TalentTier tier, Name name, ActorId? actorId = null)
+    : base(spellId.StreamId)
+  {
+    Raise(new SpellCreated(tier, name), actorId);
+  }
+  protected virtual void Handle(SpellCreated @event)
+  {
+    _tier = @event.Tier;
+    _name = @event.Name;
+  }
+
+  public void Delete(ActorId? actorId = null)
+  {
+    if (!IsDeleted)
+    {
+      Raise(new SpellDeleted(), actorId);
+    }
+  }
+
+  public void Edit(Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new SpellEdited(summary, content), actorId);
+    }
+  }
+  protected virtual void Handle(SpellEdited @event)
+  {
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
+  public void Rename(Name name, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name))
+    {
+      Raise(new SpellRenamed(name), actorId);
+    }
+  }
+  protected virtual void Handle(SpellRenamed @event)
+  {
+    _name = @event.Name;
+  }
+
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }

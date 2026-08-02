@@ -2,4 +2,4 @@ using Logitar.EventSourcing;
 
 namespace SkillCraft.Api.Core.Spells.Events;
 
-public record SpellDeleted : DomainEvent, IDeleteEvent;
+public record SpellRenamed(Name Name) : DomainEvent;

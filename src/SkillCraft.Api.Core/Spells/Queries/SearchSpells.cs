@@ -8,15 +8,15 @@ internal record SearchSpellsQuery(SearchSpellsPayload Payload) : IQuery<SearchRe
 
 internal class SearchSpellsQueryHandler : IQueryHandler<SearchSpellsQuery, SearchResults<SpellModel>>
 {
-  private readonly ISpellRepository _spellRepository;
+  private readonly ISpellQuerier _spellQuerier;
 
-  public SearchSpellsQueryHandler(ISpellRepository spellRepository)
+  public SearchSpellsQueryHandler(ISpellQuerier spellQuerier)
   {
-    _spellRepository = spellRepository;
+    _spellQuerier = spellQuerier;
   }
 
   public async Task<SearchResults<SpellModel>> HandleAsync(SearchSpellsQuery query, CancellationToken cancellationToken)
   {
-    return await _spellRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _spellQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

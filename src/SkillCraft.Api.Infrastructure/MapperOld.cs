@@ -10,8 +10,6 @@ using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
-using SkillCraft.Api.Core.Spells;
-using SkillCraft.Api.Core.Spells.Models;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -143,22 +141,6 @@ internal class MapperOld // TODO(fpion): remove this
     UpdatedBy = FindActor(feature.UpdatedBy),
     UpdatedOn = feature.UpdatedOn.AsUniversalTime()
   };
-
-  public SpellModel ToSpell(Spell source)
-  {
-    SpellModel destination = new()
-    {
-      Id = source.Id,
-      Tier = source.Tier,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content
-    };
-
-    MapAggregate(source, destination);
-
-    return destination;
-  }
 
   public TalentModel ToTalent(TalentEntity source)
   {
