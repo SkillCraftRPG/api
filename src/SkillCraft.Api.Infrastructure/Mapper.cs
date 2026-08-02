@@ -7,6 +7,7 @@ using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Scripts.Models;
+using SkillCraft.Api.Core.Spells.Models;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -95,6 +96,22 @@ internal class Mapper
     ScriptModel destination = new()
     {
       Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public SpellModel ToSpell(SpellEntity source)
+  {
+    SpellModel destination = new()
+    {
+      Id = source.Id,
+      Tier = source.Tier,
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content
