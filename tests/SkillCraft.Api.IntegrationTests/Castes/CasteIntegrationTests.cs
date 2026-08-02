@@ -140,7 +140,7 @@ public class CasteIntegrationTests : IntegrationTests
   public async Task Given_Matches_When_Search_Then_Results()
   {
     Caste artisan = CasteBuilder.Artisan(Faker, Context.World);
-    Caste boheme = new CasteBuilder(Faker).WithWorld(Context.World).WithName("Bohème").Build();
+    Caste boheme = new CasteBuilder(Faker).WithWorld(Context.World).WithName("Boh�me").Build();
     Caste milicien = new CasteBuilder(Faker).WithWorld(Context.World).WithName("Milicien").Build();
     await _casteRepository.SaveAsync([artisan, boheme, milicien]);
 
@@ -170,9 +170,10 @@ public class CasteIntegrationTests : IntegrationTests
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateCaste, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a caste.")]
@@ -183,9 +184,10 @@ public class CasteIntegrationTests : IntegrationTests
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload, _caste.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a caste.")]
@@ -196,9 +198,10 @@ public class CasteIntegrationTests : IntegrationTests
     UpdateCastePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.UpdateAsync(_caste.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing caste.")]
@@ -239,13 +242,13 @@ public class CasteIntegrationTests : IntegrationTests
   private static CreateOrReplaceCastePayload CreateArtisanPayload() => new()
   {
     Name = " Artisan ",
-    Summary = "  Expert des métiers manuels, membre d’une organisation d’artisans.  ",
-    Content = "   L’artisan est un expert d’un procédé de transformation des matières brutes.\n\nIl peut être un boulanger, un forgeron, un orfèvre, un tisserand ou pratiquer tout genre de profession œuvrant dans la transformation des matières brutes.   ",
+    Summary = "  Expert des m�tiers manuels, membre d�une organisation d�artisans.  ",
+    Content = "   L�artisan est un expert d�un proc�d� de transformation des mati�res brutes.\n\nIl peut �tre un boulanger, un forgeron, un orf�vre, un tisserand ou pratiquer tout genre de profession �uvrant dans la transformation des mati�res brutes.   ",
     Skill = Skill.Crafting,
     WealthRoll = " 8D6 ",
     Feature = new FeatureModel(
       " Professionnel ",
-      "   Grâce à ses apprentissages et à ses réalisations, le personnage est membre d’une organisation de professionnels comme lui, ou il connait ces organisations.\n\nS’il ne peut subvenir à ses besoins, il n’aura aucun mal à trouver du travail grâce à ces organisations afin de couvrir minimalement ces [dépenses](/regles/equipement/depenses).\n\nCes organisations possèdent souvent un pouvoir politique important, ce qui peut l’aider à rencontrer des gens importants, à rallier des fidèles à une cause ou à mettre la main sur des matériaux rares.\n\nIl connait également la base du fonctionnement des systèmes économiques auxquels il a participé.   ")
+      "   Gr�ce � ses apprentissages et � ses r�alisations, le personnage est membre d�une organisation de professionnels comme lui, ou il connait ces organisations.\n\nS�il ne peut subvenir � ses besoins, il n�aura aucun mal � trouver du travail gr�ce � ces organisations afin de couvrir minimalement ces [d�penses](/regles/equipement/depenses).\n\nCes organisations poss�dent souvent un pouvoir politique important, ce qui peut l�aider � rencontrer des gens importants, � rallier des fid�les � une cause ou � mettre la main sur des mat�riaux rares.\n\nIl connait �galement la base du fonctionnement des syst�mes �conomiques auxquels il a particip�.   ")
   };
 
   private static void AssertArtisan(CreateOrReplaceCastePayload payload, CasteModel caste)

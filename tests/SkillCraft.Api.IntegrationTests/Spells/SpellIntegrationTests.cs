@@ -145,7 +145,7 @@ public class SpellIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
-    Spell flammeSacree = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Flamme sacrée").Build();
+    Spell flammeSacree = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Flamme sacr�e").Build();
     Spell miracle = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Miracle").Build();
     Spell mirage = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Mirage").Build();
     await _spellRepository.SaveAsync([flammeSacree, miracle, mirage]);
@@ -188,9 +188,10 @@ public class SpellIntegrationTests : IntegrationTests
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateSpell, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a spell.")]
@@ -202,9 +203,10 @@ public class SpellIntegrationTests : IntegrationTests
     payload.Tier = _spell.Tier.Value;
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a spell.")]
@@ -215,9 +217,10 @@ public class SpellIntegrationTests : IntegrationTests
     UpdateSpellPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.UpdateAsync(_spell.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing spell.")]
@@ -251,7 +254,7 @@ public class SpellIntegrationTests : IntegrationTests
   {
     Tier = 1,
     Name = " Protection contre la magie ",
-    Summary = "  Détection, dissipation et interruption des effets magiques adverses.  ",
-    Content = "   Pouvoir défensif et utilitaire permettant de détecter la magie, dissiper les effets surnaturels actifs et interrompre les incantations ennemies en réaction.   "
+    Summary = "  D�tection, dissipation et interruption des effets magiques adverses.  ",
+    Content = "   Pouvoir d�fensif et utilitaire permettant de d�tecter la magie, dissiper les effets surnaturels actifs et interrompre les incantations ennemies en r�action.   "
   };
 }

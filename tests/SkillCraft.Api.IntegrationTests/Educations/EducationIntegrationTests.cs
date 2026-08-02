@@ -168,9 +168,10 @@ public class EducationIntegrationTests : IntegrationTests
     CreateOrReplaceEducationPayload payload = CreateJudicieuxPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateEducation, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an education.")]
@@ -181,9 +182,10 @@ public class EducationIntegrationTests : IntegrationTests
     CreateOrReplaceEducationPayload payload = CreateJudicieuxPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.CreateOrReplaceAsync(payload, _education.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_education.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an education.")]
@@ -194,9 +196,10 @@ public class EducationIntegrationTests : IntegrationTests
     UpdateEducationPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _educationService.UpdateAsync(_education.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_education.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing education.")]
@@ -237,13 +240,13 @@ public class EducationIntegrationTests : IntegrationTests
   private static CreateOrReplaceEducationPayload CreateJudicieuxPayload() => new()
   {
     Name = " Judicieux ",
-    Summary = "  Esprit posé et analytique, prêt à guider par des décisions avisées.  ",
-    Content = "   Peu importe le mode de vie dans lequel il a été élevé, le personnage prend des décisions sensées et éclairées au moment opportun.\n\nIl saisit les opportunités et on lui demande souvent conseil.\n\nIl sait mettre en exécution des plans complexes et trier les informations pertinentes.   ",
+    Summary = "  Esprit pos� et analytique, pr�t � guider par des d�cisions avis�es.  ",
+    Content = "   Peu importe le mode de vie dans lequel il a �t� �lev�, le personnage prend des d�cisions sens�es et �clair�es au moment opportun.\n\nIl saisit les opportunit�s et on lui demande souvent conseil.\n\nIl sait mettre en ex�cution des plans complexes et trier les informations pertinentes.   ",
     Skill = Skill.Orientation,
     WealthMultiplier = 10,
     Feature = new FeatureModel(
-      " Conseiller avisé ",
-      "   La nature calme et analytique du personnage lui permet d’être reconnu rapidement pour son jugement sûr.\n\nIl peut ajouter un bonus égal à son [tiers](/regles/personnages/progression/tiers) (minimum 1) à ses [tests](/regles/competences/tests) d’[Intuition](/regles/competences/intuition) ou d’[Investigation](/regles/competences/investigation) effectués afin de comprendre un plan, évaluer un risque ou choisir la meilleure approche de manière objective.\n\nÉgalement, il ajoute également ce bonus à ses tests de [Diplomatie](/regles/competences/diplomatie) effectués afin de convaincre un individue rationnel.   ")
+      " Conseiller avis� ",
+      "   La nature calme et analytique du personnage lui permet d��tre reconnu rapidement pour son jugement s�r.\n\nIl peut ajouter un bonus �gal � son [tiers](/regles/personnages/progression/tiers) (minimum 1) � ses [tests](/regles/competences/tests) d�[Intuition](/regles/competences/intuition) ou d�[Investigation](/regles/competences/investigation) effectu�s afin de comprendre un plan, �valuer un risque ou choisir la meilleure approche de mani�re objective.\n\n�galement, il ajoute �galement ce bonus � ses tests de [Diplomatie](/regles/competences/diplomatie) effectu�s afin de convaincre un individue rationnel.   ")
   };
 
   private static void AssertJudicieux(CreateOrReplaceEducationPayload payload, EducationModel education)

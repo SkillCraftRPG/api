@@ -14,20 +14,17 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
   private readonly ICustomizationQuerier _customizationQuerier;
   private readonly ICustomizationRepository _customizationRepository;
   private readonly IPermissionService _permissionService;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceCustomizationCommandHandler(
     IContext context,
     ICustomizationQuerier customizationQuerier,
     ICustomizationRepository customizationRepository,
-    IPermissionService permissionService,
-    IWorldRepository worldRepository)
+    IPermissionService permissionService)
   {
     _context = context;
     _customizationQuerier = customizationQuerier;
     _customizationRepository = customizationRepository;
     _permissionService = permissionService;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceCustomizationResult> HandleAsync(CreateOrReplaceCustomizationCommand command, CancellationToken cancellationToken)
@@ -51,8 +48,7 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
     bool created = false;
     if (customization is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateCustomization, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateCustomization, cancellationToken);
 
       customization = new Customization(customizationId, payload.Kind, name, actorId);
       created = true;

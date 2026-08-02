@@ -1,6 +1,5 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
-using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -8,12 +7,10 @@ namespace SkillCraft.Api.Infrastructure.Repositories;
 
 internal class WorldRepository : Repository, IWorldRepository
 {
-  private readonly IContext _context;
   private readonly GameContext _database;
 
-  public WorldRepository(IContext context, GameContext database, IEventStore eventStore) : base(eventStore)
+  public WorldRepository(GameContext database, IEventStore eventStore) : base(eventStore)
   {
-    _context = context;
     _database = database;
   }
 
@@ -24,12 +21,6 @@ internal class WorldRepository : Repository, IWorldRepository
   public async Task<IReadOnlyCollection<World>> LoadAsync(IEnumerable<WorldId> ids, CancellationToken cancellationToken)
   {
     return await base.LoadAsync<World>(ids.Select(id => id.StreamId), isDeleted: false, cancellationToken);
-  }
-
-  public async Task<World> LoadFromContextAsync(CancellationToken cancellationToken)
-  {
-    WorldId id = _context.WorldId;
-    return await LoadAsync(id, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={id}' was not found.");
   }
 
   public async Task SaveAsync(World world, CancellationToken cancellationToken)

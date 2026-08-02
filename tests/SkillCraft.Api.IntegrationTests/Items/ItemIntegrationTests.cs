@@ -172,9 +172,10 @@ public class ItemIntegrationTests : IntegrationTests
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateItem, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an item.")]
@@ -185,9 +186,10 @@ public class ItemIntegrationTests : IntegrationTests
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload, _item.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an item.")]
@@ -198,9 +200,10 @@ public class ItemIntegrationTests : IntegrationTests
     UpdateItemPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.UpdateAsync(_item.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing item.")]
@@ -236,9 +239,9 @@ public class ItemIntegrationTests : IntegrationTests
 
   private static CreateOrReplaceItemPayload CreateCordePayload() => new()
   {
-    Name = " Corde (15 mètres) ",
-    Summary = "  Corde de chanvre de 15 mètres, 2 points de Vitalité.  ",
-    Content = "   Une corde de chanvre dotée de 2 points de Vitalité. On peut la briser en réussissant un test d’Athlétisme de difficulté élevée. La longueur standard est de 15 mètres.   ",
+    Name = " Corde (15 m�tres) ",
+    Summary = "  Corde de chanvre de 15 m�tres, 2 points de Vitalit�.  ",
+    Content = "   Une corde de chanvre dot�e de 2 points de Vitalit�. On peut la briser en r�ussissant un test d�Athl�tisme de difficult� �lev�e. La longueur standard est de 15 m�tres.   ",
     Price = 1,
     Weight = 5
   };

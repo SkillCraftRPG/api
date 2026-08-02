@@ -121,9 +121,9 @@ public class CustomizationIntegrationTests : IntegrationTests
   public async Task Given_Matches_When_Search_Then_Results()
   {
     Customization abruti = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Disability).WithName("Abruti").Build();
-    Customization adresseLegendaire = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Adresse légendaire").Build();
-    Customization affiniteAnimale = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Affinité animale").Build();
-    Customization baraque = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Baraqué").Build();
+    Customization adresseLegendaire = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Adresse l�gendaire").Build();
+    Customization affiniteAnimale = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Affinit� animale").Build();
+    Customization baraque = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Baraqu�").Build();
     await _customizationRepository.SaveAsync([abruti, adresseLegendaire, affiniteAnimale, baraque]);
 
     SearchCustomizationsPayload payload = new()
@@ -152,7 +152,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     {
       Kind = CustomizationKind.Disability,
       Name = " Abruti ",
-      Summary = "  Limité, maladroit et désavantagé dans l’usage de son intellect.  "
+      Summary = "  Limit�, maladroit et d�savantag� dans l�usage de son intellect.  "
     };
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<CustomizationKind>>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.ResourceId));
@@ -172,9 +172,10 @@ public class CustomizationIntegrationTests : IntegrationTests
     CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateCustomization, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a customization.")]
@@ -185,9 +186,10 @@ public class CustomizationIntegrationTests : IntegrationTests
     CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a customization.")]
@@ -198,9 +200,10 @@ public class CustomizationIntegrationTests : IntegrationTests
     UpdateCustomizationPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.UpdateAsync(_customization.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing customization.")]
@@ -233,9 +236,9 @@ public class CustomizationIntegrationTests : IntegrationTests
   private static CreateOrReplaceCustomizationPayload CreateBaraquePayload() => new()
   {
     Kind = CustomizationKind.Gift,
-    Name = " Baraqué ",
-    Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-    Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
+    Name = " Baraqu� ",
+    Summary = "  Double port�e, avantage et d�g�ts contre objets et structures.  ",
+    Content = "   Le personnage acquiert les capacit�s suivantes :\n\n- Lorsqu�il [bouscule](/regles/combat/activites/bousculer) ou repousse une cr�ature par une capacit� non magique, la distance est doubl�e.\n- Il se voit conf�rer l�[avantage](/regles/competences/tests/avantage-desavantage) � ses [tests](/regles/competences/tests) lorsqu�il tente de briser ou d�[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un b�timent ou une construction non magique.\n- Il double les [points de d�g�ts](/regles/combat/degats) qu�il inflige aux objets, aux structures, aux b�timents ainsi qu�aux constructions non magiques.   "
   };
 
   private static void AssertBaraque(CreateOrReplaceCustomizationPayload payload, CustomizationModel customization)

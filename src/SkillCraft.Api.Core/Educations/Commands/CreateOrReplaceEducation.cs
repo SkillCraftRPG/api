@@ -15,20 +15,17 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
   private readonly IEducationQuerier _educationQuerier;
   private readonly IEducationRepository _educationRepository;
   private readonly IPermissionService _permissionService;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceEducationCommandHandler(
     IContext context,
     IEducationQuerier educationQuerier,
     IEducationRepository educationRepository,
-    IPermissionService permissionService,
-    IWorldRepository worldRepository)
+    IPermissionService permissionService)
   {
     _context = context;
     _educationQuerier = educationQuerier;
     _educationRepository = educationRepository;
     _permissionService = permissionService;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceEducationResult> HandleAsync(CreateOrReplaceEducationCommand command, CancellationToken cancellationToken)
@@ -56,8 +53,7 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
     bool created = false;
     if (education is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateEducation, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateEducation, cancellationToken);
 
       education = new Education(educationId, name, actorId);
       created = true;

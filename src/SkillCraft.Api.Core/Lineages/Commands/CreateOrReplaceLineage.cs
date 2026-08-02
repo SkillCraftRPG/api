@@ -17,22 +17,19 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceLineageCommandHandler(
     IContext context,
     ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
-    IPermissionService permissionService,
-    IWorldRepository worldRepository)
+    IPermissionService permissionService)
   {
     _context = context;
     _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceLineageResult> HandleAsync(CreateOrReplaceLineageCommand command, CancellationToken cancellationToken)
@@ -64,8 +61,7 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     bool created = false;
     if (lineage is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateLineage, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateLineage, cancellationToken);
 
       lineage = new Lineage(lineageId, name, parent, actorId);
       created = true;

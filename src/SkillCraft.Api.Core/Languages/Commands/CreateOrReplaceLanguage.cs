@@ -16,22 +16,19 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
   private readonly ILanguageRepository _languageRepository;
   private readonly IPermissionService _permissionService;
   private readonly IScriptRepository _scriptRepository;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceLanguageCommandHandler(
     IContext context,
     ILanguageQuerier languageQuerier,
     ILanguageRepository languageRepository,
     IPermissionService permissionService,
-    IScriptRepository scriptRepository,
-    IWorldRepository worldRepository)
+    IScriptRepository scriptRepository)
   {
     _context = context;
     _languageQuerier = languageQuerier;
     _languageRepository = languageRepository;
     _permissionService = permissionService;
     _scriptRepository = scriptRepository;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceLanguageResult> HandleAsync(CreateOrReplaceLanguageCommand command, CancellationToken cancellationToken)
@@ -63,8 +60,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     bool created = false;
     if (language is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateLanguage, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateLanguage, cancellationToken);
 
       language = new Language(languageId, name, actorId);
       created = true;

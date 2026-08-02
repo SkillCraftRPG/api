@@ -15,20 +15,17 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
   private readonly ICasteRepository _casteRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceCasteCommandHandler(
     ICasteQuerier casteQuerier,
     ICasteRepository casteRepository,
     IContext context,
-    IPermissionService permissionService,
-    IWorldRepository worldRepository)
+    IPermissionService permissionService)
   {
     _casteQuerier = casteQuerier;
     _casteRepository = casteRepository;
     _context = context;
     _permissionService = permissionService;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceCasteResult> HandleAsync(CreateOrReplaceCasteCommand command, CancellationToken cancellationToken)
@@ -56,8 +53,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
     bool created = false;
     if (caste is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateCaste, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateCaste, cancellationToken);
 
       caste = new Caste(casteId, name, actorId);
       created = true;

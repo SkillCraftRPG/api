@@ -271,9 +271,10 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHautElfePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateLineage, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a lineage.")]
@@ -284,9 +285,10 @@ public class LineageIntegrationTests : IntegrationTests
     CreateOrReplaceLineagePayload payload = CreateHumainPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a lineage.")]
@@ -297,9 +299,10 @@ public class LineageIntegrationTests : IntegrationTests
     UpdateLineagePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _lineageService.UpdateAsync(_lineage.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_lineage.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing lineage.")]
@@ -341,19 +344,19 @@ public class LineageIntegrationTests : IntegrationTests
   {
     ParentId = _elfe.ResourceId,
     Name = " Haut-Elfe ",
-    Summary = "  Héritiers stellaires de royaumes elfiques raffinés et érudits.  ",
-    Content = "   Les Hauts-Elfes privilégient l’ordre, l’érudition et la stabilité, qu’ils considèrent comme les fondations de toute civilisation durable. Héritiers d’un antique royaume forestier fondé dans l’Ouest de la Sarénie il y a plus de deux millénaires, ils ont développé une culture raffinée où astrologie, magie et savoir occupent une place centrale. Leur expansion vers les Triskîles mena à la fondation de royaumes sur Alnar et Ellesdales, bien que cette dernière région se soit fragmentée au fil des siècles en principautés rivales. Diplomates et marchands influents, les Hauts-Elfes entretiennent généralement de bonnes relations avec les peuples civilisés, mais les ambitions territoriales des Dallois menacent désormais l’équilibre fragile d’Ellesdales. Nés sous des constellations considérées sacrées, ils portent souvent sur eux le symbole de l’étoile ayant marqué leur destinée.   ",
+    Summary = "  H�ritiers stellaires de royaumes elfiques raffin�s et �rudits.  ",
+    Content = "   Les Hauts-Elfes privil�gient l�ordre, l��rudition et la stabilit�, qu�ils consid�rent comme les fondations de toute civilisation durable. H�ritiers d�un antique royaume forestier fond� dans l�Ouest de la Sar�nie il y a plus de deux mill�naires, ils ont d�velopp� une culture raffin�e o� astrologie, magie et savoir occupent une place centrale. Leur expansion vers les Trisk�les mena � la fondation de royaumes sur Alnar et Ellesdales, bien que cette derni�re r�gion se soit fragment�e au fil des si�cles en principaut�s rivales. Diplomates et marchands influents, les Hauts-Elfes entretiennent g�n�ralement de bonnes relations avec les peuples civilis�s, mais les ambitions territoriales des Dallois menacent d�sormais l��quilibre fragile d�Ellesdales. N�s sous des constellations consid�r�es sacr�es, ils portent souvent sur eux le symbole de l��toile ayant marqu� leur destin�e.   ",
     Features =
     [
       new FeatureModel(
-        " Esprit éveillé ",
-        "   Le personnage ne peut être endormi de manière surnaturelle et il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [jets de sauvegarde](/regles/competences/tests/sauvegarde) contre les [charmes](/regles/combat/conditions/charme). Il peut également s’[harmoniser](/regles/magie/artefacts/harmonisation) à un [artefact magique](/regles/magie/artefacts) supplémentaire.   "),
+        " Esprit �veill� ",
+        "   Le personnage ne peut �tre endormi de mani�re surnaturelle et il se voit conf�rer l�[avantage](/regles/competences/tests/avantage-desavantage) � ses [jets de sauvegarde](/regles/competences/tests/sauvegarde) contre les [charmes](/regles/combat/conditions/charme). Il peut �galement s�[harmoniser](/regles/magie/artefacts/harmonisation) � un [artefact magique](/regles/magie/artefacts) suppl�mentaire.   "),
       new FeatureModel(
-        " Sens affûtés ",
-        "   Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) les talents [Orientation](/regles/talents/orientation) et [Perception](/regles/talents/perception).   "),
+        " Sens aff�t�s ",
+        "   Le personnage peut [acqu�rir](/regles/talents/acquisition) [� rabais](/regles/talents/points) les talents [Orientation](/regles/talents/orientation) et [Perception](/regles/talents/perception).   "),
       new FeatureModel(
         " Transe ",
-        "   Le personnage peut remplacer la [nuit de sommeil](/regles/aventure/repos/sommeil) conventionnelle de [8 heures](/regles/aventure/temps) par une transe d’une durée de seulement 4 heures. Compléter cette transe procure les mêmes effets que de compléter une nuit de sommeil. Pendant cette transe, le personnage est en état de conscience partielle, mélangeant rêves éveillés et lucidité détachée. Il demeure partiellement réceptif à son [environnement](/regles/aventure/environnement) et peut effectuer avec [désavantage](/regles/competences/tests/avantage-desavantage) des [tests passifs](/regles/competences/tests/passif).   ")
+        "   Le personnage peut remplacer la [nuit de sommeil](/regles/aventure/repos/sommeil) conventionnelle de [8 heures](/regles/aventure/temps) par une transe d�une dur�e de seulement 4 heures. Compl�ter cette transe procure les m�mes effets que de compl�ter une nuit de sommeil. Pendant cette transe, le personnage est en �tat de conscience partielle, m�langeant r�ves �veill�s et lucidit� d�tach�e. Il demeure partiellement r�ceptif � son [environnement](/regles/aventure/environnement) et peut effectuer avec [d�savantage](/regles/competences/tests/avantage-desavantage) des [tests passifs](/regles/competences/tests/passif).   ")
     ],
     Languages = new LineageLanguagesPayload
     {
@@ -371,19 +374,19 @@ public class LineageIntegrationTests : IntegrationTests
   private static CreateOrReplaceLineagePayload CreateHumainPayload() => new()
   {
     Name = " Humain ",
-    Summary = "  Espèce adaptable et ambitieuse héritière d’un empire fragmenté.  ",
-    Content = "   Les humains représentent le commun des mortels. Répandus aux quatre coins du monde, ils s’adaptent avec aisance aux climats, aux cultures et aux bouleversements qui façonnent les civilisations. Héritiers d’un vaste empire ayant autrefois dominé la majeure partie de l’Ouespéro, ils vivent désormais au sein d’une mosaïque de royaumes, de cités libres et d’empires revendiquant un héritage souvent contesté. Leur culture mêle traditions impériales, foi organisée et anciennes coutumes guerrières, tandis que leur courte espérance de vie nourrit leur ambition et leur désir d’accomplissement. Perçus comme éphémères mais résilients, ils occupent une place centrale dans les alliances, les conflits et les échanges du monde connu.   ",
+    Summary = "  Esp�ce adaptable et ambitieuse h�riti�re d�un empire fragment�.  ",
+    Content = "   Les humains repr�sentent le commun des mortels. R�pandus aux quatre coins du monde, ils s�adaptent avec aisance aux climats, aux cultures et aux bouleversements qui fa�onnent les civilisations. H�ritiers d�un vaste empire ayant autrefois domin� la majeure partie de l�Ouesp�ro, ils vivent d�sormais au sein d�une mosa�que de royaumes, de cit�s libres et d�empires revendiquant un h�ritage souvent contest�. Leur culture m�le traditions imp�riales, foi organis�e et anciennes coutumes guerri�res, tandis que leur courte esp�rance de vie nourrit leur ambition et leur d�sir d�accomplissement. Per�us comme �ph�m�res mais r�silients, ils occupent une place centrale dans les alliances, les conflits et les �changes du monde connu.   ",
     Features =
     [
       new FeatureModel(
-        " Apprentissage accéléré ",
-        "   Le personnage débute avec 4 points d’[Apprentissage](/regles/statistiques/apprentissage) supplémentaires. Il acquiert également 1 point d’Apprentissage supplémentaire chaque fois que son [tiers](/regles/personnages/progression/tiers) augmente.   "),
+        " Apprentissage acc�l�r� ",
+        "   Le personnage d�bute avec 4 points d�[Apprentissage](/regles/statistiques/apprentissage) suppl�mentaires. Il acquiert �galement 1 point d�Apprentissage suppl�mentaire chaque fois que son [tiers](/regles/personnages/progression/tiers) augmente.   "),
       new FeatureModel(
         " Aspect ",
-        "   Le personnage acquiert gratuitement le talent [Entraînement I](/regles/talents/entrainement-i).   "),
+        "   Le personnage acquiert gratuitement le talent [Entra�nement I](/regles/talents/entrainement-i).   "),
       new FeatureModel(
-        " Versatilité ",
-        "   Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) deux [talents](/regles/talents) le [formant](/regles/competences/formation) pour une [compétence](/regles/competences).   ")
+        " Versatilit� ",
+        "   Le personnage peut [acqu�rir](/regles/talents/acquisition) [� rabais](/regles/talents/points) deux [talents](/regles/talents) le [formant](/regles/competences/formation) pour une [comp�tence](/regles/competences).   ")
     ],
     Languages = new LineageLanguagesPayload
     {
@@ -391,7 +394,7 @@ public class LineageIntegrationTests : IntegrationTests
     },
     Names = new LineageNamesModel
     {
-      Content = "   Les humains portent généralement un prénom et un nom de famille.   "
+      Content = "   Les humains portent g�n�ralement un pr�nom et un nom de famille.   "
     },
     Speeds = new LineageSpeedsModel
     {

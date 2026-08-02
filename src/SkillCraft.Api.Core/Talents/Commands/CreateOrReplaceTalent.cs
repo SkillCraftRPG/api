@@ -14,20 +14,17 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
   private readonly IPermissionService _permissionService;
   private readonly ITalentQuerier _talentQuerier;
   private readonly ITalentRepository _talentRepository;
-  private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceTalentCommandHandler(
     IContext context,
     IPermissionService permissionService,
     ITalentQuerier talentQuerier,
-    ITalentRepository talentRepository,
-    IWorldRepository worldRepository)
+    ITalentRepository talentRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _talentQuerier = talentQuerier;
     _talentRepository = talentRepository;
-    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceTalentResult> HandleAsync(CreateOrReplaceTalentCommand command, CancellationToken cancellationToken)
@@ -59,8 +56,7 @@ internal class CreateOrReplaceTalentCommandHandler : ICommandHandler<CreateOrRep
     bool created = false;
     if (talent is null)
     {
-      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
-      await _permissionService.CheckAsync(Actions.CreateTalent, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateTalent, cancellationToken);
 
       talent = new Talent(talentId, new TalentTier(payload.Tier), name, actorId);
       created = true;

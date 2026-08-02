@@ -311,9 +311,10 @@ public class TalentIntegrationTests : IntegrationTests
     CreateOrReplaceTalentPayload payload = CreateFormationMartialePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.CreateTalent, exception.Action);
-    Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
+    Assert.Null(exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a talent.")]
@@ -324,9 +325,10 @@ public class TalentIntegrationTests : IntegrationTests
     CreateOrReplaceTalentPayload payload = CreateFormationMartialePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.CreateOrReplaceAsync(payload, _talent.ResourceId));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_talent.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a talent.")]
@@ -337,9 +339,10 @@ public class TalentIntegrationTests : IntegrationTests
     UpdateTalentPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _talentService.UpdateAsync(_talent.ResourceId, payload));
-    Assert.Equal(Context.UserUid, exception.UserId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_talent.Identifier.ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should update an existing talent.")]
@@ -380,8 +383,8 @@ public class TalentIntegrationTests : IntegrationTests
   {
     Tier = 0,
     Name = " Formation martiale ",
-    Summary = "  Accorde la maîtrise des armes et armures moyennes en combat.  ",
-    Content = "   Le personnage acquiert les capacités suivantes :\n\n- Il est [formé](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de mêlée.\n- Il est [formé](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et à l’utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu’il dégaine ou rengaine une arme, il peut en faire de même avec un bouclier en [action libre](/regles/combat/deroulement/tour).   ",
+    Summary = "  Accorde la ma�trise des armes et armures moyennes en combat.  ",
+    Content = "   Le personnage acquiert les capacit�s suivantes :\n\n- Il est [form�](/regles/equipement/armes/formation) au maniement des [armes martiales](/regles/equipement/armes/martiales) de m�l�e.\n- Il est [form�](/regles/equipement/armures/formation) au port des [armures moyennes](/regles/equipement/armures/moyennes) et � l�utilisation des [boucliers moyens](/regles/equipement/boucliers).\n- Lorsqu�il d�gaine ou rengaine une arme, il peut en faire de m�me avec un bouclier en [action libre](/regles/combat/deroulement/tour).   ",
     AllowMultiplePurchases = false,
     Skill = Skill.Melee,
     RequiredTalentId = _melee.ResourceId
