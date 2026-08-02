@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Actors;
+using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Lineages;
@@ -65,7 +66,7 @@ public class LineageIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, lineage.Id);
     }
-    Assert.Equal(4, lineage.Version);
+    Assert.Equal(5, lineage.Version);
     Assert.Equal(Actor, lineage.CreatedBy);
     Assert.Equal(DateTime.UtcNow, lineage.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(lineage.CreatedBy, lineage.UpdatedBy);
@@ -131,7 +132,7 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.NotNull(lineage);
 
     Assert.Equal(id, lineage.Id);
-    Assert.Equal(7, lineage.Version);
+    Assert.Equal(8, lineage.Version);
     Assert.Equal(_lineage.CreatedBy, lineage.CreatedBy.GetActorId());
     Assert.Equal(_lineage.CreatedOn.AsUniversalTime(), lineage.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, lineage.UpdatedBy);
@@ -311,6 +312,7 @@ public class LineageIntegrationTests : IntegrationTests
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
       Content = new Optional<string>(create.Content),
+      Features = create.Features,
       Languages = create.Languages,
       Names = create.Names,
       Speeds = create.Speeds,
@@ -323,7 +325,7 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.NotNull(lineage);
 
     Assert.Equal(id, lineage.Id);
-    Assert.Equal(7, lineage.Version);
+    Assert.Equal(8, lineage.Version);
     Assert.Equal(_lineage.CreatedBy, lineage.CreatedBy.GetActorId());
     Assert.Equal(_lineage.CreatedOn.AsUniversalTime(), lineage.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, lineage.UpdatedBy);
@@ -341,6 +343,18 @@ public class LineageIntegrationTests : IntegrationTests
     Name = " Haut-Elfe ",
     Summary = "  Héritiers stellaires de royaumes elfiques raffinés et érudits.  ",
     Content = "   Les Hauts-Elfes privilégient l’ordre, l’érudition et la stabilité, qu’ils considèrent comme les fondations de toute civilisation durable. Héritiers d’un antique royaume forestier fondé dans l’Ouest de la Sarénie il y a plus de deux millénaires, ils ont développé une culture raffinée où astrologie, magie et savoir occupent une place centrale. Leur expansion vers les Triskîles mena à la fondation de royaumes sur Alnar et Ellesdales, bien que cette dernière région se soit fragmentée au fil des siècles en principautés rivales. Diplomates et marchands influents, les Hauts-Elfes entretiennent généralement de bonnes relations avec les peuples civilisés, mais les ambitions territoriales des Dallois menacent désormais l’équilibre fragile d’Ellesdales. Nés sous des constellations considérées sacrées, ils portent souvent sur eux le symbole de l’étoile ayant marqué leur destinée.   ",
+    Features =
+    [
+      new FeatureModel(
+        " Esprit éveillé ",
+        "   Le personnage ne peut être endormi de manière surnaturelle et il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [jets de sauvegarde](/regles/competences/tests/sauvegarde) contre les [charmes](/regles/combat/conditions/charme). Il peut également s’[harmoniser](/regles/magie/artefacts/harmonisation) à un [artefact magique](/regles/magie/artefacts) supplémentaire.   "),
+      new FeatureModel(
+        " Sens affûtés ",
+        "   Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) les talents [Orientation](/regles/talents/orientation) et [Perception](/regles/talents/perception).   "),
+      new FeatureModel(
+        " Transe ",
+        "   Le personnage peut remplacer la [nuit de sommeil](/regles/aventure/repos/sommeil) conventionnelle de [8 heures](/regles/aventure/temps) par une transe d’une durée de seulement 4 heures. Compléter cette transe procure les mêmes effets que de compléter une nuit de sommeil. Pendant cette transe, le personnage est en état de conscience partielle, mélangeant rêves éveillés et lucidité détachée. Il demeure partiellement réceptif à son [environnement](/regles/aventure/environnement) et peut effectuer avec [désavantage](/regles/competences/tests/avantage-desavantage) des [tests passifs](/regles/competences/tests/passif).   ")
+    ],
     Languages = new LineageLanguagesPayload
     {
       Ids = [_celfique.ResourceId],
@@ -359,6 +373,18 @@ public class LineageIntegrationTests : IntegrationTests
     Name = " Humain ",
     Summary = "  Espèce adaptable et ambitieuse héritière d’un empire fragmenté.  ",
     Content = "   Les humains représentent le commun des mortels. Répandus aux quatre coins du monde, ils s’adaptent avec aisance aux climats, aux cultures et aux bouleversements qui façonnent les civilisations. Héritiers d’un vaste empire ayant autrefois dominé la majeure partie de l’Ouespéro, ils vivent désormais au sein d’une mosaïque de royaumes, de cités libres et d’empires revendiquant un héritage souvent contesté. Leur culture mêle traditions impériales, foi organisée et anciennes coutumes guerrières, tandis que leur courte espérance de vie nourrit leur ambition et leur désir d’accomplissement. Perçus comme éphémères mais résilients, ils occupent une place centrale dans les alliances, les conflits et les échanges du monde connu.   ",
+    Features =
+    [
+      new FeatureModel(
+        " Apprentissage accéléré ",
+        "   Le personnage débute avec 4 points d’[Apprentissage](/regles/statistiques/apprentissage) supplémentaires. Il acquiert également 1 point d’Apprentissage supplémentaire chaque fois que son [tiers](/regles/personnages/progression/tiers) augmente.   "),
+      new FeatureModel(
+        " Aspect ",
+        "   Le personnage acquiert gratuitement le talent [Entraînement I](/regles/talents/entrainement-i).   "),
+      new FeatureModel(
+        " Versatilité ",
+        "   Le personnage peut [acquérir](/regles/talents/acquisition) [à rabais](/regles/talents/points) deux [talents](/regles/talents) le [formant](/regles/competences/formation) pour une [compétence](/regles/competences).   ")
+    ],
     Languages = new LineageLanguagesPayload
     {
       Extra = 2
@@ -393,6 +419,13 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.Equal(payload.Summary?.CleanTrim(), lineage.Summary);
     Assert.Equal(payload.Content?.CleanTrim(), lineage.Content);
 
+    Assert.Equal(payload.Features.Count, lineage.Features.Count);
+    foreach (FeatureModel expected in payload.Features)
+    {
+      FeatureModel actual = Assert.Single(lineage.Features, feature => feature.Name == expected.Name.Trim());
+      Assert.Equal(expected.Content?.CleanTrim(), actual.Content);
+    }
+
     Assert.Equal(payload.Languages.Extra, lineage.Languages.Extra);
     Assert.Equal(payload.Languages.Content?.CleanTrim(), lineage.Languages.Content);
     LanguageModel language = Assert.Single(lineage.Languages.Granted);
@@ -411,6 +444,13 @@ public class LineageIntegrationTests : IntegrationTests
     Assert.Equal(payload.Name.CleanTrim(), lineage.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), lineage.Summary);
     Assert.Equal(payload.Content?.CleanTrim(), lineage.Content);
+
+    Assert.Equal(payload.Features.Count, lineage.Features.Count);
+    foreach (FeatureModel expected in payload.Features)
+    {
+      FeatureModel actual = Assert.Single(lineage.Features, feature => feature.Name == expected.Name.Trim());
+      Assert.Equal(expected.Content?.CleanTrim(), actual.Content);
+    }
 
     Assert.Empty(lineage.Languages.Granted);
     Assert.Equal(payload.Languages.Extra, lineage.Languages.Extra);

@@ -96,7 +96,7 @@ public class Lineage : AggregateRoot, IResource
     IReadOnlyCollection<Feature> cleaned = features
       .GroupBy(feature => feature.Name)
       .Select(group => group.Last())
-      .OrderBy(feature => feature.Name)
+      .OrderBy(feature => feature.Name.Value)
       .ToList()
       .AsReadOnly();
 
