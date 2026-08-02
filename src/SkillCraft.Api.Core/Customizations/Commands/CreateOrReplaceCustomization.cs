@@ -1,6 +1,5 @@
-﻿using Logitar;
-using Logitar.CQRS;
-using SkillCraft.Api.Core.Customizations.Events;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds;
@@ -12,17 +11,20 @@ internal record CreateOrReplaceCustomizationCommand(CreateOrReplaceCustomization
 internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<CreateOrReplaceCustomizationCommand, CreateOrReplaceCustomizationResult>
 {
   private readonly IContext _context;
+  private readonly ICustomizationQuerier _customizationQuerier;
   private readonly ICustomizationRepository _customizationRepository;
   private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceCustomizationCommandHandler(
     IContext context,
+    ICustomizationQuerier customizationQuerier,
     ICustomizationRepository customizationRepository,
     IPermissionService permissionService,
     IWorldRepository worldRepository)
   {
     _context = context;
+    _customizationQuerier = customizationQuerier;
     _customizationRepository = customizationRepository;
     _permissionService = permissionService;
     _worldRepository = worldRepository;
@@ -33,52 +35,45 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
     CreateOrReplaceCustomizationPayload payload = command.Payload;
     payload.Validate();
 
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
     Customization? customization = null;
+    CustomizationId customizationId = CustomizationId.NewId(worldId);
     if (command.Id.HasValue)
     {
-      customization = await _customizationRepository.LoadAsync(command.Id.Value, cancellationToken);
+      customizationId = new CustomizationId(worldId, command.Id.Value);
+      customization = await _customizationRepository.LoadAsync(customizationId, cancellationToken);
     }
 
-    Guid userId = _context.UserUid;
+    Name name = new(payload.Name);
 
-    CustomizationSnapshot? snapshot = null;
+    bool created = false;
     if (customization is null)
     {
       World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateCustomization, world, cancellationToken);
 
-      customization = new Customization(world, payload.Kind, command.Id, userId);
-      _customizationRepository.Add(customization);
+      customization = new Customization(customizationId, payload.Kind, name, actorId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, customization, cancellationToken);
 
-      if (payload.Kind != customization.Kind)
+      if (customization.Kind != payload.Kind)
       {
-        throw new ImmutablePropertyException<CustomizationKind>(customization, customization.Kind, payload.Kind, nameof(Customization.Kind));
+        throw new ImmutablePropertyException<CustomizationKind>(customization, customization.Kind, payload.Kind, nameof(payload.Kind));
       }
 
-      snapshot = new CustomizationSnapshot(customization);
+      customization.Rename(name, actorId);
     }
 
-    customization.Name = payload.Name.Trim();
-    customization.Summary = payload.Summary?.CleanTrim();
-    customization.Content = payload.Content?.CleanTrim();
+    customization.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
-    if (snapshot is not null)
-    {
-      CustomizationUpdated? record = snapshot.Compare(customization);
-      if (record is not null)
-      {
-        customization.Update(userId);
-        _customizationRepository.Update(customization, record);
-      }
-    }
+    await _customizationRepository.SaveAsync(customization, cancellationToken);
 
-    await _context.SaveChangesAsync(cancellationToken);
-
-    CustomizationModel model = await _customizationRepository.ReadAsync(customization, cancellationToken);
-    return new CreateOrReplaceCustomizationResult(model, Created: snapshot is null);
+    CustomizationModel model = await _customizationQuerier.ReadAsync(customization, cancellationToken);
+    return new CreateOrReplaceCustomizationResult(model, created);
   }
 }

@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -28,8 +29,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _customization = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).Build();
-    _customizationRepository.Add(_customization);
-    await Context.SaveChangesAsync();
+    await _customizationRepository.SaveAsync(_customization);
   }
 
   [Theory(DisplayName = "It should create a new customization.")]
@@ -37,13 +37,7 @@ public class CustomizationIntegrationTests : IntegrationTests
   [InlineData(true)]
   public async Task Given_NotExist_When_CreateOrReplace_Then_Created(bool withId)
   {
-    CreateOrReplaceCustomizationPayload payload = new()
-    {
-      Kind = CustomizationKind.Gift,
-      Name = " Baraqué ",
-      Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
-    };
+    CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
     Guid? id = withId ? Guid.NewGuid() : null;
 
     CreateOrReplaceCustomizationResult result = await _customizationService.CreateOrReplaceAsync(payload, id);
@@ -59,37 +53,28 @@ public class CustomizationIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, customization.Id);
     }
-    Assert.Equal(1, customization.Version);
+    Assert.Equal(2, customization.Version);
     Assert.Equal(Actor, customization.CreatedBy);
     Assert.Equal(DateTime.UtcNow, customization.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(customization.CreatedBy, customization.UpdatedBy);
-    Assert.Equal(customization.CreatedOn, customization.UpdatedOn);
+    Assert.True(customization.CreatedOn < customization.UpdatedOn);
 
-    Assert.Equal(payload.Kind, customization.Kind);
-    Assert.Equal(payload.Name.CleanTrim(), customization.Name);
-    Assert.Equal(payload.Summary?.CleanTrim(), customization.Summary);
-    Assert.Equal(payload.Content?.CleanTrim(), customization.Content);
+    AssertBaraque(payload, customization);
   }
 
   [Fact(DisplayName = "It should read a customization by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    CustomizationModel? customization = await _customizationService.ReadAsync(_customization.Id);
+    CustomizationModel? customization = await _customizationService.ReadAsync(_customization.ResourceId);
     Assert.NotNull(customization);
-    Assert.Equal(_customization.Id, customization.Id);
+    Assert.Equal(_customization.ResourceId, customization.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing customization.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
-    CreateOrReplaceCustomizationPayload payload = new()
-    {
-      Kind = CustomizationKind.Gift,
-      Name = " Baraqué ",
-      Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
-    };
-    Guid id = _customization.Id;
+    CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
+    Guid id = _customization.ResourceId;
 
     CreateOrReplaceCustomizationResult result = await _customizationService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -97,16 +82,13 @@ public class CustomizationIntegrationTests : IntegrationTests
     Assert.NotNull(customization);
 
     Assert.Equal(id, customization.Id);
-    Assert.Equal(2, customization.Version);
-    Assert.Equal(_customization.CreatedBy, customization.CreatedBy.Id);
-    Assert.Equal(_customization.CreatedOn, customization.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(3, customization.Version);
+    Assert.Equal(_customization.CreatedBy, customization.CreatedBy.GetActorId());
+    Assert.Equal(_customization.CreatedOn.AsUniversalTime(), customization.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, customization.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, customization.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(_customization.Kind, customization.Kind);
-    Assert.Equal(payload.Name.CleanTrim(), customization.Name);
-    Assert.Equal(payload.Summary?.CleanTrim(), customization.Summary);
-    Assert.Equal(payload.Content?.CleanTrim(), customization.Content);
+    AssertBaraque(payload, customization);
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
@@ -126,7 +108,7 @@ public class CustomizationIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _customizationService.ReadAsync(_customization.Id));
+    Assert.Null(await _customizationService.ReadAsync(_customization.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the customization was not found.")]
@@ -142,8 +124,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     Customization adresseLegendaire = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Adresse légendaire").Build();
     Customization affiniteAnimale = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Affinité animale").Build();
     Customization baraque = new CustomizationBuilder(Faker).WithWorld(Context.World).WithKind(CustomizationKind.Gift).WithName("Baraqué").Build();
-    _customizationRepository.Add(abruti, adresseLegendaire, affiniteAnimale, baraque);
-    await Context.SaveChangesAsync();
+    await _customizationRepository.SaveAsync([abruti, adresseLegendaire, affiniteAnimale, baraque]);
 
     SearchCustomizationsPayload payload = new()
     {
@@ -154,14 +135,14 @@ public class CustomizationIntegrationTests : IntegrationTests
     payload.Search.Operator = SearchOperator.Or;
     payload.Search.Terms.Add(new SearchTerm("%b%"));
     payload.Search.Terms.Add(new SearchTerm("%l%"));
-    payload.Ids.AddRange([_customization.Id, abruti.Id, adresseLegendaire.Id, Guid.Empty, baraque.Id]);
+    payload.Ids.AddRange([_customization.ResourceId, abruti.ResourceId, adresseLegendaire.ResourceId, Guid.Empty, baraque.ResourceId]);
     payload.Sort.Add(new CustomizationSortOption(CustomizationSort.Name));
 
     SearchResults<CustomizationModel> results = await _customizationService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     CustomizationModel customization = Assert.Single(results.Items);
-    Assert.Equal(baraque.Id, customization.Id);
+    Assert.Equal(baraque.ResourceId, customization.Id);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the kind is changing.")]
@@ -174,10 +155,10 @@ public class CustomizationIntegrationTests : IntegrationTests
       Summary = "  Limité, maladroit et désavantagé dans l’usage de son intellect.  "
     };
 
-    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<CustomizationKind>>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.Id));
+    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<CustomizationKind>>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.ResourceId));
     Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Customization.ResourceKind, exception.ResourceKind);
-    Assert.Equal(_customization.Id, exception.ResourceId);
+    Assert.Equal(_customization.ResourceId, exception.ResourceId);
     Assert.Equal(_customization.Kind, exception.ExpectedValue);
     Assert.Equal(payload.Kind, exception.AttemptedValue);
     Assert.Equal("Kind", exception.PropertyName);
@@ -188,13 +169,7 @@ public class CustomizationIntegrationTests : IntegrationTests
   {
     Context.User = new UserBuilder(Faker).Build();
 
-    CreateOrReplaceCustomizationPayload payload = new()
-    {
-      Kind = CustomizationKind.Gift,
-      Name = " Baraqué ",
-      Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
-    };
+    CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.UserUid, exception.UserId);
@@ -207,15 +182,9 @@ public class CustomizationIntegrationTests : IntegrationTests
   {
     Context.User = new UserBuilder(Faker).Build();
 
-    CreateOrReplaceCustomizationPayload payload = new()
-    {
-      Kind = CustomizationKind.Gift,
-      Name = " Baraqué ",
-      Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
-      Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
-    };
+    CreateOrReplaceCustomizationPayload payload = CreateBaraquePayload();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
@@ -228,7 +197,7 @@ public class CustomizationIntegrationTests : IntegrationTests
 
     UpdateCustomizationPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.UpdateAsync(_customization.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.UpdateAsync(_customization.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
@@ -237,26 +206,43 @@ public class CustomizationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing customization.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _customization.Id;
+    Guid id = _customization.ResourceId;
+    CreateOrReplaceCustomizationPayload create = CreateBaraquePayload();
     UpdateCustomizationPayload payload = new()
     {
-      Name = " Baraqué ",
-      Summary = new Optional<string>("  Double portée, avantage et dégâts contre objets et structures.  "),
-      Content = new Optional<string>("   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   ")
+      Name = create.Name,
+      Summary = new Optional<string>(create.Summary),
+      Content = new Optional<string>(create.Content)
     };
 
     CustomizationModel? customization = await _customizationService.UpdateAsync(id, payload);
     Assert.NotNull(customization);
 
     Assert.Equal(id, customization.Id);
-    Assert.Equal(2, customization.Version);
-    Assert.Equal(_customization.CreatedBy, customization.CreatedBy.Id);
-    Assert.Equal(_customization.CreatedOn, customization.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(3, customization.Version);
+    Assert.Equal(_customization.CreatedBy, customization.CreatedBy.GetActorId());
+    Assert.Equal(_customization.CreatedOn.AsUniversalTime(), customization.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, customization.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, customization.UpdatedOn, TimeSpan.FromSeconds(10));
 
     Assert.Equal(payload.Name.CleanTrim(), customization.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), customization.Summary);
     Assert.Equal(payload.Content.Value?.CleanTrim(), customization.Content);
+  }
+
+  private static CreateOrReplaceCustomizationPayload CreateBaraquePayload() => new()
+  {
+    Kind = CustomizationKind.Gift,
+    Name = " Baraqué ",
+    Summary = "  Double portée, avantage et dégâts contre objets et structures.  ",
+    Content = "   Le personnage acquiert les capacités suivantes :\n\n- Lorsqu’il [bouscule](/regles/combat/activites/bousculer) ou repousse une créature par une capacité non magique, la distance est doublée.\n- Il se voit conférer l’[avantage](/regles/competences/tests/avantage-desavantage) à ses [tests](/regles/competences/tests) lorsqu’il tente de briser ou d’[attaquer](/regles/combat/attaque) un [objet](/regles/aventure/interaction-objets), une structure, un bâtiment ou une construction non magique.\n- Il double les [points de dégâts](/regles/combat/degats) qu’il inflige aux objets, aux structures, aux bâtiments ainsi qu’aux constructions non magiques.   "
+  };
+
+  private static void AssertBaraque(CreateOrReplaceCustomizationPayload payload, CustomizationModel customization)
+  {
+    Assert.Equal(payload.Kind, customization.Kind);
+    Assert.Equal(payload.Name.CleanTrim(), customization.Name);
+    Assert.Equal(payload.Summary?.CleanTrim(), customization.Summary);
+    Assert.Equal(payload.Content?.CleanTrim(), customization.Content);
   }
 }
