@@ -1,6 +1,6 @@
 ﻿using SkillCraft.Api.Core.Identity.Models;
 
-namespace SkillCraft.Api.Controllers;
+namespace SkillCraft.Api.Models.Identity;
 
 public class SignInAccountRequest
 {
