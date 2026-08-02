@@ -4,6 +4,7 @@ using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Talents.Models;
@@ -61,6 +62,28 @@ internal class Mapper
       Summary = source.Summary,
       Content = source.Content
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public EducationModel ToEducation(EducationEntity source)
+  {
+    EducationModel destination = new()
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Skill = source.Skill,
+      WealthMultiplier = source.WealthMultiplier
+    };
+
+    if (source.FeatureName is not null)
+    {
+      destination.Feature = new FeatureModel(source.FeatureName, source.FeatureContent);
+    }
 
     MapAggregate(source, destination);
 
