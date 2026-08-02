@@ -97,7 +97,7 @@ public class TalentBuilder : ITalentBuilder
   public Talent Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    ActorId? actorId = null; // TODO(fpion): world.CreatedBy
+    ActorId actorId = world.OwnerId.ActorId;
     TalentTier tier = new(_tier);
     Name name = new(_name);
 

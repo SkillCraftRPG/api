@@ -39,7 +39,7 @@ internal class LineageRepository : Repository, ILineageRepository
   public void Remove(Lineage lineage)
   {
     Database.Lineages.Remove(lineage);
-    base.RecordChange(new LineageDeleted(lineage, _context.UserId));
+    base.RecordChange(new LineageDeleted(lineage, _context.UserUid));
   }
   public void Remove(LineageFeature feature)
   {

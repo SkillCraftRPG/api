@@ -23,7 +23,7 @@ internal class SignOutAccountCommandHandler : ICommandHandler<SignOutAccountComm
 
   public async Task<bool> HandleAsync(SignOutAccountCommand command, CancellationToken cancellationToken)
   {
-    Guid userId = _context.UserId;
+    Guid userId = _context.UserUid;
 
     if (command.SessionId.HasValue)
     {

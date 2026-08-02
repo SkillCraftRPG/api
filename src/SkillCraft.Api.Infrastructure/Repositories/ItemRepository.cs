@@ -34,7 +34,7 @@ internal class ItemRepository : Repository, IItemRepository
   public void Remove(Item item)
   {
     Database.Items.Remove(item);
-    base.RecordChange(new ItemDeleted(item, _context.UserId));
+    base.RecordChange(new ItemDeleted(item, _context.UserUid));
   }
   public void Update(Item item, ItemUpdated record)
   {

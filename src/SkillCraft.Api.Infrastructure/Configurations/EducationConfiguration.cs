@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillCraft.Api.Core;
@@ -31,8 +31,8 @@ internal class EducationConfiguration : IEntityTypeConfiguration<Education>
     builder.Property(x => x.Skill).HasMaxLength(16).HasConversion(new EnumToStringConverter<Skill>());
     builder.Property(x => x.FeatureName).HasMaxLength(Constants.NameMaximumLength);
 
-    builder.HasOne(x => x.World).WithMany(x => x.Educations)
-      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-      .OnDelete(DeleteBehavior.Restrict);
+    //builder.HasOne(x => x.World).WithMany(x => x.Educations)
+    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+    //  .OnDelete(DeleteBehavior.Restrict);
   }
 }

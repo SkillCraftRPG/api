@@ -43,7 +43,7 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
       lineage = await _lineageRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
+    Guid userId = _context.UserUid;
     Guid worldId = _context.WorldUid;
 
     Lineage? parent = null;
@@ -69,8 +69,7 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     LineageSnapshot? snapshot = null;
     if (lineage is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateLineage, world, cancellationToken);
 
       lineage = new Lineage(world, command.Id, parent, userId);

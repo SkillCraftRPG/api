@@ -39,14 +39,12 @@ internal class CreateOrReplaceCustomizationCommandHandler : ICommandHandler<Crea
       customization = await _customizationRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
-    Guid worldId = _context.WorldUid;
+    Guid userId = _context.UserUid;
 
     CustomizationSnapshot? snapshot = null;
     if (customization is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateCustomization, world, cancellationToken);
 
       customization = new Customization(world, payload.Kind, command.Id, userId);

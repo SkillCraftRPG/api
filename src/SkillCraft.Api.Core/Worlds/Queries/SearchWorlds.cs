@@ -8,15 +8,15 @@ internal record SearchWorldsQuery(SearchWorldsPayload Payload) : IQuery<SearchRe
 
 internal class SearchWorldsQueryHandler : IQueryHandler<SearchWorldsQuery, SearchResults<WorldModel>>
 {
-  private readonly IWorldRepository _worldRepository;
+  private readonly IWorldQuerier _worldQuerier;
 
-  public SearchWorldsQueryHandler(IWorldRepository worldRepository)
+  public SearchWorldsQueryHandler(IWorldQuerier worldQuerier)
   {
-    _worldRepository = worldRepository;
+    _worldQuerier = worldQuerier;
   }
 
   public async Task<SearchResults<WorldModel>> HandleAsync(SearchWorldsQuery query, CancellationToken cancellationToken)
   {
-    return await _worldRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _worldQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

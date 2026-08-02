@@ -5,8 +5,8 @@ namespace SkillCraft.Api.Core.Actors;
 
 public static class ActorExtensions
 {
-  private const string RealmKind = "Realm";
-  private const char Separator = '|';
+  public const string RealmKind = "Realm";
+  public const char Separator = '|';
 
   public static Actor GetActor(this ActorId id)
   {

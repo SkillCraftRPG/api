@@ -31,7 +31,7 @@ public class GameContext : DbContext
   internal DbSet<Script> Scripts => Set<Script>();
   internal DbSet<Spell> Spells => Set<Spell>();
   internal DbSet<TalentEntity> Talents => Set<TalentEntity>();
-  internal DbSet<World> Worlds => Set<World>();
+  internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

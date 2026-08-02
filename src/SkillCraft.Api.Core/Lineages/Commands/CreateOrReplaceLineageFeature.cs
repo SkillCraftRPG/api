@@ -35,7 +35,7 @@ internal class CreateOrReplaceLineageFeatureCommandHandler : ICommandHandler<Cre
       ? lineage.Features.SingleOrDefault(feature => feature.Id == command.FeatureId.Value)
       : null;
 
-    Guid userId = _context.UserId;
+    Guid userId = _context.UserUid;
 
     LineageFeatureSnapshot? snapshot = null;
     if (feature is null)

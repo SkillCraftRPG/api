@@ -16,7 +16,7 @@ public class Talent : AggregateRoot, IResource
   public TalentTier Tier => _tier ?? throw new InvalidOperationException("The talent tier has not been initialized.");
 
   private Name? _name = null;
-  public Name Name => _name ?? throw new InvalidOperationException("The talent name has not been initialized.");
+  public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
 
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
@@ -32,7 +32,7 @@ public class Talent : AggregateRoot, IResource
   }
 
   public Talent(World world, TalentTier tier, Name name, ActorId? actorId = null)
-    : this(TalentId.NewId(new WorldId(world.Id)), tier, name, actorId)
+    : this(TalentId.NewId(world.Id), tier, name, actorId)
   {
   }
 

@@ -109,8 +109,7 @@ public abstract class IntegrationTests : IAsyncLifetime
 
     IWorldRepository worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     Context.World = new WorldBuilder(Faker).WithOwner(Context.User).Build();
-    worldRepository.Add(Context.World);
-    await Context.SaveChangesAsync();
+    await worldRepository.SaveAsync(Context.World);
   }
 
   public virtual Task DisposeAsync() => Task.CompletedTask;

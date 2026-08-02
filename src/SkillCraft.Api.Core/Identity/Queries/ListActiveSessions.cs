@@ -20,7 +20,7 @@ internal class ListActiveSessionsQueryHandler : IQueryHandler<ListActiveSessions
 
   public async Task<SearchResults<SessionModel>> HandleAsync(ListActiveSessionsQuery _, CancellationToken cancellationToken)
   {
-    IReadOnlyCollection<Session> sessions = await _sessionGateway.ListActiveAsync(_context.UserId, cancellationToken);
+    IReadOnlyCollection<Session> sessions = await _sessionGateway.ListActiveAsync(_context.UserUid, cancellationToken);
 
     SessionMapper mapper = new(_context.TryGetSessionId());
     IEnumerable<SessionModel> mapped = sessions.Select(mapper.Map)

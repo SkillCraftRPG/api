@@ -56,7 +56,8 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddQueriers(this IServiceCollection services)
   {
     return services
-      .AddScoped<ITalentQuerier, TalentQuerier>();
+      .AddScoped<ITalentQuerier, TalentQuerier>()
+      .AddScoped<IWorldQuerier, WorldQuerier>();
   }
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)

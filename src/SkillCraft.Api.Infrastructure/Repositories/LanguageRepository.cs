@@ -34,7 +34,7 @@ internal class LanguageRepository : Repository, ILanguageRepository
   public void Remove(Language language)
   {
     Database.Languages.Remove(language);
-    base.RecordChange(new LanguageDeleted(language, _context.UserId));
+    base.RecordChange(new LanguageDeleted(language, _context.UserUid));
   }
   public void Update(Language language, LanguageUpdated record)
   {

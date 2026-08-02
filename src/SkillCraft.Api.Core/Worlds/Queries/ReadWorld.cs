@@ -8,11 +8,11 @@ internal record ReadWorldQuery(Guid? Id, string? Key) : IQuery<WorldModel?>;
 
 internal class ReadWorldQueryHandler : IQueryHandler<ReadWorldQuery, WorldModel?>
 {
-  private readonly IWorldRepository _worldRepository;
+  private readonly IWorldQuerier _worldQuerier;
 
-  public ReadWorldQueryHandler(IWorldRepository worldRepository)
+  public ReadWorldQueryHandler(IWorldQuerier worldQuerier)
   {
-    _worldRepository = worldRepository;
+    _worldQuerier = worldQuerier;
   }
 
   public async Task<WorldModel?> HandleAsync(ReadWorldQuery query, CancellationToken cancellationToken)
@@ -21,7 +21,7 @@ internal class ReadWorldQueryHandler : IQueryHandler<ReadWorldQuery, WorldModel?
 
     if (query.Id.HasValue)
     {
-      WorldModel? world = await _worldRepository.ReadAsync(query.Id.Value, cancellationToken);
+      WorldModel? world = await _worldQuerier.ReadAsync(query.Id.Value, cancellationToken);
       if (world is not null)
       {
         worlds[world.Id] = world;
@@ -30,7 +30,7 @@ internal class ReadWorldQueryHandler : IQueryHandler<ReadWorldQuery, WorldModel?
 
     if (!string.IsNullOrWhiteSpace(query.Key))
     {
-      WorldModel? world = await _worldRepository.ReadAsync(query.Key, cancellationToken);
+      WorldModel? world = await _worldQuerier.ReadAsync(query.Key, cancellationToken);
       if (world is not null)
       {
         worlds[world.Id] = world;

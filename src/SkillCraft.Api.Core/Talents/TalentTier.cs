@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Talents;
 
@@ -23,7 +24,7 @@ public class TalentTier
   {
     public Validator()
     {
-      RuleFor(x => x.Value).InclusiveBetween(MinimumValue, MaximumValue);
+      RuleFor(x => x.Value).TalentTier();
     }
   }
 }

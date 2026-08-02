@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -172,7 +172,7 @@ public class CasteIntegrationTests : IntegrationTests
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateCaste, exception.Action);
     Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
   }
@@ -185,7 +185,7 @@ public class CasteIntegrationTests : IntegrationTests
     CreateOrReplaceCastePayload payload = CreateArtisanPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.CreateOrReplaceAsync(payload, _caste.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
   }
@@ -198,7 +198,7 @@ public class CasteIntegrationTests : IntegrationTests
     UpdateCastePayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _casteService.UpdateAsync(_caste.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_caste.Identifier.ToString(), exception.Resource);
   }

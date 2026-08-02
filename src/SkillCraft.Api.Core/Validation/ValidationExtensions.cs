@@ -1,10 +1,15 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts.Settings;
 
 namespace SkillCraft.Api.Core.Validation;
 
 internal static class ValidationExtensions
 {
+  public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty();
+  }
+
   public static IRuleBuilderOptions<T, DateTime> DateOfBirth<T>(this IRuleBuilder<T, DateTime> ruleBuilder, DateTime? moment = null, int minimumAge = 18, int maximumAge = 100)
   {
     moment ??= DateTime.Now;
@@ -21,9 +26,9 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(10).SetValidator(new GenderValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
+  public static IRuleBuilderOptions<T, string> Key<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
-    return ruleBuilder.NotEmpty();
+    return ruleBuilder.NotEmpty().MaximumLength(Core.Key.MaximumLength).SetValidator(new SlugValidator<T>());
   }
 
   public static IRuleBuilderOptions<T, string> Locale<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -33,7 +38,7 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
-    return ruleBuilder.NotEmpty().MaximumLength(Constants.NameMaximumLength);
+    return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);
   }
 
   public static IRuleBuilderOptions<T, string> Password<T>(this IRuleBuilder<T, string> ruleBuilder, IPasswordSettings settings)
@@ -88,19 +93,14 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Constants.RollMaximumLength).SetValidator(new RollValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, string> Slug<T>(this IRuleBuilder<T, string> ruleBuilder)
-  {
-    return ruleBuilder.NotEmpty().MaximumLength(Constants.SlugMaximumLength).SetValidator(new SlugValidator<T>());
-  }
-
   public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
-    return ruleBuilder.NotEmpty().MaximumLength(Constants.SummaryMaximumLength);
+    return ruleBuilder.NotEmpty().MaximumLength(Core.Summary.MaximumLength);
   }
 
   public static IRuleBuilderOptions<T, int> TalentTier<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(0, 3);
+    return ruleBuilder.InclusiveBetween(Talents.TalentTier.MinimumValue, Talents.TalentTier.MaximumValue);
   }
 
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)

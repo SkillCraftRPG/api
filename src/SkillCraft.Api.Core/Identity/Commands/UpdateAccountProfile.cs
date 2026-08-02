@@ -22,7 +22,7 @@ internal class UpdateAccountProfileCommandHandler : ICommandHandler<UpdateAccoun
     UpdateProfilePayload payload = command.Payload;
     payload.Validate();
 
-    User user = await _userGateway.UpdateProfileAsync(_context.UserId, payload, cancellationToken);
+    User user = await _userGateway.UpdateProfileAsync(_context.UserUid, payload, cancellationToken);
     return new ProfileModel(user);
   }
 }

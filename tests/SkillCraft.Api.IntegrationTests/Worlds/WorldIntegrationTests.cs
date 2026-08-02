@@ -4,6 +4,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Models;
@@ -29,8 +30,7 @@ public class WorldIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _world = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("the-old-world").WithName("The Old World").Build();
-    _worldRepository.Add(_world);
-    await Context.SaveChangesAsync();
+    await _worldRepository.SaveAsync(_world);
   }
 
   [Theory(DisplayName = "It should create a new world.")]
@@ -59,11 +59,11 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, world.Id);
     }
-    Assert.Equal(1, world.Version);
+    Assert.Equal(3, world.Version);
     Assert.Equal(Actor, world.CreatedBy);
     Assert.Equal(DateTime.UtcNow, world.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(world.CreatedBy, world.UpdatedBy);
-    Assert.Equal(world.CreatedOn, world.UpdatedOn);
+    Assert.True(world.CreatedOn < world.UpdatedOn);
 
     Assert.Equal(SlugHelper.Format(payload.Key), world.Key);
     Assert.Equal(payload.Name?.CleanTrim(), world.Name);
@@ -73,17 +73,17 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a world by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    WorldModel? world = await _worldService.ReadAsync(_world.Id);
+    WorldModel? world = await _worldService.ReadAsync(_world.ResourceId);
     Assert.NotNull(world);
-    Assert.Equal(_world.Id, world.Id);
+    Assert.Equal(_world.ResourceId, world.Id);
   }
 
   [Fact(DisplayName = "It should read a world by key.")]
   public async Task Given_Key_When_Read_Then_Read()
   {
-    WorldModel? world = await _worldService.ReadAsync(id: null, _world.Key);
+    WorldModel? world = await _worldService.ReadAsync(id: null, _world.Key.Value);
     Assert.NotNull(world);
-    Assert.Equal(_world.Id, world.Id);
+    Assert.Equal(_world.ResourceId, world.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing world.")]
@@ -95,7 +95,7 @@ public class WorldIntegrationTests : IntegrationTests
       Name = " The New World ",
       Content = "  This is the new world.  "
     };
-    Guid id = _world.Id;
+    Guid id = _world.ResourceId;
 
     CreateOrReplaceWorldResult result = await _worldService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -103,9 +103,9 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.NotNull(world);
 
     Assert.Equal(id, world.Id);
-    Assert.Equal(2, world.Version);
-    Assert.Equal(_world.CreatedBy, world.CreatedBy.Id);
-    Assert.Equal(_world.CreatedOn, world.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(5, world.Version);
+    Assert.Equal(_world.CreatedBy, world.CreatedBy.GetActorId());
+    Assert.Equal(_world.CreatedOn.AsUniversalTime(), world.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, world.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, world.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -131,7 +131,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     Context.User = new UserBuilder(Faker).Build();
 
-    Assert.Null(await _worldService.ReadAsync(Context.WorldUid, _world.Key));
+    Assert.Null(await _worldService.ReadAsync(Context.WorldUid, _world.Key.Value));
   }
 
   [Fact(DisplayName = "It should return null when the world was not found.")]
@@ -145,8 +145,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     World newWorld = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("the-new-world").Build();
     World anotherWorld = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("another-world").Build();
-    _worldRepository.Add(newWorld, anotherWorld);
-    await Context.SaveChangesAsync();
+    await _worldRepository.SaveAsync([newWorld, anotherWorld]);
 
     SearchWorldsPayload payload = new()
     {
@@ -154,14 +153,14 @@ public class WorldIntegrationTests : IntegrationTests
       Limit = 1
     };
     payload.Search.Terms.Add(new SearchTerm("%world%"));
-    payload.Ids.AddRange([Context.WorldUid, _world.Id, newWorld.Id, Guid.Empty]);
+    payload.Ids.AddRange([Context.WorldUid, _world.ResourceId, newWorld.ResourceId, Guid.Empty]);
     payload.Sort.Add(new WorldSortOption(WorldSort.Key, isDescending: true));
 
     SearchResults<WorldModel> results = await _worldService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     WorldModel world = Assert.Single(results.Items);
-    Assert.Equal(newWorld.Id, world.Id);
+    Assert.Equal(newWorld.ResourceId, world.Id);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when creating a world and the key conflicts.")]
@@ -169,7 +168,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     CreateOrReplaceWorldPayload payload = new()
     {
-      Key = _world.Key
+      Key = _world.Key.Value
     };
     Guid id = Guid.NewGuid();
 
@@ -177,7 +176,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(exception.WorldId);
     Assert.Equal(World.ResourceKind, exception.ResourceKind);
     Assert.Equal(id, exception.ResourceId);
-    Assert.Equal(_world.Id, exception.ConflictId);
+    Assert.Equal(_world.ResourceId, exception.ConflictId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -187,7 +186,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     CreateOrReplaceWorldPayload payload = new()
     {
-      Key = _world.Key
+      Key = _world.Key.Value
     };
     Guid id = Context.WorldUid;
 
@@ -195,7 +194,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(exception.WorldId);
     Assert.Equal(World.ResourceKind, exception.ResourceKind);
     Assert.Equal(id, exception.ResourceId);
-    Assert.Equal(_world.Id, exception.ConflictId);
+    Assert.Equal(_world.ResourceId, exception.ConflictId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -205,7 +204,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     UpdateWorldPayload payload = new()
     {
-      Key = _world.Key
+      Key = _world.Key.Value
     };
     Guid id = Context.WorldUid;
 
@@ -213,7 +212,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(exception.WorldId);
     Assert.Equal(World.ResourceKind, exception.ResourceKind);
     Assert.Equal(id, exception.ResourceId);
-    Assert.Equal(_world.Id, exception.ConflictId);
+    Assert.Equal(_world.ResourceId, exception.ConflictId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -223,8 +222,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     World world2 = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("world-2").Build();
     World world3 = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("world-3").Build();
-    _worldRepository.Add(world2, world3);
-    await Context.SaveChangesAsync();
+    await _worldRepository.SaveAsync([world2, world3]);
 
     CreateOrReplaceWorldPayload payload = new()
     {
@@ -234,7 +232,7 @@ public class WorldIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateWorld, exception.Action);
     Assert.Null(exception.Resource);
   }
@@ -251,8 +249,8 @@ public class WorldIntegrationTests : IntegrationTests
       Content = "  This is the new world.  "
     };
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload, _world.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.CreateOrReplaceAsync(payload, _world.ResourceId));
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_world.Identifier.ToString(), exception.Resource);
   }
@@ -264,8 +262,8 @@ public class WorldIntegrationTests : IntegrationTests
 
     UpdateWorldPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.UpdateAsync(_world.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _worldService.UpdateAsync(_world.ResourceId, payload));
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_world.Identifier.ToString(), exception.Resource);
   }
@@ -273,7 +271,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {
-    var exception = await Assert.ThrowsAsync<TooManyResultsException<WorldModel>>(async () => await _worldService.ReadAsync(Context.WorldUid, _world.Key));
+    var exception = await Assert.ThrowsAsync<TooManyResultsException<WorldModel>>(async () => await _worldService.ReadAsync(Context.WorldUid, _world.Key.Value));
     Assert.Equal(1, exception.ExpectedCount);
     Assert.Equal(2, exception.ActualCount);
   }
@@ -281,7 +279,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing world.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _world.Id;
+    Guid id = _world.ResourceId;
     UpdateWorldPayload payload = new()
     {
       Key = "The-New-World",
@@ -293,9 +291,9 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.NotNull(world);
 
     Assert.Equal(id, world.Id);
-    Assert.Equal(2, world.Version);
-    Assert.Equal(_world.CreatedBy, world.CreatedBy.Id);
-    Assert.Equal(_world.CreatedOn, world.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(5, world.Version);
+    Assert.Equal(_world.CreatedBy, world.CreatedBy.GetActorId());
+    Assert.Equal(_world.CreatedOn.AsUniversalTime(), world.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, world.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, world.UpdatedOn, TimeSpan.FromSeconds(10));
 

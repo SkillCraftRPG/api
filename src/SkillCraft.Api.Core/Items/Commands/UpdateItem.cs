@@ -60,7 +60,7 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
     ItemUpdated? record = snapshot.Compare(item);
     if (record is not null)
     {
-      item.Update(_context.UserId);
+      item.Update(_context.UserUid);
       _itemRepository.Update(item, record);
 
       await _context.SaveChangesAsync(cancellationToken);

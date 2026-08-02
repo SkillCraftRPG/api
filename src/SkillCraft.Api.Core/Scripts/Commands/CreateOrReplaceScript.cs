@@ -39,14 +39,12 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
       script = await _scriptRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
-    Guid worldId = _context.WorldUid;
+    Guid userId = _context.UserUid;
 
     ScriptSnapshot? snapshot = null;
     if (script is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateScript, world, cancellationToken);
 
       script = new Script(world, command.Id, userId);

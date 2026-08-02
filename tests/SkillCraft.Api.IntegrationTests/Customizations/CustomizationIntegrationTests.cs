@@ -197,7 +197,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateCustomization, exception.Action);
     Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
   }
@@ -216,7 +216,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.CreateOrReplaceAsync(payload, _customization.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
   }
@@ -229,7 +229,7 @@ public class CustomizationIntegrationTests : IntegrationTests
     UpdateCustomizationPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _customizationService.UpdateAsync(_customization.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_customization.Identifier.ToString(), exception.Resource);
   }

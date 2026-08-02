@@ -1,13 +1,16 @@
-using Bogus;
+﻿using Bogus;
+using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
+using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Builders;
 
 public interface IWorldBuilder
 {
-  IWorldBuilder WithId(Guid id);
+  IWorldBuilder WithId(WorldId worldId);
   IWorldBuilder WithOwner(User? owner);
   IWorldBuilder WithKey(string key);
   IWorldBuilder WithName(string? name);
@@ -21,19 +24,19 @@ public class WorldBuilder : IWorldBuilder
   private readonly Faker _faker;
 
   private string? _content = null;
-  private Guid? _id = null;
   private string _key = "ungar";
   private string? _name = "Ungar";
   private User? _owner = null;
+  private WorldId? _worldId = null;
 
   public WorldBuilder(Faker? faker = null)
   {
     _faker = faker ?? new();
   }
 
-  public IWorldBuilder WithId(Guid id)
+  public IWorldBuilder WithId(WorldId worldId)
   {
-    _id = id;
+    _worldId = worldId;
     return this;
   }
 
@@ -64,11 +67,12 @@ public class WorldBuilder : IWorldBuilder
   public World Build()
   {
     User owner = _owner ?? new UserBuilder(_faker).Build();
-    return new World(owner.Id, _id)
-    {
-      Key = SlugHelper.Format(_key),
-      Name = _name,
-      Content = _content
-    };
+    UserId ownerId = new(new Actor(owner).GetActorId());
+    Key key = new(_key);
+
+    World world = new(ownerId, key, _worldId);
+    world.Rename(Name.TryCreate(_name), ownerId.ActorId);
+    world.Edit(Content.TryCreate(_content), ownerId.ActorId);
+    return world;
   }
 }

@@ -5,6 +5,7 @@ using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Actors;
+using SkillCraft.Api.Core.Identity;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Extensions;
@@ -41,7 +42,8 @@ internal class HttpApplicationContext : IContext
       return null;
     }
   }
-  public Guid UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
+  public UserId UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
+  public Guid UserUid => TryGetUserUid() ?? throw new InvalidOperationException("An authenticated user is required.");
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
   public Guid WorldUid => TryGetWorldUid() ?? throw new InvalidOperationException("A world is required.");
 
@@ -55,7 +57,12 @@ internal class HttpApplicationContext : IContext
   }
 
   public Guid? TryGetSessionId() => Context.GetSession()?.Id;
-  public Guid? TryGetUserId() => Context.GetUser()?.Id;
+  public UserId? TryGetUserId()
+  {
+    User? user = Context.GetUser();
+    return user is null ? null : new UserId(new Actor(user).GetActorId());
+  }
+  public Guid? TryGetUserUid() => Context.GetUser()?.Id;
   public WorldId? TryGetWorldId()
   {
     WorldModel? world = Context.GetWorld();

@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Spells.Events;
@@ -51,7 +51,7 @@ internal class UpdateSpellCommandHandler : ICommandHandler<UpdateSpellCommand, S
     SpellUpdated? record = snapshot.Compare(spell);
     if (record is not null)
     {
-      spell.Update(_context.UserId);
+      spell.Update(_context.UserUid);
       _spellRepository.Update(spell, record);
 
       await _context.SaveChangesAsync(cancellationToken);

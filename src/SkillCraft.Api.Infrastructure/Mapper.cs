@@ -3,6 +3,7 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Talents.Models;
+using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure;
@@ -41,6 +42,22 @@ internal class Mapper
     {
       destination.RequiredTalent = ToTalent(source.RequiredTalent);
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public WorldModel ToWorld(WorldEntity source)
+  {
+    WorldModel destination = new()
+    {
+      Id = source.Id,
+      Owner = FindActor(source.OwnerId),
+      Key = source.Key,
+      Name = source.Name,
+      Content = source.Content
+    };
 
     MapAggregate(source, destination);
 

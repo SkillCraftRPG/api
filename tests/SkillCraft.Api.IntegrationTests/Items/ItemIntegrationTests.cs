@@ -173,7 +173,7 @@ public class ItemIntegrationTests : IntegrationTests
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.CreateItem, exception.Action);
     Assert.Equal(Context.World?.Identifier.ToString(), exception.Resource);
   }
@@ -186,7 +186,7 @@ public class ItemIntegrationTests : IntegrationTests
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload, _item.Id));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
   }
@@ -199,7 +199,7 @@ public class ItemIntegrationTests : IntegrationTests
     UpdateItemPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.UpdateAsync(_item.Id, payload));
-    Assert.Equal(Context.UserId, exception.UserId);
+    Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
   }

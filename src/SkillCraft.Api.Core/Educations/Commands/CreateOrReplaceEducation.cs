@@ -40,14 +40,12 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
       education = await _educationRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
-    Guid worldId = _context.WorldUid;
+    Guid userId = _context.UserUid;
 
     EducationSnapshot? snapshot = null;
     if (education is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateEducation, world, cancellationToken);
 
       education = new Education(world, command.Id, userId);

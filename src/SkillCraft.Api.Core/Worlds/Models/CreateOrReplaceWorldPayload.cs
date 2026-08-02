@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Worlds.Models;
@@ -15,7 +15,7 @@ public record CreateOrReplaceWorldPayload
   {
     public Validator()
     {
-      RuleFor(x => x.Key).Slug();
+      RuleFor(x => x.Key).Key();
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
     }

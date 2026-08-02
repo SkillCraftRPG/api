@@ -43,21 +43,19 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
       language = await _languageRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    Guid userId = _context.UserId;
-    Guid worldId = _context.WorldUid;
+    Guid userId = _context.UserUid;
 
     Script? script = null;
     if (payload.ScriptId.HasValue)
     {
       script = await _scriptRepository.LoadAsync(payload.ScriptId.Value, cancellationToken)
-        ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value, worldId), nameof(Language.ScriptId));
+        ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value, _context.WorldUid), nameof(Language.ScriptId));
     }
 
     LanguageSnapshot? snapshot = null;
     if (language is null)
     {
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken)
-        ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not found.");
+      World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateLanguage, world, cancellationToken);
 
       language = new Language(world, command.Id, userId);

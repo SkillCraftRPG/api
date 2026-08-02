@@ -15,11 +15,7 @@ internal class UpdateTalentCommandHandler : ICommandHandler<UpdateTalentCommand,
   private readonly ITalentQuerier _talentQuerier;
   private readonly ITalentRepository _talentRepository;
 
-  public UpdateTalentCommandHandler(
-    IContext context,
-    IPermissionService permissionService,
-    ITalentQuerier talentQuerier,
-    ITalentRepository talentRepository)
+  public UpdateTalentCommandHandler(IContext context, IPermissionService permissionService, ITalentQuerier talentQuerier, ITalentRepository talentRepository)
   {
     _context = context;
     _permissionService = permissionService;

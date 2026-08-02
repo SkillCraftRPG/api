@@ -25,8 +25,8 @@ internal class ScriptConfiguration : IEntityTypeConfiguration<Script>
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
 
-    builder.HasOne(x => x.World).WithMany(x => x.Scripts)
-      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-      .OnDelete(DeleteBehavior.Restrict);
+    //builder.HasOne(x => x.World).WithMany(x => x.Scripts)
+    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+    //  .OnDelete(DeleteBehavior.Restrict);
   }
 }

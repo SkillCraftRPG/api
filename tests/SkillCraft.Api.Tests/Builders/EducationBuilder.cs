@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Features;

@@ -20,13 +20,13 @@ internal class PermissionService : IPermissionService
 
   private readonly IContext _context;
   private readonly PermissionSettings _settings;
-  private readonly IWorldRepository _worldRepository;
+  private readonly IWorldQuerier _worldQuerier;
 
-  public PermissionService(IContext context, PermissionSettings settings, IWorldRepository worldRepository)
+  public PermissionService(IContext context, PermissionSettings settings, IWorldQuerier worldQuerier)
   {
     _context = context;
     _settings = settings;
-    _worldRepository = worldRepository;
+    _worldQuerier = worldQuerier;
   }
 
   public async Task CheckAsync(string action, CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ internal class PermissionService : IPermissionService
 
     if (!isAllowed)
     {
-      throw new PermissionDeniedException(_context.TryGetUserId(), action, identifier);
+      throw new PermissionDeniedException(_context.TryGetUserUid(), action, identifier);
     }
   }
 
@@ -59,7 +59,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.CreateWorld:
-        int worlds = await _worldRepository.CountAsync(cancellationToken);
+        int worlds = await _worldQuerier.CountAsync(cancellationToken);
         return worlds < _settings.WorldLimit;
       default:
         return false;
@@ -70,6 +70,7 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      // TODO(fpion): those Create permissions should not need a World.
       case Actions.CreateCaste:
       case Actions.CreateCustomization:
       case Actions.CreateEducation:

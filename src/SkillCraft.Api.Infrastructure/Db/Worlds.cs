@@ -1,5 +1,5 @@
 ﻿using Logitar.Data;
-using SkillCraft.Api.Core.Worlds;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Db;
 
@@ -7,15 +7,15 @@ public static class Worlds
 {
   public static readonly TableId Table = new(Schemas.Game, nameof(GameContext.Worlds), alias: null);
 
-  public static readonly ColumnId Content = new(nameof(World.Content), Table);
-  public static readonly ColumnId CreatedBy = new(nameof(World.CreatedBy), Table);
-  public static readonly ColumnId CreatedOn = new(nameof(World.CreatedOn), Table);
-  public static readonly ColumnId Id = new(nameof(World.Id), Table);
-  public static readonly ColumnId Key = new(nameof(World.Key), Table);
-  public static readonly ColumnId Name = new(nameof(World.Name), Table);
-  public static readonly ColumnId OwnerId = new(nameof(World.OwnerId), Table);
-  public static readonly ColumnId UpdatedBy = new(nameof(World.UpdatedBy), Table);
-  public static readonly ColumnId UpdatedOn = new(nameof(World.UpdatedOn), Table);
-  public static readonly ColumnId Version = new(nameof(World.Version), Table);
-  public static readonly ColumnId WorldId = new(nameof(World.WorldId), Table);
+  public static readonly ColumnId Content = new(nameof(WorldEntity.Content), Table);
+  public static readonly ColumnId CreatedBy = new(nameof(WorldEntity.CreatedBy), Table);
+  public static readonly ColumnId CreatedOn = new(nameof(WorldEntity.CreatedOn), Table);
+  public static readonly ColumnId Id = new(nameof(WorldEntity.Id), Table);
+  public static readonly ColumnId Key = new(nameof(WorldEntity.Key), Table);
+  public static readonly ColumnId Name = new(nameof(WorldEntity.Name), Table);
+  public static readonly ColumnId OwnerId = new(nameof(WorldEntity.OwnerId), Table);
+  public static readonly ColumnId UpdatedBy = new(nameof(WorldEntity.UpdatedBy), Table);
+  public static readonly ColumnId UpdatedOn = new(nameof(WorldEntity.UpdatedOn), Table);
+  public static readonly ColumnId Version = new(nameof(WorldEntity.Version), Table);
+  public static readonly ColumnId WorldId = new(nameof(WorldEntity.WorldId), Table);
 }

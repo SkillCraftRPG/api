@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core;
 
@@ -24,7 +25,7 @@ public class Summary
   {
     public Validator()
     {
-      RuleFor(x => x.Value).NotEmpty().MaximumLength(MaximumLength);
+      RuleFor(x => x.Value).Summary();
     }
   }
 }

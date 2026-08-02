@@ -1,152 +1,66 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Search;
-using Logitar.Data;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Worlds;
-using SkillCraft.Api.Core.Worlds.Events;
-using SkillCraft.Api.Core.Worlds.Models;
-using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class WorldRepository : Repository, IWorldRepository
+internal class WorldRepository : Logitar.EventSourcing.Repository, IWorldRepository // TODO(fpion): namespace, and other repos
 {
-  private readonly IActorService _actorService;
   private readonly IContext _context;
-  private readonly ISqlHelper _sqlHelper;
+  private readonly GameContext _database;
 
-  public WorldRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper) : base(game)
+  public WorldRepository(IContext context, GameContext database, IEventStore eventStore) : base(eventStore)
   {
-    _actorService = actorService;
     _context = context;
-    _sqlHelper = sqlHelper;
+    _database = database;
   }
 
-  public void Add(params World[] worlds)
+  public async Task<World?> LoadAsync(WorldId id, CancellationToken cancellationToken)
   {
-    foreach (World world in worlds)
-    {
-      Database.Worlds.Add(world);
-      base.RecordChange(new WorldCreated(world));
-    }
+    return await base.LoadAsync<World>(id.StreamId, isDeleted: false, cancellationToken);
   }
-  public void Remove(World world)
+  public async Task<IReadOnlyCollection<World>> LoadAsync(IEnumerable<WorldId> ids, CancellationToken cancellationToken)
   {
-    Database.Worlds.Remove(world);
-    base.RecordChange(new WorldDeleted(world, _context.UserId));
-  }
-  public void Update(World world, WorldUpdated record)
-  {
-    Database.Worlds.Update(world);
-    base.RecordChange(record);
-  }
-
-  public async Task<int> CountAsync(CancellationToken cancellationToken)
-  {
-    return await Database.Worlds.CountAsync(x => x.OwnerId == _context.UserId, cancellationToken);
-  }
-
-  public async Task EnsureUnicityAsync(World world, CancellationToken cancellationToken)
-  {
-    Guid? worldId = await Database.Worlds.Where(x => x.Key == world.Key)
-      .Select(x => (Guid?)x.Id)
-      .SingleOrDefaultAsync(cancellationToken);
-    if (worldId.HasValue && !worldId.Value.Equals(world.Id))
-    {
-      throw new KeyAlreadyUsedException(world, worldId.Value, world.Key, nameof(World.Key));
-    }
-  }
-
-  public async Task<World?> LoadAsync(Guid id, CancellationToken cancellationToken)
-  {
-    return await Database.Worlds.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    return await base.LoadAsync<World>(ids.Select(id => id.StreamId), isDeleted: false, cancellationToken);
   }
 
   public async Task<World> LoadFromContextAsync(CancellationToken cancellationToken)
   {
-    return await LoadAsync(_context.WorldUid, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={_context.WorldUid}' was not found.");
+    WorldId id = _context.WorldId;
+    return await LoadAsync(id, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={id}' was not found.");
   }
 
-  public async Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken)
+  public async Task SaveAsync(World world, CancellationToken cancellationToken)
   {
-    return await ReadAsync(world.Id, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={world.Id}' was not found.");
-  }
-  public async Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
-  {
-    World? world = await Database.Worlds.AsNoTracking()
-      .Where(x => x.Id == id && x.OwnerId == _context.UserId)
-      .SingleOrDefaultAsync(cancellationToken);
+    await base.SaveAsync(world, cancellationToken);
 
-    return world is null ? null : await MapAsync(world, cancellationToken);
-  }
-  public async Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken)
-  {
-    World? world = await Database.Worlds.AsNoTracking()
-      .Where(x => x.Key == SlugHelper.Format(key) && x.OwnerId == _context.UserId)
-      .SingleOrDefaultAsync(cancellationToken);
-
-    return world is null ? null : await MapAsync(world, cancellationToken);
+    await SynchronizeAsync(world, cancellationToken);
   }
 
-  public virtual async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
+  public async Task SaveAsync(IEnumerable<World> worlds, CancellationToken cancellationToken)
   {
-    IQueryBuilder builder = _sqlHelper.Query(Db.Worlds.Table).SelectAll(Db.Worlds.Table)
-      .Where(Db.Worlds.OwnerId, Operators.IsEqualTo(_context.UserId))
-      .ApplyIdFilter(Db.Worlds.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Worlds.Key, Db.Worlds.Name);
+    await base.SaveAsync(worlds, cancellationToken);
 
-    IQueryable<World> query = Database.Worlds.FromQuery(builder).AsNoTracking();
-
-    long total = await query.LongCountAsync(cancellationToken);
-
-    IOrderedQueryable<World>? ordered = null;
-    foreach (WorldSortOption sort in payload.Sort)
+    foreach (World world in worlds)
     {
-      switch (sort.Field)
-      {
-        case WorldSort.CreatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
-          break;
-        case WorldSort.Key:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Key) : ordered.ThenBy(x => x.Key));
-          break;
-        case WorldSort.Name:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name ?? x.Key) : query.OrderBy(x => x.Name ?? x.Key))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name ?? x.Key) : ordered.ThenBy(x => x.Name ?? x.Key));
-          break;
-        case WorldSort.UpdatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
-          break;
-      }
+      await SynchronizeAsync(world, cancellationToken);
     }
-    query = ordered ?? query;
-
-    query = query.ApplyPaging(payload);
-
-    World[] worlds = await query.ToArrayAsync(cancellationToken);
-    IReadOnlyCollection<WorldModel> items = await MapAsync(worlds, cancellationToken);
-
-    return new SearchResults<WorldModel>(items, total);
   }
 
-  private async Task<WorldModel> MapAsync(World world, CancellationToken cancellationToken)
+  private async Task SynchronizeAsync(World world, CancellationToken cancellationToken)
   {
-    return (await MapAsync([world], cancellationToken)).Single();
-  }
-  private async Task<IReadOnlyCollection<WorldModel>> MapAsync(IEnumerable<World> worlds, CancellationToken cancellationToken)
-  {
-    IEnumerable<Guid> userIds = worlds.SelectMany(world => world.GetUserIds());
-    IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    MapperOld mapper = new(actors);
-
-    return worlds.Select(mapper.ToWorld).ToList().AsReadOnly();
+    WorldEntity? entity = await _database.Worlds.SingleOrDefaultAsync(x => x.StreamId == world.Id.Value, cancellationToken);
+    if (entity is null)
+    {
+      entity = new WorldEntity(world);
+      _database.Worlds.Add(entity);
+    }
+    else
+    {
+      entity.Update(world);
+    }
+    await _database.SaveChangesAsync(cancellationToken);
   }
 }
