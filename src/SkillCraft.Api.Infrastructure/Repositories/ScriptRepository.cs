@@ -1,118 +1,56 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Search;
-using Logitar.Data;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
-using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Scripts;
-using SkillCraft.Api.Core.Scripts.Events;
-using SkillCraft.Api.Core.Scripts.Models;
-using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class ScriptRepository : Repository, IScriptRepository
+internal class ScriptRepository : Logitar.EventSourcing.Repository, IScriptRepository
 {
-  private readonly IActorService _actorService;
-  private readonly IContext _context;
-  private readonly ISqlHelper _sqlHelper;
+  private readonly GameContext _database;
 
-  public ScriptRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper) : base(game)
+  public ScriptRepository(GameContext database, IEventStore eventStore) : base(eventStore)
   {
-    _actorService = actorService;
-    _context = context;
-    _sqlHelper = sqlHelper;
+    _database = database;
   }
 
-  public void Add(params Script[] scripts)
+  public async Task<Script?> LoadAsync(ScriptId id, CancellationToken cancellationToken)
   {
+    return await base.LoadAsync<Script>(id.StreamId, isDeleted: false, cancellationToken);
+  }
+  public async Task<IReadOnlyCollection<Script>> LoadAsync(IEnumerable<ScriptId> ids, CancellationToken cancellationToken)
+  {
+    return await base.LoadAsync<Script>(ids.Select(id => id.StreamId), isDeleted: false, cancellationToken);
+  }
+
+  public async Task SaveAsync(Script script, CancellationToken cancellationToken)
+  {
+    await base.SaveAsync(script, cancellationToken);
+
+    await SynchronizeAsync(script, cancellationToken);
+  }
+  public async Task SaveAsync(IEnumerable<Script> scripts, CancellationToken cancellationToken)
+  {
+    await base.SaveAsync(scripts, cancellationToken);
+
     foreach (Script script in scripts)
     {
-      Database.Scripts.Add(script);
-      base.RecordChange(new ScriptCreated(script));
+      await SynchronizeAsync(script, cancellationToken);
     }
   }
-  public void Remove(Script script)
+
+  private async Task SynchronizeAsync(Script script, CancellationToken cancellationToken)
   {
-    Database.Scripts.Remove(script);
-    base.RecordChange(new ScriptDeleted(script, _context.UserUid));
-  }
-  public void Update(Script script, ScriptUpdated record)
-  {
-    Database.Scripts.Update(script);
-    base.RecordChange(record);
-  }
-
-  public async Task<Script?> LoadAsync(Guid id, CancellationToken cancellationToken)
-  {
-    return await Database.Scripts.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
-  }
-
-  public async Task<ScriptModel> ReadAsync(Script script, CancellationToken cancellationToken)
-  {
-    return await ReadAsync(script.Id, cancellationToken) ?? throw new InvalidOperationException($"The script 'Id={script.Id}' was not found.");
-  }
-  public async Task<ScriptModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
-  {
-    Script? script = await Database.Scripts.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
-      .SingleOrDefaultAsync(cancellationToken);
-
-    return script is null ? null : await MapAsync(script, cancellationToken);
-  }
-
-  public virtual async Task<SearchResults<ScriptModel>> SearchAsync(SearchScriptsPayload payload, CancellationToken cancellationToken)
-  {
-    IQueryBuilder builder = _sqlHelper.Query(Db.Scripts.Table).SelectAll(Db.Scripts.Table)
-      .Where(Db.Scripts.WorldId, Operators.IsEqualTo(_context.WorldUid))
-      .ApplyIdFilter(Db.Scripts.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Scripts.Name, Db.Scripts.Summary);
-
-    IQueryable<Script> query = Database.Scripts.FromQuery(builder).AsNoTracking();
-
-    long total = await query.LongCountAsync(cancellationToken);
-
-    IOrderedQueryable<Script>? ordered = null;
-    foreach (ScriptSortOption sort in payload.Sort)
+    ScriptEntity? entity = await _database.Scripts.SingleOrDefaultAsync(x => x.StreamId == script.Id.Value, cancellationToken);
+    if (entity is null)
     {
-      switch (sort.Field)
-      {
-        case ScriptSort.CreatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
-          break;
-        case ScriptSort.Name:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name) : ordered.ThenBy(x => x.Name));
-          break;
-        case ScriptSort.UpdatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
-          break;
-      }
+      entity = new ScriptEntity(script);
+      _database.Scripts.Add(entity);
     }
-    query = ordered ?? query;
-
-    query = query.ApplyPaging(payload);
-
-    Script[] scripts = await query.ToArrayAsync(cancellationToken);
-    IReadOnlyCollection<ScriptModel> items = await MapAsync(scripts, cancellationToken);
-
-    return new SearchResults<ScriptModel>(items, total);
-  }
-
-  private async Task<ScriptModel> MapAsync(Script script, CancellationToken cancellationToken)
-  {
-    return (await MapAsync([script], cancellationToken)).Single();
-  }
-  private async Task<IReadOnlyCollection<ScriptModel>> MapAsync(IEnumerable<Script> scripts, CancellationToken cancellationToken)
-  {
-    IEnumerable<Guid> userIds = scripts.SelectMany(script => script.GetUserIds());
-    IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    MapperOld mapper = new(actors);
-
-    return scripts.Select(mapper.ToScript).ToList().AsReadOnly();
+    else
+    {
+      entity.Update(script);
+    }
+    await _database.SaveChangesAsync(cancellationToken);
   }
 }

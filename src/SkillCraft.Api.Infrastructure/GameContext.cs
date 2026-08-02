@@ -1,13 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core.Castes;
-using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
-using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Spells;
-using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Configurations;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -28,7 +25,7 @@ public class GameContext : DbContext
   internal DbSet<Lineage> Lineages => Set<Lineage>();
   internal DbSet<LineageFeature> LineageFeatures => Set<LineageFeature>();
   internal DbSet<LineageLanguage> LineageLanguages => Set<LineageLanguage>();
-  internal DbSet<Script> Scripts => Set<Script>();
+  internal DbSet<ScriptEntity> Scripts => Set<ScriptEntity>();
   internal DbSet<Spell> Spells => Set<Spell>();
   internal DbSet<TalentEntity> Talents => Set<TalentEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();

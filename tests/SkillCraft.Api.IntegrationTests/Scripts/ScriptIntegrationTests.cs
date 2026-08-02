@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
@@ -28,8 +29,7 @@ public class ScriptIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _script = new ScriptBuilder(Faker).WithWorld(Context.World).Build();
-    _scriptRepository.Add(_script);
-    await Context.SaveChangesAsync();
+    await _scriptRepository.SaveAsync(_script);
   }
 
   [Theory(DisplayName = "It should create a new script.")]
@@ -37,12 +37,7 @@ public class ScriptIntegrationTests : IntegrationTests
   [InlineData(true)]
   public async Task Given_NotExist_When_CreateOrReplace_Then_Created(bool withId)
   {
-    CreateOrReplaceScriptPayload payload = new()
-    {
-      Name = " Rénon ",
-      Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
-    };
+    CreateOrReplaceScriptPayload payload = CreateRenonPayload();
     Guid? id = withId ? Guid.NewGuid() : null;
 
     CreateOrReplaceScriptResult result = await _scriptService.CreateOrReplaceAsync(payload, id);
@@ -58,35 +53,28 @@ public class ScriptIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, script.Id);
     }
-    Assert.Equal(1, script.Version);
+    Assert.Equal(2, script.Version);
     Assert.Equal(Actor, script.CreatedBy);
     Assert.Equal(DateTime.UtcNow, script.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(script.CreatedBy, script.UpdatedBy);
-    Assert.Equal(script.CreatedOn, script.UpdatedOn);
+    Assert.True(script.CreatedOn < script.UpdatedOn);
 
-    Assert.Equal(payload.Name.CleanTrim(), script.Name);
-    Assert.Equal(payload.Summary?.CleanTrim(), script.Summary);
-    Assert.Equal(payload.Content?.CleanTrim(), script.Content);
+    AssertRenon(payload, script);
   }
 
   [Fact(DisplayName = "It should read a script by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    ScriptModel? script = await _scriptService.ReadAsync(_script.Id);
+    ScriptModel? script = await _scriptService.ReadAsync(_script.ResourceId);
     Assert.NotNull(script);
-    Assert.Equal(_script.Id, script.Id);
+    Assert.Equal(_script.ResourceId, script.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing script.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
-    CreateOrReplaceScriptPayload payload = new()
-    {
-      Name = " Rénon ",
-      Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
-    };
-    Guid id = _script.Id;
+    CreateOrReplaceScriptPayload payload = CreateRenonPayload();
+    Guid id = _script.ResourceId;
 
     CreateOrReplaceScriptResult result = await _scriptService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -94,15 +82,13 @@ public class ScriptIntegrationTests : IntegrationTests
     Assert.NotNull(script);
 
     Assert.Equal(id, script.Id);
-    Assert.Equal(2, script.Version);
-    Assert.Equal(_script.CreatedBy, script.CreatedBy.Id);
-    Assert.Equal(_script.CreatedOn, script.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(3, script.Version);
+    Assert.Equal(_script.CreatedBy, script.CreatedBy.GetActorId());
+    Assert.Equal(_script.CreatedOn.AsUniversalTime(), script.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, script.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, script.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(payload.Name.CleanTrim(), script.Name);
-    Assert.Equal(payload.Summary?.CleanTrim(), script.Summary);
-    Assert.Equal(payload.Content?.CleanTrim(), script.Content);
+    AssertRenon(payload, script);
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
@@ -122,7 +108,7 @@ public class ScriptIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _scriptService.ReadAsync(_script.Id));
+    Assert.Null(await _scriptService.ReadAsync(_script.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the script was not found.")]
@@ -137,8 +123,7 @@ public class ScriptIntegrationTests : IntegrationTests
     Script elfique = new ScriptBuilder(Faker).WithWorld(Context.World).WithName("Elfique").Build();
     Script montagnard = new ScriptBuilder(Faker).WithWorld(Context.World).WithName("Montagnard").Build();
     Script orrinique = new ScriptBuilder(Faker).WithWorld(Context.World).WithName("Orrinique").Build();
-    _scriptRepository.Add(elfique, montagnard, orrinique);
-    await Context.SaveChangesAsync();
+    await _scriptRepository.SaveAsync([elfique, montagnard, orrinique]);
 
     SearchScriptsPayload payload = new()
     {
@@ -146,14 +131,14 @@ public class ScriptIntegrationTests : IntegrationTests
       Limit = 1
     };
     payload.Search.Terms.Add(new SearchTerm("%i%"));
-    payload.Ids.AddRange([_script.Id, Guid.Empty, montagnard.Id, orrinique.Id]);
+    payload.Ids.AddRange([_script.ResourceId, Guid.Empty, montagnard.ResourceId, orrinique.ResourceId]);
     payload.Sort.Add(new ScriptSortOption(ScriptSort.Name, isDescending: true));
 
     SearchResults<ScriptModel> results = await _scriptService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     ScriptModel script = Assert.Single(results.Items);
-    Assert.Equal(orrinique.Id, script.Id);
+    Assert.Equal(orrinique.ResourceId, script.Id);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a script.")]
@@ -161,12 +146,7 @@ public class ScriptIntegrationTests : IntegrationTests
   {
     Context.User = new UserBuilder(Faker).Build();
 
-    CreateOrReplaceScriptPayload payload = new()
-    {
-      Name = " Rénon ",
-      Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
-    };
+    CreateOrReplaceScriptPayload payload = CreateRenonPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.UserUid, exception.UserId);
@@ -179,14 +159,9 @@ public class ScriptIntegrationTests : IntegrationTests
   {
     Context.User = new UserBuilder(Faker).Build();
 
-    CreateOrReplaceScriptPayload payload = new()
-    {
-      Name = " Rénon ",
-      Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
-      Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
-    };
+    CreateOrReplaceScriptPayload payload = CreateRenonPayload();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload, _script.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.CreateOrReplaceAsync(payload, _script.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_script.Identifier.ToString(), exception.Resource);
@@ -199,7 +174,7 @@ public class ScriptIntegrationTests : IntegrationTests
 
     UpdateScriptPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.UpdateAsync(_script.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _scriptService.UpdateAsync(_script.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_script.Identifier.ToString(), exception.Resource);
@@ -208,26 +183,41 @@ public class ScriptIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing script.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _script.Id;
+    Guid id = _script.ResourceId;
+    CreateOrReplaceScriptPayload create = CreateRenonPayload();
     UpdateScriptPayload payload = new()
     {
-      Name = " Rénon ",
-      Summary = new Optional<string>("  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  "),
-      Content = new Optional<string>("   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   ")
+      Name = create.Name,
+      Summary = new Optional<string>(create.Summary),
+      Content = new Optional<string>(create.Content)
     };
 
     ScriptModel? script = await _scriptService.UpdateAsync(id, payload);
     Assert.NotNull(script);
 
     Assert.Equal(id, script.Id);
-    Assert.Equal(2, script.Version);
-    Assert.Equal(_script.CreatedBy, script.CreatedBy.Id);
-    Assert.Equal(_script.CreatedOn, script.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(3, script.Version);
+    Assert.Equal(_script.CreatedBy, script.CreatedBy.GetActorId());
+    Assert.Equal(_script.CreatedOn.AsUniversalTime(), script.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, script.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, script.UpdatedOn, TimeSpan.FromSeconds(10));
 
     Assert.Equal(payload.Name.CleanTrim(), script.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), script.Summary);
     Assert.Equal(payload.Content.Value?.CleanTrim(), script.Content);
+  }
+
+  private static CreateOrReplaceScriptPayload CreateRenonPayload() => new()
+  {
+    Name = " Rénon ",
+    Summary = "  Alphabet unifié et standardisé, utilisé par le Commun et l’Impérial.  ",
+    Content = "   L’alphabet Rénon est un système d’écriture alphabétique commun à l’ensemble du monde Rénon, utilisé aussi bien pour le [Commun](/regles/langues/commun) que pour l’[Impérial](/regles/langues/imperial). Hérité de l’écriture de l’ancien empire occidental, il a été progressivement standardisé afin d’assurer une lecture claire et cohérente sur tout le territoire. Écrit de gauche à droite, il repose sur une relation généralement stable entre les lettres et les sons, tout en conservant certaines conventions historiques. Son apparence a évolué des formes monumentales vers des écritures plus cursives et livresques, et il admet différents styles selon les usages (quotidiens, administratifs ou religieux) sans jamais se fragmenter en alphabets distincts.   "
+  };
+
+  private static void AssertRenon(CreateOrReplaceScriptPayload payload, ScriptModel script)
+  {
+    Assert.Equal(payload.Name.CleanTrim(), script.Name);
+    Assert.Equal(payload.Summary?.CleanTrim(), script.Summary);
+    Assert.Equal(payload.Content?.CleanTrim(), script.Content);
   }
 }

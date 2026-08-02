@@ -8,15 +8,15 @@ internal record SearchScriptsQuery(SearchScriptsPayload Payload) : IQuery<Search
 
 internal class SearchScriptsQueryHandler : IQueryHandler<SearchScriptsQuery, SearchResults<ScriptModel>>
 {
-  private readonly IScriptRepository _scriptRepository;
+  private readonly IScriptQuerier _scriptQuerier;
 
-  public SearchScriptsQueryHandler(IScriptRepository scriptRepository)
+  public SearchScriptsQueryHandler(IScriptQuerier scriptQuerier)
   {
-    _scriptRepository = scriptRepository;
+    _scriptQuerier = scriptQuerier;
   }
 
   public async Task<SearchResults<ScriptModel>> HandleAsync(SearchScriptsQuery query, CancellationToken cancellationToken)
   {
-    return await _scriptRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _scriptQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

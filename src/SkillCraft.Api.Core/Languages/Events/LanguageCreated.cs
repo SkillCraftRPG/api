@@ -19,7 +19,7 @@ public class LanguageCreated : CreateEvent
     Summary = language.Summary;
     Content = language.Content;
 
-    ScriptId = language.Script?.Id;
+    ScriptId = language.ScriptUid;
     TypicalSpeakers = language.TypicalSpeakers;
   }
 }

@@ -4,6 +4,7 @@ using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Languages.Commands;
 
@@ -14,17 +15,20 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
   private readonly IContext _context;
   private readonly ILanguageRepository _languageRepository;
   private readonly IPermissionService _permissionService;
+  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
 
   public UpdateLanguageCommandHandler(
     IContext context,
     ILanguageRepository languageRepository,
     IPermissionService permissionService,
+    IScriptQuerier scriptQuerier,
     IScriptRepository scriptRepository)
   {
     _context = context;
     _languageRepository = languageRepository;
     _permissionService = permissionService;
+    _scriptQuerier = scriptQuerier;
     _scriptRepository = scriptRepository;
   }
 
@@ -57,13 +61,18 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
 
     if (payload.ScriptId is not null)
     {
-      Script? script = null;
+      int? scriptKey = null;
+      Guid? scriptUid = null;
       if (payload.ScriptId.Value.HasValue)
       {
-        script = await _scriptRepository.LoadAsync(payload.ScriptId.Value.Value, cancellationToken)
+        ScriptId scriptId = new(_context.WorldId, payload.ScriptId.Value.Value);
+        Script script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
           ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value.Value, _context.WorldUid), nameof(Language.ScriptId));
+        scriptKey = await _scriptQuerier.FindKeyAsync(script.Id, cancellationToken)
+          ?? throw new InvalidOperationException($"The script entity 'StreamId={script.Id}' was not found.");
+        scriptUid = script.ResourceId;
       }
-      language.SetScript(script);
+      language.SetScript(scriptKey, scriptUid);
     }
     if (payload.TypicalSpeakers is not null)
     {

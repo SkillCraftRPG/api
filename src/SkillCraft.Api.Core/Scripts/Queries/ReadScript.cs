@@ -7,15 +7,15 @@ internal record ReadScriptQuery(Guid Id) : IQuery<ScriptModel?>;
 
 internal class ReadScriptQueryHandler : IQueryHandler<ReadScriptQuery, ScriptModel?>
 {
-  private readonly IScriptRepository _scriptRepository;
+  private readonly IScriptQuerier _scriptQuerier;
 
-  public ReadScriptQueryHandler(IScriptRepository scriptRepository)
+  public ReadScriptQueryHandler(IScriptQuerier scriptQuerier)
   {
-    _scriptRepository = scriptRepository;
+    _scriptQuerier = scriptQuerier;
   }
 
   public async Task<ScriptModel?> HandleAsync(ReadScriptQuery query, CancellationToken cancellationToken)
   {
-    return await _scriptRepository.ReadAsync(query.Id, cancellationToken);
+    return await _scriptQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

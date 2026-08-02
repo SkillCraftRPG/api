@@ -17,7 +17,7 @@ public record LanguageSnapshot
     Summary = language.Summary;
     Content = language.Content;
 
-    ScriptId = language.Script?.Id;
+    ScriptId = language.ScriptUid;
     TypicalSpeakers = language.TypicalSpeakers;
   }
 
@@ -44,10 +44,10 @@ public record LanguageSnapshot
       record.Content = new Change<string>(Content, language.Content);
     }
 
-    if (ScriptId != language.Script?.Id)
+    if (ScriptId != language.ScriptUid)
     {
       changes++;
-      record.ScriptId = new Change<Guid?>(ScriptId, language.Script?.Id);
+      record.ScriptId = new Change<Guid?>(ScriptId, language.ScriptUid);
     }
 
     if (TypicalSpeakers != language.TypicalSpeakers)

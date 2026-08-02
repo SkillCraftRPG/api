@@ -1,19 +1,10 @@
-using Krakenar.Contracts.Search;
-using SkillCraft.Api.Core.Scripts.Events;
-using SkillCraft.Api.Core.Scripts.Models;
-
 namespace SkillCraft.Api.Core.Scripts;
 
 public interface IScriptRepository
 {
-  void Add(params Script[] scripts);
-  void Remove(Script script);
-  void Update(Script script, ScriptUpdated record);
+  Task<Script?> LoadAsync(ScriptId id, CancellationToken cancellationToken = default);
+  Task<IReadOnlyCollection<Script>> LoadAsync(IEnumerable<ScriptId> ids, CancellationToken cancellationToken = default);
 
-  Task<Script?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
-
-  Task<ScriptModel> ReadAsync(Script script, CancellationToken cancellationToken = default);
-  Task<ScriptModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
-
-  Task<SearchResults<ScriptModel>> SearchAsync(SearchScriptsPayload payload, CancellationToken cancellationToken = default);
+  Task SaveAsync(Script script, CancellationToken cancellationToken = default);
+  Task SaveAsync(IEnumerable<Script> scripts, CancellationToken cancellationToken = default);
 }

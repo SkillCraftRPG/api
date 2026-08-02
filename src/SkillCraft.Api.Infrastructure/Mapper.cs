@@ -3,6 +3,7 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -32,6 +33,21 @@ internal class Mapper
     {
       Id = source.Id,
       Kind = source.Kind,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ScriptModel ToScript(ScriptEntity source)
+  {
+    ScriptModel destination = new()
+    {
+      Id = source.Id,
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content
