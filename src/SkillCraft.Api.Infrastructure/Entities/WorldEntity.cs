@@ -23,7 +23,7 @@ internal class WorldEntity : AggregateEntity
   public string? Content { get; private set; }
 
   public List<Caste> Castes { get; private set; } = [];
-  public List<Customization> Customizations { get; private set; } = [];
+  public List<CustomizationEntity> Customizations { get; private set; } = [];
   public List<Education> Educations { get; private set; } = [];
   public List<Item> Items { get; private set; } = [];
   public List<Language> Languages { get; private set; } = [];

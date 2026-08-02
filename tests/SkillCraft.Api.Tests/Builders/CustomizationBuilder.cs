@@ -1,4 +1,6 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Worlds;
 
@@ -6,7 +8,7 @@ namespace SkillCraft.Api.Builders;
 
 public interface ICustomizationBuilder
 {
-  ICustomizationBuilder WithId(Guid id);
+  ICustomizationBuilder WithId(CustomizationId customizationId);
   ICustomizationBuilder WithWorld(World? world);
   ICustomizationBuilder WithKind(CustomizationKind kind);
   ICustomizationBuilder WithName(string name);
@@ -21,7 +23,7 @@ public class CustomizationBuilder : ICustomizationBuilder
   private readonly Faker _faker;
 
   private string? _content = null;
-  private Guid? _id = null;
+  private CustomizationId? _customizationId = null;
   private CustomizationKind? _kind = null;
   private string _name = "Customization";
   private string? _summary = null;
@@ -32,9 +34,9 @@ public class CustomizationBuilder : ICustomizationBuilder
     _faker = faker ?? new();
   }
 
-  public ICustomizationBuilder WithId(Guid id)
+  public ICustomizationBuilder WithId(CustomizationId customizationId)
   {
-    _id = id;
+    _customizationId = customizationId;
     return this;
   }
 
@@ -71,12 +73,16 @@ public class CustomizationBuilder : ICustomizationBuilder
   public Customization Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    CustomizationKind kind = _kind ?? _faker.PickRandom<CustomizationKind>();
-    return new Customization(world, kind, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content
-    };
+    ActorId actorId = world.OwnerId.ActorId;
+    CustomizationKind kind = _kind ?? _faker.PickRandom(CustomizationKind.Disability, CustomizationKind.Gift);
+    Name name = new(_name);
+
+    Customization customization = _customizationId.HasValue
+      ? new(_customizationId.Value, kind, name, actorId)
+      : new(world, kind, name, actorId);
+
+    customization.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+
+    return customization;
   }
 }

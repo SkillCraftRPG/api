@@ -7,15 +7,15 @@ internal record ReadCustomizationQuery(Guid Id) : IQuery<CustomizationModel?>;
 
 internal class ReadCustomizationQueryHandler : IQueryHandler<ReadCustomizationQuery, CustomizationModel?>
 {
-  private readonly ICustomizationRepository _customizationRepository;
+  private readonly ICustomizationQuerier _customizationQuerier;
 
-  public ReadCustomizationQueryHandler(ICustomizationRepository customizationRepository)
+  public ReadCustomizationQueryHandler(ICustomizationQuerier customizationQuerier)
   {
-    _customizationRepository = customizationRepository;
+    _customizationQuerier = customizationQuerier;
   }
 
   public async Task<CustomizationModel?> HandleAsync(ReadCustomizationQuery query, CancellationToken cancellationToken)
   {
-    return await _customizationRepository.ReadAsync(query.Id, cancellationToken);
+    return await _customizationQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

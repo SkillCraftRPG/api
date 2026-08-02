@@ -4,8 +4,6 @@ using Logitar;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Castes.Models;
-using SkillCraft.Api.Core.Customizations;
-using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
@@ -57,22 +55,6 @@ internal class MapperOld // TODO(fpion): remove this
     {
       destination.Feature = new FeatureModel(source.FeatureName, source.FeatureContent);
     }
-
-    MapAggregate(source, destination);
-
-    return destination;
-  }
-
-  public CustomizationModel ToCustomization(Customization source)
-  {
-    CustomizationModel destination = new()
-    {
-      Id = source.Id,
-      Kind = source.Kind,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content
-    };
 
     MapAggregate(source, destination);
 

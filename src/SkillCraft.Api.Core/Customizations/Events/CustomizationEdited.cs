@@ -2,4 +2,4 @@
 
 namespace SkillCraft.Api.Core.Customizations.Events;
 
-public record CustomizationCreated(CustomizationKind Kind, Name Name) : DomainEvent;
+public record CustomizationEdited(Summary? Summary, Content? Content) : DomainEvent;

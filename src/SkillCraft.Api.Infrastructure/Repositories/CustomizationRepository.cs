@@ -1,123 +1,56 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Search;
-using Logitar.Data;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
-using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Customizations;
-using SkillCraft.Api.Core.Customizations.Events;
-using SkillCraft.Api.Core.Customizations.Models;
-using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class CustomizationRepository : Repository, ICustomizationRepository
+internal class CustomizationRepository : Logitar.EventSourcing.Repository, ICustomizationRepository
 {
-  private readonly IActorService _actorService;
-  private readonly IContext _context;
-  private readonly ISqlHelper _sqlHelper;
+  private readonly GameContext _database;
 
-  public CustomizationRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper) : base(game)
+  public CustomizationRepository(GameContext database, IEventStore eventStore) : base(eventStore)
   {
-    _actorService = actorService;
-    _context = context;
-    _sqlHelper = sqlHelper;
+    _database = database;
   }
 
-  public void Add(params Customization[] customizations)
+  public async Task<Customization?> LoadAsync(CustomizationId id, CancellationToken cancellationToken)
   {
+    return await base.LoadAsync<Customization>(id.StreamId, isDeleted: false, cancellationToken);
+  }
+  public async Task<IReadOnlyCollection<Customization>> LoadAsync(IEnumerable<CustomizationId> ids, CancellationToken cancellationToken)
+  {
+    return await base.LoadAsync<Customization>(ids.Select(id => id.StreamId), isDeleted: false, cancellationToken);
+  }
+
+  public async Task SaveAsync(Customization customization, CancellationToken cancellationToken)
+  {
+    await base.SaveAsync(customization, cancellationToken);
+
+    await SynchronizeAsync(customization, cancellationToken);
+  }
+  public async Task SaveAsync(IEnumerable<Customization> customizations, CancellationToken cancellationToken)
+  {
+    await base.SaveAsync(customizations, cancellationToken);
+
     foreach (Customization customization in customizations)
     {
-      Database.Customizations.Add(customization);
-      base.RecordChange(new CustomizationCreated(customization));
+      await SynchronizeAsync(customization, cancellationToken);
     }
   }
-  public void Remove(Customization customization)
-  {
-    Database.Customizations.Remove(customization);
-    base.RecordChange(new CustomizationDeleted(customization, _context.UserUid));
-  }
-  public void Update(Customization customization, CustomizationUpdated record)
-  {
-    Database.Customizations.Update(customization);
-    base.RecordChange(record);
-  }
 
-  public async Task<Customization?> LoadAsync(Guid id, CancellationToken cancellationToken)
+  private async Task SynchronizeAsync(Customization customization, CancellationToken cancellationToken)
   {
-    return await Database.Customizations.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
-  }
-
-  public async Task<CustomizationModel> ReadAsync(Customization customization, CancellationToken cancellationToken)
-  {
-    return await ReadAsync(customization.Id, cancellationToken) ?? throw new InvalidOperationException($"The customization 'Id={customization.Id}' was not found.");
-  }
-  public async Task<CustomizationModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
-  {
-    Customization? customization = await Database.Customizations.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
-      .SingleOrDefaultAsync(cancellationToken);
-
-    return customization is null ? null : await MapAsync(customization, cancellationToken);
-  }
-
-  public virtual async Task<SearchResults<CustomizationModel>> SearchAsync(SearchCustomizationsPayload payload, CancellationToken cancellationToken)
-  {
-    IQueryBuilder builder = _sqlHelper.Query(Db.Customizations.Table).SelectAll(Db.Customizations.Table)
-      .Where(Db.Customizations.WorldId, Operators.IsEqualTo(_context.WorldUid))
-      .ApplyIdFilter(Db.Customizations.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Customizations.Name, Db.Customizations.Summary);
-
-    if (payload.Kind.HasValue)
+    CustomizationEntity? entity = await _database.Customizations.SingleOrDefaultAsync(x => x.StreamId == customization.Id.Value, cancellationToken);
+    if (entity is null)
     {
-      builder.Where(Db.Customizations.Kind, Operators.IsEqualTo(payload.Kind.Value.ToString()));
+      entity = new CustomizationEntity(customization);
+      _database.Customizations.Add(entity);
     }
-
-    IQueryable<Customization> query = Database.Customizations.FromQuery(builder).AsNoTracking();
-
-    long total = await query.LongCountAsync(cancellationToken);
-
-    IOrderedQueryable<Customization>? ordered = null;
-    foreach (CustomizationSortOption sort in payload.Sort)
+    else
     {
-      switch (sort.Field)
-      {
-        case CustomizationSort.CreatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
-          break;
-        case CustomizationSort.Name:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name) : ordered.ThenBy(x => x.Name));
-          break;
-        case CustomizationSort.UpdatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
-          break;
-      }
+      entity.Update(customization);
     }
-    query = ordered ?? query;
-
-    query = query.ApplyPaging(payload);
-
-    Customization[] customizations = await query.ToArrayAsync(cancellationToken);
-    IReadOnlyCollection<CustomizationModel> items = await MapAsync(customizations, cancellationToken);
-
-    return new SearchResults<CustomizationModel>(items, total);
-  }
-
-  private async Task<CustomizationModel> MapAsync(Customization customization, CancellationToken cancellationToken)
-  {
-    return (await MapAsync([customization], cancellationToken)).Single();
-  }
-  private async Task<IReadOnlyCollection<CustomizationModel>> MapAsync(IEnumerable<Customization> customizations, CancellationToken cancellationToken)
-  {
-    IEnumerable<Guid> userIds = customizations.SelectMany(customization => customization.GetUserIds());
-    IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    MapperOld mapper = new(actors);
-
-    return customizations.Select(mapper.ToCustomization).ToList().AsReadOnly();
+    await _database.SaveChangesAsync(cancellationToken);
   }
 }

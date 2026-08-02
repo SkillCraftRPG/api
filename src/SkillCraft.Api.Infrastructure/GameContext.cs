@@ -20,7 +20,7 @@ public class GameContext : DbContext
   }
 
   internal DbSet<Caste> Castes => Set<Caste>();
-  internal DbSet<Customization> Customizations => Set<Customization>();
+  internal DbSet<CustomizationEntity> Customizations => Set<CustomizationEntity>();
   internal DbSet<Education> Educations => Set<Education>();
   internal DbSet<HistoryRecord> History => Set<HistoryRecord>();
   internal DbSet<Item> Items => Set<Item>();

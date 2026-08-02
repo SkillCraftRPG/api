@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Core.Worlds.Models;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -23,6 +24,22 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public CustomizationModel ToCustomization(CustomizationEntity source)
+  {
+    CustomizationModel destination = new()
+    {
+      Id = source.Id,
+      Kind = source.Kind,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public TalentModel ToTalent(TalentEntity source)

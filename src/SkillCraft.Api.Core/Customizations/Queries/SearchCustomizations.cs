@@ -8,15 +8,15 @@ internal record SearchCustomizationsQuery(SearchCustomizationsPayload Payload) :
 
 internal class SearchCustomizationsQueryHandler : IQueryHandler<SearchCustomizationsQuery, SearchResults<CustomizationModel>>
 {
-  private readonly ICustomizationRepository _customizationRepository;
+  private readonly ICustomizationQuerier _customizationQuerier;
 
-  public SearchCustomizationsQueryHandler(ICustomizationRepository customizationRepository)
+  public SearchCustomizationsQueryHandler(ICustomizationQuerier customizationQuerier)
   {
-    _customizationRepository = customizationRepository;
+    _customizationQuerier = customizationQuerier;
   }
 
   public async Task<SearchResults<CustomizationModel>> HandleAsync(SearchCustomizationsQuery query, CancellationToken cancellationToken)
   {
-    return await _customizationRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _customizationQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }
