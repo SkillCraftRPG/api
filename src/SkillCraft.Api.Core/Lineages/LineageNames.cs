@@ -7,7 +7,7 @@ public class LineageNames
   public IReadOnlyCollection<string> Male { get; }
   public IReadOnlyCollection<string> Unisex { get; }
   public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Custom { get; }
-  public string? Content { get; }
+  public Content? Content { get; }
 
   public LineageNames()
   {
@@ -25,36 +25,35 @@ public class LineageNames
     IReadOnlyCollection<string> male,
     IReadOnlyCollection<string> unisex,
     IReadOnlyDictionary<string, IReadOnlyCollection<string>> custom,
-    string? content)
+    Content? content)
   {
-    Family = family;
-    Female = female;
-    Male = male;
-    Unisex = unisex;
-    Custom = custom;
+    Family = Clean(family);
+    Female = Clean(female);
+    Male = Clean(male);
+    Unisex = Clean(unisex);
+
+    Dictionary<string, IReadOnlyCollection<string>> customNames = new(capacity: custom.Count);
+    foreach (KeyValuePair<string, IReadOnlyCollection<string>> category in custom)
+    {
+      string key = category.Key.Trim();
+      IReadOnlyCollection<string> names = Clean(category.Value);
+      if (!string.IsNullOrEmpty(key) && names.Count > 0)
+      {
+        customNames[key] = names;
+      }
+    }
+    Custom = customNames.AsReadOnly();
+
     Content = content;
   }
 
-  public LineageNames(Lineage lineage)
-  {
-    Family = Decode(lineage.FamilyNames);
-    Female = Decode(lineage.FemaleNames);
-    Male = Decode(lineage.MaleNames);
-    Unisex = Decode(lineage.UnisexNames);
-    Custom = DecodeCustom(lineage.CustomNames);
-    Content = lineage.NamesContent;
-  }
-
-  public static IReadOnlyCollection<string> Decode(string? names)
-  {
-    return (names is null ? null : JsonSerializer.Deserialize<IReadOnlyCollection<string>>(names)) ?? [];
-  }
-
-  public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> DecodeCustom(string? custom)
-  {
-    return (custom is null ? null : JsonSerializer.Deserialize<IReadOnlyDictionary<string, IReadOnlyCollection<string>>>(custom))
-      ?? new Dictionary<string, IReadOnlyCollection<string>>().AsReadOnly();
-  }
+  private static IReadOnlyCollection<string> Clean(IEnumerable<string> names) => names
+    .Where(name => !string.IsNullOrWhiteSpace(name))
+    .Select(name => name.Trim())
+    .OrderBy(name => name)
+    .Distinct()
+    .ToList()
+    .AsReadOnly();
 
   public override bool Equals(object? obj) => obj is LineageNames names
     && names.Family.SequenceEqual(Family)
@@ -62,7 +61,7 @@ public class LineageNames
     && names.Male.SequenceEqual(Male)
     && names.Unisex.SequenceEqual(Unisex)
     && AreEqual(names.Custom, Custom)
-    && names.Content == Content;
+    && Equals(names.Content, Content);
   public override int GetHashCode()
   {
     HashCode hash = new();
@@ -96,30 +95,20 @@ public class LineageNames
   public override string ToString()
   {
     StringBuilder value = new();
-    if (Family.Count > 0)
-    {
-      value.Append(nameof(Family)).Append(':').Append(string.Join(',', Family)).AppendLine();
-    }
-    if (Female.Count > 0)
-    {
-      value.Append(nameof(Female)).Append(':').Append(string.Join(',', Female)).AppendLine();
-    }
-    if (Male.Count > 0)
-    {
-      value.Append(nameof(Male)).Append(':').Append(string.Join(',', Male)).AppendLine();
-    }
-    if (Unisex.Count > 0)
-    {
-      value.Append(nameof(Unisex)).Append(':').Append(string.Join(',', Unisex)).AppendLine();
-    }
+    value.AppendLine(base.ToString());
+
+    value.Append(nameof(Family)).Append(": ").Append(Family.Count < 1 ? "[]" : string.Join(',', Family)).AppendLine();
+    value.Append(nameof(Female)).Append(": ").Append(Female.Count < 1 ? "[]" : string.Join(',', Female)).AppendLine();
+    value.Append(nameof(Male)).Append(": ").Append(Male.Count < 1 ? "[]" : string.Join(',', Male)).AppendLine();
+    value.Append(nameof(Unisex)).Append(": ").Append(Unisex.Count < 1 ? "[]" : string.Join(',', Unisex)).AppendLine();
+
     foreach (KeyValuePair<string, IReadOnlyCollection<string>> custom in Custom)
     {
-      value.Append(custom.Key).Append(':').Append(string.Join(',', custom.Value)).AppendLine();
+      value.Append(custom.Key).Append(": ").Append(string.Join(',', custom.Value)).AppendLine();
     }
-    if (Content is not null)
-    {
-      value.Append(nameof(Content)).Append(':').Append(Content).AppendLine();
-    }
+
+    value.Append(nameof(Content)).Append(": ").Append(Content is null ? "<null>" : Content).AppendLine();
+
     return value.ToString();
   }
 

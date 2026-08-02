@@ -8,15 +8,15 @@ internal record SearchLineagesQuery(SearchLineagesPayload Payload) : IQuery<Sear
 
 internal class SearchLineagesQueryHandler : IQueryHandler<SearchLineagesQuery, SearchResults<LineageModel>>
 {
-  private readonly ILineageRepository _lineageRepository;
+  private readonly ILineageQuerier _lineageQuerier;
 
-  public SearchLineagesQueryHandler(ILineageRepository lineageRepository)
+  public SearchLineagesQueryHandler(ILineageQuerier lineageQuerier)
   {
-    _lineageRepository = lineageRepository;
+    _lineageQuerier = lineageQuerier;
   }
 
   public async Task<SearchResults<LineageModel>> HandleAsync(SearchLineagesQuery query, CancellationToken cancellationToken)
   {
-    return await _lineageRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _lineageQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

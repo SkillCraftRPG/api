@@ -1,191 +1,148 @@
-﻿using Logitar;
+﻿using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages;
-using SkillCraft.Api.Core.Lineages.Models;
+using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Lineages;
 
-public class Lineage : IAuditable, IResource, IVersioned
+public class Lineage : AggregateRoot, IResource
 {
   public const string ResourceKind = "Lineage";
 
-  public int LineageId { get; private set; }
+  public new LineageId Id => new(base.Id);
+  public WorldId WorldId => Id.WorldId;
+  public Guid ResourceId => Id.ResourceId;
 
-  // TODO(fpion): public WorldEntity? World { get; private set; }
-  public Guid WorldId { get; private set; }
-  public Guid Id { get; private set; }
+  public LineageId? ParentId { get; private set; }
 
-  public Lineage? Parent { get; private set; }
-  public List<Lineage> Children { get; private set; } = [];
-  public int? ParentId { get; private set; }
+  private Name? _name = null;
+  public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
+  public Summary? Summary { get; private set; }
+  public Content? Content { get; private set; }
 
-  public string Name { get; set; } = string.Empty;
-  public string? Summary { get; set; }
-  public string? Content { get; set; }
+  // TODO(fpion): Features
+  public LineageLanguages Languages { get; private set; } = new();
+  public LineageNames Names { get; private set; } = new();
+  public LineageSpeeds Speeds { get; private set; } = new();
+  public LineageSize Size { get; private set; } = new();
+  public LineageWeight Weight { get; private set; } = new();
+  public LineageAge Age { get; private set; } = new();
 
-  public int ExtraLanguages { get; private set; }
-  public string? LanguagesContent { get; private set; }
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
 
-  public string? FamilyNames { get; private set; }
-  public string? FemaleNames { get; private set; }
-  public string? MaleNames { get; private set; }
-  public string? UnisexNames { get; private set; }
-  public string? CustomNames { get; private set; }
-  public string? NamesContent { get; private set; }
-
-  public int? Walk { get; private set; }
-  public int? Climb { get; private set; }
-  public int? Swim { get; private set; }
-  public int? Fly { get; private set; }
-  public bool Hover { get; private set; }
-  public int? Burrow { get; private set; }
-
-  public SizeCategory SizeCategory { get; private set; }
-  public string? HeightRoll { get; private set; }
-
-  public string? Malnutrition { get; private set; }
-  public string? Skinny { get; private set; }
-  public string? NormalWeight { get; private set; }
-  public string? Overweight { get; private set; }
-  public string? Obese { get; private set; }
-
-  public int? Teenager { get; private set; }
-  public int? Adult { get; private set; }
-  public int? Mature { get; private set; }
-  public int? Venerable { get; private set; }
-
-  public long Version { get; private set; }
-  public Guid CreatedBy { get; private set; }
-  public DateTime CreatedOn { get; private set; }
-  public Guid UpdatedBy { get; private set; }
-  public DateTime UpdatedOn { get; private set; }
-
-  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
-
-  public List<LineageFeature> Features { get; private set; } = [];
-  public List<Language> Languages { get; private set; } = [];
-
-  public Lineage(World world, Guid? id = null, Lineage? parent = null, Guid? userId = null, DateTime? createdOn = null)
+  public Lineage() : base()
   {
-    if (parent?.ParentId is not null)
+  }
+
+  public Lineage(World world, Name name, Lineage? parent = null, ActorId? actorId = null)
+    : this(LineageId.NewId(world.Id), name, parent, actorId)
+  {
+  }
+
+  public Lineage(LineageId LineageId, Name name, Lineage? parent = null, ActorId? actorId = null)
+    : base(LineageId.StreamId)
+  {
+    if (parent is not null && parent.ParentId.HasValue)
     {
-      throw new InvalidParentLineageException(parent, nameof(Lineage.ParentId));
+      throw new InvalidParentLineageException(parent, nameof(ParentId));
     }
 
-    // TODO(fpion): World = world;
-    WorldId = world.ResourceId;
-    Id = id ?? Guid.NewGuid();
+    Raise(new LineageCreated(parent?.Id, name), actorId);
+  }
+  protected virtual void Handle(LineageCreated @event)
+  {
+    ParentId = @event.ParentId;
 
-    Parent = parent;
-    ParentId = parent?.LineageId;
-
-    Version = 1;
-    CreatedBy = UpdatedBy = userId ?? world.OwnerId.ResourceId;
-    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
+    _name = @event.Name;
   }
 
-  private Lineage()
+  public void Delete(ActorId? actorId = null)
   {
-  }
-
-  public IReadOnlyCollection<Guid> GetUserIds()
-  {
-    List<Guid> userIds = [CreatedBy, UpdatedBy];
-    foreach (LineageFeature feature in Features)
+    if (!IsDeleted)
     {
-      userIds.AddRange(feature.GetUserIds());
+      Raise(new LineageDeleted(), actorId);
     }
-    return userIds.AsReadOnly();
   }
 
-  public void SetAge(ILineageAge age)
+  public void Edit(Summary? summary, Content? content, ActorId? actorId = null)
   {
-    Teenager = age.Teenager;
-    Adult = age.Adult;
-    Mature = age.Mature;
-    Venerable = age.Venerable;
-  }
-
-  public void SetLanguages(IEnumerable<Language> granted, int extra, string? content)
-  {
-    Languages.Clear();
-    Languages.AddRange(granted);
-    ExtraLanguages = extra;
-    LanguagesContent = content?.CleanTrim();
-  }
-
-  public void SetNames(
-    IEnumerable<string> family,
-    IEnumerable<string> female,
-    IEnumerable<string> male,
-    IEnumerable<string> unisex,
-    IEnumerable<NameCategory> custom,
-    string? content)
-  {
-    FamilyNames = EncodeNames(family);
-    FemaleNames = EncodeNames(female);
-    MaleNames = EncodeNames(male);
-    UnisexNames = EncodeNames(unisex);
-
-    Dictionary<string, IEnumerable<string>> customNames = new(capacity: custom.Count());
-    foreach (NameCategory nameCategory in custom)
+    if (!Equals(Summary, summary) || !Equals(Content, content))
     {
-      string category = nameCategory.Category.Trim();
-      IEnumerable<string> cleaned = CleanNames(nameCategory.Values);
-      if (!string.IsNullOrEmpty(category) && cleaned.Any())
-      {
-        customNames[category] = cleaned;
-      }
+      Raise(new LineageEdited(summary, content), actorId);
     }
-    CustomNames = customNames.Count < 1 ? null : JsonSerializer.Serialize(customNames);
-
-    NamesContent = content?.CleanTrim();
   }
-
-  public void SetSize(ILineageSize size)
+  protected virtual void Handle(LineageEdited @event)
   {
-    SizeCategory = size.Category;
-    HeightRoll = size.Height;
+    Summary = @event.Summary;
+    Content = @event.Content;
   }
 
-  public void SetSpeeds(ILineageSpeeds speeds)
+  public void Rename(Name name, ActorId? actorId = null)
   {
-    Walk = speeds.Walk;
-    Climb = speeds.Climb;
-    Swim = speeds.Swim;
-    Fly = speeds.Fly;
-    Hover = speeds.Hover;
-    Burrow = speeds.Burrow;
+    if (!Equals(Name, name))
+    {
+      Raise(new LineageRenamed(name), actorId);
+    }
   }
-
-  public void SetWeight(ILineageWeight weight)
+  protected virtual void Handle(LineageRenamed @event)
   {
-    Malnutrition = weight.Malnutrition;
-    Skinny = weight.Skinny;
-    NormalWeight = weight.Normal;
-    Overweight = weight.Overweight;
-    Obese = weight.Obese;
+    _name = @event.Name;
   }
 
-  public void Update(Guid userId, DateTime? updatedOn = null)
+  public void SetLanguages(LineageLanguages languages, ActorId? actorId = null)
   {
-    Version++;
-    UpdatedBy = userId;
-    UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
-  }
+    foreach (LanguageId id in languages.Ids)
+    {
+      WorldMismatchException.ThrowIfMismatch(WorldId, id.WorldId, nameof(languages));
+    }
 
-  private static string? EncodeNames(IEnumerable<string> names)
+    if (!Equals(Languages, languages))
+    {
+      Raise(new LineageLanguagesChanged(languages), actorId);
+    }
+  }
+  protected virtual void Handle(LineageLanguagesChanged @event)
   {
-    IEnumerable<string> cleaned = CleanNames(names);
-    return cleaned.Any() ? JsonSerializer.Serialize(cleaned) : null;
+    Languages = @event.Languages;
   }
-  private static IEnumerable<string> CleanNames(IEnumerable<string> names) => names
-    .Where(name => !string.IsNullOrWhiteSpace(name))
-    .Select(name => name.Trim())
-    .OrderBy(name => name)
-    .Distinct();
 
-  public override bool Equals(object? obj) => obj is Lineage lineage && lineage.LineageId == LineageId;
-  public override int GetHashCode() => LineageId.GetHashCode();
-  public override string ToString() => $"{Name} | {GetType()} (LineageId={LineageId})";
+  public void SetNames(LineageNames names, ActorId? actorId = null)
+  {
+    if (!Equals(Names, names))
+    {
+      Raise(new LineageNamesChanged(names), actorId);
+    }
+  }
+  protected virtual void Handle(LineageNamesChanged @event)
+  {
+    Names = @event.Names;
+  }
+
+  public void SetSpeeds(LineageSpeeds speeds, ActorId? actorId = null)
+  {
+    if (!Equals(Speeds, speeds))
+    {
+      Raise(new LineageSpeedsChanged(speeds), actorId);
+    }
+  }
+  protected virtual void Handle(LineageSpeedsChanged @event)
+  {
+    Speeds = @event.Speeds;
+  }
+
+  public void SetTraits(LineageSize size, LineageWeight weight, LineageAge age, ActorId? actorId = null)
+  {
+    if (!Equals(Size, size) || !Equals(Weight, weight) || !Equals(Age, age))
+    {
+      Raise(new LineageTraitsChanged(size, weight, age), actorId);
+    }
+  }
+  protected virtual void Handle(LineageTraitsChanged @event)
+  {
+    Size = @event.Size;
+    Weight = @event.Weight;
+    Age = @event.Age;
+  }
+
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }

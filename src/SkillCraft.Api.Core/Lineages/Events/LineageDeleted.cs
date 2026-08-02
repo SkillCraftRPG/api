@@ -1,12 +1,5 @@
-﻿namespace SkillCraft.Api.Core.Lineages.Events;
+﻿using Logitar.EventSourcing;
 
-public class LineageDeleted : DeleteEvent
-{
-  public LineageDeleted() : base()
-  {
-  }
+namespace SkillCraft.Api.Core.Lineages.Events;
 
-  public LineageDeleted(Lineage lineage, Guid userId) : base(lineage, userId)
-  {
-  }
-}
+public record LineageDeleted : DomainEvent, IDeleteEvent;

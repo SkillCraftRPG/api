@@ -17,20 +17,17 @@ public record LineageAge : ILineageAge
   public int? Mature { get; }
   public int? Venerable { get; }
 
-  public LineageAge()
-  {
-  }
-
   [JsonConstructor]
-  public LineageAge(int? teenager, int? adult, int? mature, int? venerable)
+  public LineageAge(int? teenager = null, int? adult = null, int? mature = null, int? venerable = null)
   {
     Teenager = teenager;
     Adult = adult;
     Mature = mature;
     Venerable = venerable;
+    new LineageAgeValidator().ValidateAndThrow(this);
   }
 
-  public LineageAge(Lineage lineage) : this(lineage.Teenager, lineage.Adult, lineage.Mature, lineage.Venerable)
+  public LineageAge(ILineageAge age) : this(age.Teenager, age.Adult, age.Mature, age.Venerable)
   {
   }
 }

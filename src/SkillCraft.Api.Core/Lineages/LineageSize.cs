@@ -1,40 +1,24 @@
 ﻿using FluentValidation;
-using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Lineages;
 
-public interface ILineageSize
-{
-  SizeCategory Category { get; }
-  string? Height { get; }
-}
-
-public record LineageSize : ILineageSize
+public record LineageSize
 {
   public SizeCategory Category { get; }
-  public string? Height { get; }
+  public Roll? Height { get; }
 
-  public LineageSize()
-  {
-  }
-
-  [JsonConstructor]
-  public LineageSize(SizeCategory category, string? height)
+  public LineageSize(SizeCategory category = default, Roll? height = null)
   {
     Category = category;
     Height = height;
+    new Validator().ValidateAndThrow(this);
   }
 
-  public LineageSize(Lineage lineage) : this(lineage.SizeCategory, lineage.HeightRoll)
+  private class Validator : AbstractValidator<LineageSize>
   {
-  }
-}
-
-internal class LineageSizeValidator : AbstractValidator<ILineageSize>
-{
-  public LineageSizeValidator()
-  {
-    RuleFor(x => x.Category).IsInEnum();
-    When(x => !string.IsNullOrWhiteSpace(x.Height), () => RuleFor(x => x.Height!).Roll());
+    public Validator()
+    {
+      RuleFor(x => x.Category).IsInEnum();
+    }
   }
 }

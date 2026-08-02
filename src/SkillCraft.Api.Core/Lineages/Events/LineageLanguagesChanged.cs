@@ -2,4 +2,4 @@
 
 namespace SkillCraft.Api.Core.Lineages.Events;
 
-public record LineageCreated(LineageId? ParentId, Name Name) : DomainEvent;
+public record LineageLanguagesChanged(LineageLanguages Languages) : DomainEvent;

@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts;
 using Logitar;
+using SkillCraft.Api.Core.Identity;
 
 namespace SkillCraft.Api.Core.Permissions;
 
@@ -25,16 +26,16 @@ public class PermissionDeniedException : ErrorException
 
   public override Error Error => new(this.GetErrorCode(), ErrorMessage);
 
-  public PermissionDeniedException(Guid? userId, string action, ResourceIdentifier? resource)
+  public PermissionDeniedException(UserId? userId, string action, ResourceIdentifier? resource)
     : base(BuildMessage(userId, action, resource))
   {
-    UserId = userId;
+    UserId = userId?.ResourceId;
     Action = action;
     Resource = resource?.ToString();
   }
 
-  private static string BuildMessage(Guid? userId, string action, ResourceIdentifier? resource) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(UserId), userId, "<null>")
+  private static string BuildMessage(UserId? userId, string action, ResourceIdentifier? resource) => new ErrorMessageBuilder(ErrorMessage)
+    .AddData(nameof(UserId), userId?.ResourceId, "<null>")
     .AddData(nameof(Action), action)
     .AddData(nameof(Resource), resource, "<null>")
     .Build();

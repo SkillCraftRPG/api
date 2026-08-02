@@ -1,7 +1,6 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Languages;
-using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Permissions;
 
@@ -13,17 +12,20 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
 {
   private readonly IContext _context;
   private readonly ILanguageRepository _languageRepository;
+  private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
 
   public UpdateLineageCommandHandler(
     IContext context,
     ILanguageRepository languageRepository,
+    ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService)
   {
     _context = context;
     _languageRepository = languageRepository;
+    _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
   }
@@ -33,75 +35,58 @@ internal class UpdateLineageCommandHandler : ICommandHandler<UpdateLineageComman
     UpdateLineagePayload payload = command.Payload;
     payload.Validate();
 
-    Lineage? lineage = await _lineageRepository.LoadAsync(command.Id, cancellationToken);
+    LineageId lineageId = new(_context.WorldId, command.Id);
+    Lineage? lineage = await _lineageRepository.LoadAsync(lineageId, cancellationToken);
     if (lineage is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, lineage, cancellationToken);
 
-    LineageSnapshot snapshot = new(lineage);
+    ActorId? actorId = _context.ActorId;
 
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
     {
-      lineage.Name = payload.Name.Trim();
+      lineage.Rename(name, actorId);
     }
-    if (payload.Summary is not null)
+
+    if (payload.Summary is not null || payload.Content is not null)
     {
-      lineage.Summary = payload.Summary.Value?.CleanTrim();
-    }
-    if (payload.Content is not null)
-    {
-      lineage.Content = payload.Content.Value?.CleanTrim();
+      lineage.Edit(
+        payload.Summary is null ? lineage.Summary : Summary.TryCreate(payload.Summary.Value),
+        payload.Content is null ? lineage.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
     }
 
     if (payload.Languages is not null)
     {
-      IReadOnlyCollection<Language> languages = [];
-      if (payload.Languages.Ids.Count > 0)
-      {
-        LanguageId[] languageIds = [.. payload.Languages.Ids.Select(id => new LanguageId(_context.WorldId, id))];
-        languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
-
-        HashSet<Guid> missingIds = payload.Languages.Ids.Except(languages.Select(language => language.ResourceId)).ToHashSet();
-        if (missingIds.Count > 0)
-        {
-          string propertyName = string.Join('.', nameof(payload.Languages), nameof(payload.Languages.Ids));
-          throw new LanguagesNotFoundException(_context.WorldUid, missingIds, propertyName);
-        }
-      }
-      lineage.SetLanguages(languages, payload.Languages.Extra, payload.Languages.Content);
+      LineageLanguages languages = await LineageHelper.GetLanguagesAsync(_languageRepository, _context.WorldId, payload.Languages, cancellationToken);
+      lineage.SetLanguages(languages, actorId);
     }
+
     if (payload.Names is not null)
     {
-      lineage.SetNames(payload.Names.Family, payload.Names.Female, payload.Names.Male, payload.Names.Unisex, payload.Names.Custom, payload.Names.Content);
+      LineageNames names = LineageHelper.GetNames(payload.Names);
+      lineage.SetNames(names, actorId);
     }
+
     if (payload.Speeds is not null)
     {
-      lineage.SetSpeeds(payload.Speeds);
-    }
-    if (payload.Size is not null)
-    {
-      lineage.SetSize(payload.Size);
-    }
-    if (payload.Weight is not null)
-    {
-      lineage.SetWeight(payload.Weight);
-    }
-    if (payload.Age is not null)
-    {
-      lineage.SetAge(payload.Age);
+      LineageSpeeds speeds = new(payload.Speeds);
+      lineage.SetSpeeds(speeds, actorId);
     }
 
-    LineageUpdated? record = snapshot.Compare(lineage);
-    if (record is not null)
+    if (payload.Size is not null || payload.Weight is not null || payload.Age is not null)
     {
-      lineage.Update(_context.UserUid);
-      _lineageRepository.Update(lineage, record);
-
-      await _context.SaveChangesAsync(cancellationToken);
+      LineageSize size = payload.Size is null ? lineage.Size : LineageHelper.GetSize(payload.Size);
+      LineageWeight weight = payload.Weight is null ? lineage.Weight : LineageHelper.GetWeight(payload.Weight);
+      LineageAge age = payload.Age is null ? lineage.Age : new(payload.Age);
+      lineage.SetTraits(size, weight, age, actorId);
     }
 
-    return await _lineageRepository.ReadAsync(lineage, cancellationToken);
+    await _lineageRepository.SaveAsync(lineage, cancellationToken);
+
+    return await _lineageQuerier.ReadAsync(lineage, cancellationToken);
   }
 }

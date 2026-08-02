@@ -1,39 +1,43 @@
-﻿namespace SkillCraft.Api.Core.Lineages;
+﻿using FluentValidation;
+using SkillCraft.Api.Core.Languages;
+
+namespace SkillCraft.Api.Core.Lineages;
 
 public class LineageLanguages
 {
-  public IReadOnlyCollection<Guid> Ids { get; }
+  public IReadOnlyCollection<LanguageId> Ids { get; } = [];
   public int Extra { get; }
-  public string? Content { get; }
+  public Content? Content { get; }
 
   public LineageLanguages()
   {
-    Ids = [];
   }
 
   [JsonConstructor]
-  public LineageLanguages(IReadOnlyCollection<Guid> ids, int extra, string? content)
+  public LineageLanguages(IReadOnlyCollection<LanguageId> ids, int extra, Content? content)
   {
-    Ids = ids;
+    Ids = ids.Distinct().ToList().AsReadOnly();
     Extra = extra;
     Content = content;
+    new Validator().ValidateAndThrow(this);
   }
 
-  public LineageLanguages(Lineage lineage)
+  private class Validator : AbstractValidator<LineageLanguages>
   {
-    Ids = lineage.Languages.Select(language => language.ResourceId).ToList().AsReadOnly();
-    Extra = lineage.ExtraLanguages;
-    Content = lineage.LanguagesContent;
+    public Validator()
+    {
+      RuleFor(x => x.Extra).GreaterThanOrEqualTo(0);
+    }
   }
 
   public override bool Equals(object? obj) => obj is LineageLanguages languages
     && languages.Ids.SequenceEqual(Ids)
     && languages.Extra == Extra
-    && languages.Content == Content;
+    && Equals(languages.Content, Content);
   public override int GetHashCode()
   {
     HashCode hash = new();
-    foreach (Guid id in Ids)
+    foreach (LanguageId id in Ids)
     {
       hash.Add(id);
     }
@@ -45,19 +49,23 @@ public class LineageLanguages
   {
     StringBuilder value = new();
     value.AppendLine(base.ToString());
-    if (Ids.Count > 0)
+
+    value.Append(nameof(Ids)).Append(": ");
+    if (Ids.Count < 1)
     {
-      value.Append(nameof(Ids)).Append(':').AppendLine();
-      foreach (Guid id in Ids)
+      value.AppendLine("[]");
+    }
+    else
+    {
+      foreach (LanguageId id in Ids)
       {
         value.Append(" - ").Append(id).AppendLine();
       }
     }
-    value.Append(nameof(Extra)).Append(':').Append(Extra).AppendLine();
-    if (Content is not null)
-    {
-      value.Append(nameof(Content)).Append(':').Append(Content).AppendLine();
-    }
+
+    value.Append(nameof(Extra)).Append(": ").Append(Extra).AppendLine();
+    value.Append(nameof(Content)).Append(": ").Append(Content is null ? "<null>" : Content).AppendLine();
+
     return value.ToString();
   }
 }

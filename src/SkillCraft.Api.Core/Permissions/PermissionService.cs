@@ -50,7 +50,7 @@ internal class PermissionService : IPermissionService
 
     if (!isAllowed)
     {
-      throw new PermissionDeniedException(_context.TryGetUserUid(), action, identifier);
+      throw new PermissionDeniedException(_context.TryGetUserId(), action, identifier);
     }
   }
 
@@ -92,7 +92,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.Update:
-        return _context.IsWorldOwner() && resource.WorldId == _context.TryGetWorldUid();
+        return _context.IsWorldOwner() && resource.WorldId == _context.TryGetWorldId()?.ResourceId;
       default:
         return false;
     }
