@@ -1,10 +1,8 @@
-﻿using Logitar;
-using SkillCraft.Api.Core;
-using SkillCraft.Api.Core.Features;
+﻿using Logitar.EventSourcing;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
-internal class LineageFeatureEntity : IAuditable, IFeature
+internal class LineageFeatureEntity
 {
   public int LineageFeatureId { get; private set; }
 
@@ -15,31 +13,27 @@ internal class LineageFeatureEntity : IAuditable, IFeature
   public string Name { get; set; } = string.Empty;
   public string? Content { get; set; }
 
-  public Guid CreatedBy { get; private set; }
+  public string? CreatedBy { get; private set; }
   public DateTime CreatedOn { get; private set; }
-  public Guid UpdatedBy { get; private set; }
+  public string? UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
-
-  public LineageFeatureEntity(LineageEntity lineage, Guid userId, Guid? id = null, DateTime? createdOn = null)
-  {
-    Lineage = lineage;
-    LineageId = lineage.LineageId;
-    Id = id ?? Guid.NewGuid();
-
-    CreatedBy = UpdatedBy = userId;
-    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-  }
 
   private LineageFeatureEntity()
   {
   }
 
-  public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
-
-  public void Update(Guid userId, DateTime? updatedOn = null)
+  public virtual IReadOnlyCollection<ActorId> GetActorIds()
   {
-    UpdatedBy = userId;
-    UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
+    HashSet<ActorId> actorIds = new(capacity: 2);
+    if (CreatedBy is not null)
+    {
+      actorIds.Add(new ActorId(CreatedBy));
+    }
+    if (UpdatedBy is not null)
+    {
+      actorIds.Add(new ActorId(UpdatedBy));
+    }
+    return actorIds.AsReadOnly();
   }
 
   public override bool Equals(object? obj) => obj is LineageFeatureEntity feature && feature.LineageFeatureId == LineageFeatureId;

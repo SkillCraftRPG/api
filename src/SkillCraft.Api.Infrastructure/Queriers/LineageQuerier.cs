@@ -38,9 +38,9 @@ internal class LineageQuerier : ILineageQuerier
     LineageEntity? lineage = await _lineages.AsNoTracking().AsSplitQuery()
       .Where(x => x.StreamId == id.Value)
       .Include(x => x.Features)
-      .Include(x => x.Languages)
+      .Include(x => x.Languages).ThenInclude(x => x.Script)
       .Include(x => x.Parent).ThenInclude(x => x!.Features)
-      .Include(x => x.Parent).ThenInclude(x => x!.Languages)
+      .Include(x => x.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
 
     return lineage is null ? null : await MapAsync(lineage, cancellationToken);
@@ -50,9 +50,9 @@ internal class LineageQuerier : ILineageQuerier
     LineageEntity? lineage = await _lineages.AsNoTracking().AsSplitQuery()
       .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
       .Include(x => x.Features)
-      .Include(x => x.Languages)
+      .Include(x => x.Languages).ThenInclude(x => x.Script)
       .Include(x => x.Parent).ThenInclude(x => x!.Features)
-      .Include(x => x.Parent).ThenInclude(x => x!.Languages)
+      .Include(x => x.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
 
     return lineage is null ? null : await MapAsync(lineage, cancellationToken);
@@ -85,7 +85,7 @@ internal class LineageQuerier : ILineageQuerier
 
     IQueryable<LineageEntity> query = _lineages.FromQuery(builder).AsNoTracking().AsSplitQuery()
       .Include(x => x.Features)
-      .Include(x => x.Languages);
+      .Include(x => x.Languages).ThenInclude(x => x.Script);
 
     long total = await query.LongCountAsync(cancellationToken);
 

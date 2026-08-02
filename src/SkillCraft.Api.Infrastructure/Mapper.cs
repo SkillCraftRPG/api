@@ -147,9 +147,15 @@ internal class Mapper
       destination.Parent = ToLineage(source.Parent);
     }
 
-    // TODO(fpion): Features
-    // TODO(fpion): Languages
+    foreach (LineageFeatureEntity feature in source.Features)
+    {
+      destination.Features.Add(ToLineageFeature(feature));
+    }
 
+    foreach (LanguageEntity language in source.Languages)
+    {
+      destination.Languages.Granted.Add(ToLanguage(language));
+    }
     destination.Languages.Extra = source.ExtraLanguages;
     destination.Languages.Content = source.LanguagesContent;
 
@@ -185,6 +191,16 @@ internal class Mapper
 
     return destination;
   }
+  private LineageFeatureModel ToLineageFeature(LineageFeatureEntity feature) => new()
+  {
+    Id = feature.Id,
+    Name = feature.Name,
+    Content = feature.Content,
+    CreatedBy = FindActor(feature.CreatedBy),
+    CreatedOn = feature.CreatedOn.AsUniversalTime(),
+    UpdatedBy = FindActor(feature.UpdatedBy),
+    UpdatedOn = feature.UpdatedOn.AsUniversalTime()
+  };
 
   public ScriptModel ToScript(ScriptEntity source)
   {

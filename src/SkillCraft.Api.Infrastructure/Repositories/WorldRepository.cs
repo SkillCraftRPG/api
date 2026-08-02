@@ -6,7 +6,7 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class WorldRepository : Repository, IWorldRepository // TODO(fpion): namespace, and other repos
+internal class WorldRepository : Repository, IWorldRepository
 {
   private readonly IContext _context;
   private readonly GameContext _database;

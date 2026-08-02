@@ -1,4 +1,6 @@
-﻿using SkillCraft.Api.Core;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 
@@ -54,7 +56,7 @@ internal class LineageEntity : AggregateEntity
   public List<LineageFeatureEntity> Features { get; private set; } = [];
   public List<LanguageEntity> Languages { get; private set; } = [];
 
-  public LineageEntity(Lineage lineage, int? parentId) : base(lineage)
+  public LineageEntity(Lineage lineage, int? parentId, IEnumerable<LanguageEntity> languages) : base(lineage)
   {
     WorldId = lineage.WorldId.ResourceId;
     Id = lineage.ResourceId;
@@ -62,7 +64,7 @@ internal class LineageEntity : AggregateEntity
 
     Name = lineage.Name.Value;
 
-    Update(lineage, parentId);
+    Update(lineage, parentId, languages);
   }
 
   public LineageEntity(LineageCreated @event, int? parentId) : base(@event)
@@ -87,6 +89,24 @@ internal class LineageEntity : AggregateEntity
     Content = @event.Content?.Value;
   }
 
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Parent is not null)
+    {
+      actorIds.AddRange(Parent.GetActorIds());
+    }
+    foreach (LineageFeatureEntity feature in Features)
+    {
+      actorIds.AddRange(feature.GetActorIds());
+    }
+    foreach (LanguageEntity language in Languages)
+    {
+      actorIds.AddRange(language.GetActorIds());
+    }
+    return actorIds.AsReadOnly();
+  }
+
   public void Rename(LineageRenamed @event)
   {
     base.Update(@event);
@@ -94,13 +114,14 @@ internal class LineageEntity : AggregateEntity
     Name = @event.Name.Value;
   }
 
-  public void SetLanguages(LineageLanguagesChanged @event)
+  public void SetLanguages(IEnumerable<LanguageEntity> languages, LineageLanguagesChanged @event)
   {
     base.Update(@event);
 
     ExtraLanguages = @event.Languages.Extra;
     LanguagesContent = @event.Languages.Content?.Value;
-    // TODO(fpion): Languages
+    Languages.Clear();
+    Languages.AddRange(languages);
   }
 
   public void SetNames(LineageNamesChanged @event)
@@ -124,7 +145,7 @@ internal class LineageEntity : AggregateEntity
     SetTraits(@event.Size, @event.Weight, @event.Age);
   }
 
-  public void Update(Lineage lineage, int? parentId)
+  public void Update(Lineage lineage, int? parentId, IEnumerable<LanguageEntity> languages)
   {
     base.Update(lineage);
 
@@ -136,7 +157,8 @@ internal class LineageEntity : AggregateEntity
 
     ExtraLanguages = lineage.Languages.Extra;
     LanguagesContent = lineage.Languages.Content?.Value;
-    // TODO(fpion): Languages
+    Languages.Clear();
+    Languages.AddRange(languages);
 
     SetNames(lineage.Names);
     SetSpeeds(lineage.Speeds);

@@ -51,19 +51,22 @@ internal class LineageRepository : Repository, ILineageRepository
         ?? throw new InvalidOperationException($"The lineage entity 'StreamId={lineage.ParentId}' was not found.");
     }
 
-    // TODO(fpion): Languages
+    HashSet<string> languageIds = lineage.Languages.Ids.Select(id => id.StreamId.Value).ToHashSet();
+    LanguageEntity[] languages = await _database.Languages
+      .Where(x => languageIds.Contains(x.StreamId))
+      .ToArrayAsync(cancellationToken);
 
     LineageEntity? entity = await _database.Lineages
       .Include(x => x.Features)
       .SingleOrDefaultAsync(x => x.StreamId == lineage.Id.Value, cancellationToken);
     if (entity is null)
     {
-      entity = new LineageEntity(lineage, parentId);
+      entity = new LineageEntity(lineage, parentId, languages);
       _database.Lineages.Add(entity);
     }
     else
     {
-      entity.Update(lineage, parentId);
+      entity.Update(lineage, parentId, languages);
     }
     await _database.SaveChangesAsync(cancellationToken);
   }
