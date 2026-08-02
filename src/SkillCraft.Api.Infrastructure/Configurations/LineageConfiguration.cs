@@ -38,5 +38,6 @@ internal class LineageConfiguration : AggregateConfiguration<LineageEntity>, IEn
     builder.HasOne(x => x.Parent).WithMany(x => x.Children)
       .HasForeignKey(x => x.ParentId)
       .OnDelete(DeleteBehavior.Restrict);
+    builder.HasMany(x => x.Languages).WithMany(x => x.Lineages).UsingEntity<LineageLanguageEntity>();
   }
 }

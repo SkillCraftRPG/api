@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SkillCraft.Api.Infrastructure.Configurations;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure;
@@ -17,7 +16,7 @@ public class GameContext : DbContext
   internal DbSet<LanguageEntity> Languages => Set<LanguageEntity>();
   internal DbSet<LineageEntity> Lineages => Set<LineageEntity>();
   internal DbSet<LineageFeatureEntity> LineageFeatures => Set<LineageFeatureEntity>();
-  internal DbSet<LineageLanguage> LineageLanguages => Set<LineageLanguage>();
+  internal DbSet<LineageLanguageEntity> LineageLanguages => Set<LineageLanguageEntity>();
   internal DbSet<ScriptEntity> Scripts => Set<ScriptEntity>();
   internal DbSet<SpellEntity> Spells => Set<SpellEntity>();
   internal DbSet<TalentEntity> Talents => Set<TalentEntity>();

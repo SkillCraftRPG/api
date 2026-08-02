@@ -5,23 +5,11 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class LineageLanguage
+internal class LineageLanguageConfiguration : IEntityTypeConfiguration<LineageLanguageEntity>
 {
-  public LineageEntity? Lineage { get; set; }
-  public int LineageId { get; set; }
-
-  public LanguageEntity? Language { get; set; }
-  public int LanguageId { get; set; }
-}
-
-internal class LineageLanguageConfiguration : IEntityTypeConfiguration<LineageLanguage>
-{
-  public void Configure(EntityTypeBuilder<LineageLanguage> builder)
+  public void Configure(EntityTypeBuilder<LineageLanguageEntity> builder)
   {
     builder.ToTable(nameof(GameContext.LineageLanguages), Schemas.Game);
     builder.HasKey(x => new { x.LineageId, x.LanguageId });
-
-    builder.HasOne(x => x.Lineage).WithMany().HasForeignKey(x => x.LineageId);
-    builder.HasOne(x => x.Language).WithMany().HasForeignKey(x => x.LanguageId);
   }
 }
