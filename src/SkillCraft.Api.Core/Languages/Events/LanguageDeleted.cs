@@ -1,12 +1,5 @@
+using Logitar.EventSourcing;
+
 namespace SkillCraft.Api.Core.Languages.Events;
 
-public class LanguageDeleted : DeleteEvent
-{
-  public LanguageDeleted() : base()
-  {
-  }
-
-  public LanguageDeleted(Language language, Guid userId) : base(language, userId)
-  {
-  }
-}
+public record LanguageDeleted : DomainEvent, IDeleteEvent;

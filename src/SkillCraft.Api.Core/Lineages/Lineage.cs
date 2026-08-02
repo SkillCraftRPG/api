@@ -95,10 +95,6 @@ public class Lineage : IAuditable, IResource, IVersioned
     {
       userIds.AddRange(feature.GetUserIds());
     }
-    foreach (Language language in Languages)
-    {
-      userIds.AddRange(language.GetUserIds());
-    }
     return userIds.AsReadOnly();
   }
 
