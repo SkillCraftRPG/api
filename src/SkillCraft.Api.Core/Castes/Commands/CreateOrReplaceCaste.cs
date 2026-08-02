@@ -1,6 +1,6 @@
 ﻿using Logitar;
 using Logitar.CQRS;
-using SkillCraft.Api.Core.Castes.Events;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Permissions;
@@ -12,17 +12,20 @@ internal record CreateOrReplaceCasteCommand(CreateOrReplaceCastePayload Payload,
 
 internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrReplaceCasteCommand, CreateOrReplaceCasteResult>
 {
+  private readonly ICasteQuerier _casteQuerier;
   private readonly ICasteRepository _casteRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceCasteCommandHandler(
+    ICasteQuerier casteQuerier,
     ICasteRepository casteRepository,
     IContext context,
     IPermissionService permissionService,
     IWorldRepository worldRepository)
   {
+    _casteQuerier = casteQuerier;
     _casteRepository = casteRepository;
     _context = context;
     _permissionService = permissionService;
@@ -34,51 +37,45 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
     CreateOrReplaceCastePayload payload = command.Payload;
     payload.Validate();
 
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
     Caste? caste = null;
+    CasteId casteId = CasteId.NewId(worldId);
     if (command.Id.HasValue)
     {
-      caste = await _casteRepository.LoadAsync(command.Id.Value, cancellationToken);
+      casteId = new CasteId(worldId, command.Id.Value);
+      caste = await _casteRepository.LoadAsync(casteId, cancellationToken);
     }
 
-    Guid userId = _context.UserUid;
+    Name name = new(payload.Name);
+    Roll? wealthRoll = Roll.TryCreate(payload.WealthRoll?.CleanTrim()?.ToLowerInvariant());
+    Feature? feature = payload.Feature is null
+      ? null
+      : new Feature(new Name(payload.Feature.Name), Content.TryCreate(payload.Feature.Content));
 
-    CasteSnapshot? snapshot = null;
+    bool created = false;
     if (caste is null)
     {
       World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateCaste, world, cancellationToken);
 
-      caste = new Caste(world, command.Id, userId);
-      _casteRepository.Add(caste);
+      caste = new Caste(casteId, name, actorId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, caste, cancellationToken);
 
-      snapshot = new CasteSnapshot(caste);
+      caste.Rename(name, actorId);
     }
 
-    caste.Name = payload.Name.Trim();
-    caste.Summary = payload.Summary?.CleanTrim();
-    caste.Content = payload.Content?.CleanTrim();
+    caste.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    caste.SetRules(payload.Skill, wealthRoll, feature, actorId);
 
-    caste.Skill = payload.Skill;
-    caste.WealthRoll = payload.WealthRoll?.CleanTrim()?.ToLowerInvariant();
-    caste.SetFeature(payload.Feature is null ? null : new Feature(payload.Feature));
+    await _casteRepository.SaveAsync(caste, cancellationToken);
 
-    if (snapshot is not null)
-    {
-      CasteUpdated? record = snapshot.Compare(caste);
-      if (record is not null)
-      {
-        caste.Update(userId);
-        _casteRepository.Update(caste, record);
-      }
-    }
-
-    await _context.SaveChangesAsync(cancellationToken);
-
-    CasteModel model = await _casteRepository.ReadAsync(caste, cancellationToken);
-    return new CreateOrReplaceCasteResult(model, Created: snapshot is null);
+    CasteModel model = await _casteQuerier.ReadAsync(caste, cancellationToken);
+    return new CreateOrReplaceCasteResult(model, created);
   }
 }

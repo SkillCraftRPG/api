@@ -1,4 +1,4 @@
-using SkillCraft.Api.Core.Educations.Events;
+﻿using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Features;
 
 namespace SkillCraft.Api.Core.Educations;
@@ -11,7 +11,7 @@ public record EducationSnapshot
 
   public Skill? Skill { get; }
   public int? WealthMultiplier { get; }
-  public Feature? Feature { get; }
+  public FeatureOld? Feature { get; }
 
   public EducationSnapshot(Education education)
   {
@@ -21,7 +21,7 @@ public record EducationSnapshot
 
     Skill = education.Skill;
     WealthMultiplier = education.WealthMultiplier;
-    Feature = education.FeatureName is null ? null : new Feature(education.FeatureName, education.FeatureContent);
+    Feature = education.FeatureName is null ? null : new FeatureOld(education.FeatureName, education.FeatureContent);
   }
 
   public EducationUpdated? Compare(Education education)
@@ -59,11 +59,11 @@ public record EducationSnapshot
       record.WealthMultiplier = new Change<int?>(WealthMultiplier, education.WealthMultiplier);
     }
 
-    Feature? feature = education.FeatureName is null ? null : new Feature(education.FeatureName, education.FeatureContent);
+    FeatureOld? feature = education.FeatureName is null ? null : new FeatureOld(education.FeatureName, education.FeatureContent);
     if (Feature != feature)
     {
       changes++;
-      record.Feature = new Change<Feature>(Feature, feature);
+      record.Feature = new Change<FeatureOld>(Feature, feature);
     }
 
     return changes < 1 ? null : record;

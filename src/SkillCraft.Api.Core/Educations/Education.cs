@@ -49,7 +49,7 @@ public class Education : IAuditable, IResource, IVersioned
 
   public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
 
-  public void SetFeature(Feature? feature)
+  public void SetFeature(FeatureOld? feature)
   {
     FeatureName = feature?.Name;
     FeatureContent = feature?.Content;

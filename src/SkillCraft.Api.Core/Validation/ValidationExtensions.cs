@@ -90,7 +90,7 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, string> Roll<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
-    return ruleBuilder.NotEmpty().MaximumLength(Constants.RollMaximumLength).SetValidator(new RollValidator<T>());
+    return ruleBuilder.NotEmpty().MaximumLength(Core.Roll.MaximumLength).SetValidator(new RollValidator<T>());
   }
 
   public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)

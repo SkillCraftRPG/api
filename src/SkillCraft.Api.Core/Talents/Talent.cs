@@ -17,7 +17,6 @@ public class Talent : AggregateRoot, IResource
 
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
-
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
