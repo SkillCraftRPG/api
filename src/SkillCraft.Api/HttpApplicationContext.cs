@@ -43,9 +43,7 @@ internal class HttpApplicationContext : IContext
     }
   }
   public UserId UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
-  public Guid UserUid => TryGetUserUid() ?? throw new InvalidOperationException("An authenticated user is required.");
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
-  public Guid WorldUid => TryGetWorldUid() ?? throw new InvalidOperationException("A world is required.");
 
   public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() => Context.GetSessionCustomAttributes();
 
@@ -62,13 +60,11 @@ internal class HttpApplicationContext : IContext
     User? user = Context.GetUser();
     return user is null ? null : new UserId(new Actor(user).GetActorId());
   }
-  public Guid? TryGetUserUid() => Context.GetUser()?.Id;
   public WorldId? TryGetWorldId()
   {
     WorldModel? world = Context.GetWorld();
     return world is null ? null : new WorldId(world.Id);
   }
-  public Guid? TryGetWorldUid() => Context.GetWorld()?.Id;
 
   public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
   {
