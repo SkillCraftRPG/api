@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Spells.Models;
@@ -28,8 +29,7 @@ public class SpellIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _spell = new SpellBuilder(Faker).WithWorld(Context.World).Build();
-    _spellRepository.Add(_spell);
-    await Context.SaveChangesAsync();
+    await _spellRepository.SaveAsync(_spell);
   }
 
   [Theory(DisplayName = "It should create a new spell.")]
@@ -53,11 +53,11 @@ public class SpellIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, spell.Id);
     }
-    Assert.Equal(1, spell.Version);
+    Assert.Equal(2, spell.Version);
     Assert.Equal(Actor, spell.CreatedBy);
     Assert.Equal(DateTime.UtcNow, spell.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(spell.CreatedBy, spell.UpdatedBy);
-    Assert.Equal(spell.CreatedOn, spell.UpdatedOn);
+    Assert.True(spell.CreatedOn < spell.UpdatedOn);
 
     Assert.Equal(payload.Tier, spell.Tier);
     Assert.Equal(payload.Name.CleanTrim(), spell.Name);
@@ -69,35 +69,34 @@ public class SpellIntegrationTests : IntegrationTests
   public async Task Given_Tiers_When_Search_Then_Results()
   {
     Spell protection = SpellBuilder.ProtectionContreLaMagie(Faker, Context.World);
-    _spellRepository.Add(protection);
-    await Context.SaveChangesAsync();
+    await _spellRepository.SaveAsync(protection);
 
     SearchSpellsPayload payload = new()
     {
-      Tiers = [protection.Tier]
+      Tiers = [protection.Tier.Value]
     };
 
     SearchResults<SpellModel> results = await _spellService.SearchAsync(payload);
     Assert.Equal(1, results.Total);
 
     SpellModel spell = Assert.Single(results.Items);
-    Assert.Equal(protection.Id, spell.Id);
+    Assert.Equal(protection.ResourceId, spell.Id);
   }
 
   [Fact(DisplayName = "It should read a spell by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    SpellModel? spell = await _spellService.ReadAsync(_spell.Id);
+    SpellModel? spell = await _spellService.ReadAsync(_spell.ResourceId);
     Assert.NotNull(spell);
-    Assert.Equal(_spell.Id, spell.Id);
+    Assert.Equal(_spell.ResourceId, spell.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing spell.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
-    payload.Tier = _spell.Tier;
-    Guid id = _spell.Id;
+    payload.Tier = _spell.Tier.Value;
+    Guid id = _spell.ResourceId;
 
     CreateOrReplaceSpellResult result = await _spellService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -105,9 +104,9 @@ public class SpellIntegrationTests : IntegrationTests
     Assert.NotNull(spell);
 
     Assert.Equal(id, spell.Id);
-    Assert.Equal(2, spell.Version);
-    Assert.Equal(_spell.CreatedBy, spell.CreatedBy.Id);
-    Assert.Equal(_spell.CreatedOn, spell.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(3, spell.Version);
+    Assert.Equal(_spell.CreatedBy, spell.CreatedBy.GetActorId());
+    Assert.Equal(_spell.CreatedOn.AsUniversalTime(), spell.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, spell.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, spell.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -134,7 +133,7 @@ public class SpellIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _spellService.ReadAsync(_spell.Id));
+    Assert.Null(await _spellService.ReadAsync(_spell.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the spell was not found.")]
@@ -149,8 +148,7 @@ public class SpellIntegrationTests : IntegrationTests
     Spell flammeSacree = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Flamme sacrée").Build();
     Spell miracle = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Miracle").Build();
     Spell mirage = new SpellBuilder(Faker).WithWorld(Context.World).WithName("Mirage").Build();
-    _spellRepository.Add(flammeSacree, miracle, mirage);
-    await Context.SaveChangesAsync();
+    await _spellRepository.SaveAsync([flammeSacree, miracle, mirage]);
 
     SearchSpellsPayload payload = new()
     {
@@ -158,14 +156,14 @@ public class SpellIntegrationTests : IntegrationTests
       Limit = 1
     };
     payload.Search.Terms.Add(new SearchTerm("%i%"));
-    payload.Ids.AddRange([_spell.Id, Guid.Empty, miracle.Id, mirage.Id]);
+    payload.Ids.AddRange([_spell.ResourceId, Guid.Empty, miracle.ResourceId, mirage.ResourceId]);
     payload.Sort.Add(new SpellSortOption(SpellSort.Name, isDescending: true));
 
     SearchResults<SpellModel> results = await _spellService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     SpellModel spell = Assert.Single(results.Items);
-    Assert.Equal(miracle.Id, spell.Id);
+    Assert.Equal(miracle.ResourceId, spell.Id);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the tier is changing.")]
@@ -173,11 +171,11 @@ public class SpellIntegrationTests : IntegrationTests
   {
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
 
-    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<int>>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.Id));
+    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<int>>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.ResourceId));
     Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Spell.ResourceKind, exception.ResourceKind);
-    Assert.Equal(_spell.Id, exception.ResourceId);
-    Assert.Equal(_spell.Tier, exception.ExpectedValue);
+    Assert.Equal(_spell.ResourceId, exception.ResourceId);
+    Assert.Equal(_spell.Tier.Value, exception.ExpectedValue);
     Assert.Equal(payload.Tier, exception.AttemptedValue);
     Assert.Equal("Tier", exception.PropertyName);
   }
@@ -201,9 +199,9 @@ public class SpellIntegrationTests : IntegrationTests
     Context.User = new UserBuilder(Faker).Build();
 
     CreateOrReplaceSpellPayload payload = CreateProtectionContreLaMagiePayload();
-    payload.Tier = _spell.Tier;
+    payload.Tier = _spell.Tier.Value;
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.CreateOrReplaceAsync(payload, _spell.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
@@ -216,7 +214,7 @@ public class SpellIntegrationTests : IntegrationTests
 
     UpdateSpellPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.UpdateAsync(_spell.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _spellService.UpdateAsync(_spell.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_spell.Identifier.ToString(), exception.Resource);
@@ -225,7 +223,7 @@ public class SpellIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing spell.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _spell.Id;
+    Guid id = _spell.ResourceId;
     CreateOrReplaceSpellPayload create = CreateProtectionContreLaMagiePayload();
     UpdateSpellPayload payload = new()
     {
@@ -238,9 +236,9 @@ public class SpellIntegrationTests : IntegrationTests
     Assert.NotNull(spell);
 
     Assert.Equal(id, spell.Id);
-    Assert.Equal(2, spell.Version);
-    Assert.Equal(_spell.CreatedBy, spell.CreatedBy.Id);
-    Assert.Equal(_spell.CreatedOn, spell.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(3, spell.Version);
+    Assert.Equal(_spell.CreatedBy, spell.CreatedBy.GetActorId());
+    Assert.Equal(_spell.CreatedOn.AsUniversalTime(), spell.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, spell.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, spell.UpdatedOn, TimeSpan.FromSeconds(10));
 
