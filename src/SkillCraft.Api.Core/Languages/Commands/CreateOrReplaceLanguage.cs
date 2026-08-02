@@ -15,6 +15,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
   private readonly IContext _context;
   private readonly ILanguageRepository _languageRepository;
   private readonly IPermissionService _permissionService;
+  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
   private readonly IWorldRepository _worldRepository;
 
@@ -22,12 +23,14 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     IContext context,
     ILanguageRepository languageRepository,
     IPermissionService permissionService,
+    IScriptQuerier scriptQuerier,
     IScriptRepository scriptRepository,
     IWorldRepository worldRepository)
   {
     _context = context;
     _languageRepository = languageRepository;
     _permissionService = permissionService;
+    _scriptQuerier = scriptQuerier;
     _scriptRepository = scriptRepository;
     _worldRepository = worldRepository;
   }
@@ -44,12 +47,18 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     }
 
     Guid userId = _context.UserUid;
+    WorldId worldId = _context.WorldId;
 
-    Script? script = null;
+    int? scriptKey = null;
+    Guid? scriptUid = null;
     if (payload.ScriptId.HasValue)
     {
-      script = await _scriptRepository.LoadAsync(payload.ScriptId.Value, cancellationToken)
+      ScriptId scriptId = new(worldId, payload.ScriptId.Value);
+      Script script = await _scriptRepository.LoadAsync(scriptId, cancellationToken)
         ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value, _context.WorldUid), nameof(Language.ScriptId));
+      scriptKey = await _scriptQuerier.FindKeyAsync(script.Id, cancellationToken)
+        ?? throw new InvalidOperationException($"The script entity 'StreamId={script.Id}' was not found.");
+      scriptUid = script.ResourceId;
     }
 
     LanguageSnapshot? snapshot = null;
@@ -72,7 +81,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     language.Summary = payload.Summary?.CleanTrim();
     language.Content = payload.Content?.CleanTrim();
 
-    language.SetScript(script);
+    language.SetScript(scriptKey, scriptUid);
     language.TypicalSpeakers = payload.TypicalSpeakers?.CleanTrim();
 
     if (snapshot is not null)

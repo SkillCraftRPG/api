@@ -1,6 +1,5 @@
 ﻿using Logitar;
 using SkillCraft.Api.Core.Lineages;
-using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Languages;
@@ -19,8 +18,8 @@ public class Language : IAuditable, IResource, IVersioned
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
-  public Script? Script { get; private set; }
   public int? ScriptId { get; private set; }
+  public Guid? ScriptUid { get; private set; }
   public string? TypicalSpeakers { get; set; }
 
   public long Version { get; private set; }
@@ -48,20 +47,12 @@ public class Language : IAuditable, IResource, IVersioned
   {
   }
 
-  public IReadOnlyCollection<Guid> GetUserIds()
-  {
-    List<Guid> userIds = [CreatedBy, UpdatedBy];
-    if (Script is not null)
-    {
-      userIds.AddRange(Script.GetUserIds());
-    }
-    return userIds.AsReadOnly();
-  }
+  public IReadOnlyCollection<Guid> GetUserIds() => [CreatedBy, UpdatedBy];
 
-  public void SetScript(Script? script)
+  public void SetScript(int? scriptId, Guid? scriptUid = null)
   {
-    Script = script;
-    ScriptId = script?.ScriptId;
+    ScriptId = scriptId;
+    ScriptUid = scriptUid;
   }
 
   public void Update(Guid userId, DateTime? updatedOn = null)
