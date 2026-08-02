@@ -1,7 +1,6 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Scripts.Events;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Worlds;
 
@@ -13,17 +12,20 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
   private readonly IWorldRepository _worldRepository;
 
   public CreateOrReplaceScriptCommandHandler(
     IContext context,
     IPermissionService permissionService,
+    IScriptQuerier scriptQuerier,
     IScriptRepository scriptRepository,
     IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _scriptQuerier = scriptQuerier;
     _scriptRepository = scriptRepository;
     _worldRepository = worldRepository;
   }
@@ -33,47 +35,40 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
     CreateOrReplaceScriptPayload payload = command.Payload;
     payload.Validate();
 
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
     Script? script = null;
+    ScriptId scriptId = ScriptId.NewId(worldId);
     if (command.Id.HasValue)
     {
-      script = await _scriptRepository.LoadAsync(command.Id.Value, cancellationToken);
+      scriptId = new ScriptId(worldId, command.Id.Value);
+      script = await _scriptRepository.LoadAsync(scriptId, cancellationToken);
     }
 
-    Guid userId = _context.UserUid;
+    Name name = new(payload.Name);
 
-    ScriptSnapshot? snapshot = null;
+    bool created = false;
     if (script is null)
     {
       World world = await _worldRepository.LoadFromContextAsync(cancellationToken);
       await _permissionService.CheckAsync(Actions.CreateScript, world, cancellationToken);
 
-      script = new Script(world, command.Id, userId);
-      _scriptRepository.Add(script);
+      script = new Script(scriptId, name, actorId);
+      created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, script, cancellationToken);
 
-      snapshot = new ScriptSnapshot(script);
+      script.Rename(name, actorId);
     }
 
-    script.Name = payload.Name.Trim();
-    script.Summary = payload.Summary?.CleanTrim();
-    script.Content = payload.Content?.CleanTrim();
+    script.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
-    if (snapshot is not null)
-    {
-      ScriptUpdated? record = snapshot.Compare(script);
-      if (record is not null)
-      {
-        script.Update(userId);
-        _scriptRepository.Update(script, record);
-      }
-    }
+    await _scriptRepository.SaveAsync(script, cancellationToken);
 
-    await _context.SaveChangesAsync(cancellationToken);
-
-    ScriptModel model = await _scriptRepository.ReadAsync(script, cancellationToken);
-    return new CreateOrReplaceScriptResult(model, Created: snapshot is null);
+    ScriptModel model = await _scriptQuerier.ReadAsync(script, cancellationToken);
+    return new CreateOrReplaceScriptResult(model, created);
   }
 }

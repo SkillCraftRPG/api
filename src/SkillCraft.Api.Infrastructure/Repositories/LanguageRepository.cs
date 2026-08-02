@@ -1,12 +1,15 @@
 ﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
+using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
@@ -44,16 +47,21 @@ internal class LanguageRepository : Repository, ILanguageRepository
 
   public async Task<Language?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Languages
-      .Include(x => x.Script)
+    Language? language = await Database.Languages
       .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
+    if (language is not null)
+    {
+      await HydrateScriptsAsync([language], cancellationToken);
+    }
+    return language;
   }
   public async Task<IReadOnlyCollection<Language>> LoadAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
   {
-    return (await Database.Languages
-      .Include(x => x.Script)
+    List<Language> languages = await Database.Languages
       .Where(x => ids.Contains(x.Id) && x.WorldId == _context.WorldUid)
-      .ToListAsync(cancellationToken)).AsReadOnly();
+      .ToListAsync(cancellationToken);
+    await HydrateScriptsAsync(languages, cancellationToken);
+    return languages.AsReadOnly();
   }
 
   public async Task<LanguageModel> ReadAsync(Language language, CancellationToken cancellationToken)
@@ -64,7 +72,6 @@ internal class LanguageRepository : Repository, ILanguageRepository
   {
     Language? language = await Database.Languages.AsNoTracking()
       .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
-      .Include(x => x.Script)
       .SingleOrDefaultAsync(cancellationToken);
 
     return language is null ? null : await MapAsync(language, cancellationToken);
@@ -83,8 +90,7 @@ internal class LanguageRepository : Repository, ILanguageRepository
       builder.Join(Db.Scripts.ScriptId, Db.Languages.ScriptId, condition);
     }
 
-    IQueryable<Language> query = Database.Languages.FromQuery(builder).AsNoTracking()
-      .Include(x => x.Script);
+    IQueryable<Language> query = Database.Languages.FromQuery(builder).AsNoTracking();
 
     long total = await query.LongCountAsync(cancellationToken);
 
@@ -120,16 +126,71 @@ internal class LanguageRepository : Repository, ILanguageRepository
     return new SearchResults<LanguageModel>(items, total);
   }
 
+  private async Task HydrateScriptsAsync(IEnumerable<Language> languages, CancellationToken cancellationToken)
+  {
+    Dictionary<int, Guid> scripts = await LoadScriptUidsAsync(languages, cancellationToken);
+    foreach (Language language in languages)
+    {
+      if (language.ScriptId is int key && scripts.TryGetValue(key, out Guid uid))
+      {
+        language.SetScript(key, uid);
+      }
+    }
+  }
+
+  private async Task<Dictionary<int, Guid>> LoadScriptUidsAsync(IEnumerable<Language> languages, CancellationToken cancellationToken)
+  {
+    int[] keys = [.. languages.Where(language => language.ScriptId.HasValue).Select(language => language.ScriptId!.Value).Distinct()];
+    if (keys.Length < 1)
+    {
+      return [];
+    }
+
+    return await Database.Scripts.AsNoTracking()
+      .Where(script => keys.Contains(script.ScriptId))
+      .ToDictionaryAsync(script => script.ScriptId, script => script.Id, cancellationToken);
+  }
+
   private async Task<LanguageModel> MapAsync(Language language, CancellationToken cancellationToken)
   {
     return (await MapAsync([language], cancellationToken)).Single();
   }
   private async Task<IReadOnlyCollection<LanguageModel>> MapAsync(IEnumerable<Language> languages, CancellationToken cancellationToken)
   {
-    IEnumerable<Guid> userIds = languages.SelectMany(language => language.GetUserIds());
-    IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    MapperOld mapper = new(actors);
+    Language[] languageList = [.. languages];
+    Dictionary<int, ScriptEntity> scripts = await LoadScriptEntitiesAsync(languageList, cancellationToken);
 
-    return languages.Select(mapper.ToLanguage).ToList().AsReadOnly();
+    IEnumerable<Guid> userIds = languageList.SelectMany(language => language.GetUserIds());
+    IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
+    MapperOld languageMapper = new(actors);
+
+    IEnumerable<ActorId> actorIds = scripts.Values.SelectMany(script => script.GetActorIds());
+    IReadOnlyDictionary<ActorId, Actor> scriptActors = await _actorService.FindAsync(actorIds, cancellationToken);
+    Mapper scriptMapper = new(scriptActors);
+
+    List<LanguageModel> models = new(capacity: languageList.Length);
+    foreach (Language language in languageList)
+    {
+      ScriptModel? script = null;
+      if (language.ScriptId is int key && scripts.TryGetValue(key, out ScriptEntity? entity))
+      {
+        script = scriptMapper.ToScript(entity);
+      }
+      models.Add(languageMapper.ToLanguage(language, script));
+    }
+    return models.AsReadOnly();
+  }
+
+  private async Task<Dictionary<int, ScriptEntity>> LoadScriptEntitiesAsync(IEnumerable<Language> languages, CancellationToken cancellationToken)
+  {
+    int[] keys = [.. languages.Where(language => language.ScriptId.HasValue).Select(language => language.ScriptId!.Value).Distinct()];
+    if (keys.Length < 1)
+    {
+      return [];
+    }
+
+    return await Database.Scripts.AsNoTracking()
+      .Where(script => keys.Contains(script.ScriptId))
+      .ToDictionaryAsync(script => script.ScriptId, cancellationToken);
   }
 }

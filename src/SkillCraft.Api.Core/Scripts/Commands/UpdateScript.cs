@@ -1,8 +1,8 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Permissions;
-using SkillCraft.Api.Core.Scripts.Events;
 using SkillCraft.Api.Core.Scripts.Models;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Scripts.Commands;
 
@@ -12,12 +12,18 @@ internal class UpdateScriptCommandHandler : ICommandHandler<UpdateScriptCommand,
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
 
-  public UpdateScriptCommandHandler(IContext context, IPermissionService permissionService, IScriptRepository scriptRepository)
+  public UpdateScriptCommandHandler(
+    IContext context,
+    IPermissionService permissionService,
+    IScriptQuerier scriptQuerier,
+    IScriptRepository scriptRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _scriptQuerier = scriptQuerier;
     _scriptRepository = scriptRepository;
   }
 
@@ -26,37 +32,33 @@ internal class UpdateScriptCommandHandler : ICommandHandler<UpdateScriptCommand,
     UpdateScriptPayload payload = command.Payload;
     payload.Validate();
 
-    Script? script = await _scriptRepository.LoadAsync(command.Id, cancellationToken);
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
+    ScriptId scriptId = new(worldId, command.Id);
+    Script? script = await _scriptRepository.LoadAsync(scriptId, cancellationToken);
     if (script is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, script, cancellationToken);
 
-    ScriptSnapshot snapshot = new(script);
-
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
     {
-      script.Name = payload.Name.Trim();
-    }
-    if (payload.Summary is not null)
-    {
-      script.Summary = payload.Summary.Value?.CleanTrim();
-    }
-    if (payload.Content is not null)
-    {
-      script.Content = payload.Content.Value?.CleanTrim();
+      script.Rename(name, actorId);
     }
 
-    ScriptUpdated? record = snapshot.Compare(script);
-    if (record is not null)
+    if (payload.Summary is not null || payload.Content is not null)
     {
-      script.Update(_context.UserUid);
-      _scriptRepository.Update(script, record);
-
-      await _context.SaveChangesAsync(cancellationToken);
+      script.Edit(
+        payload.Summary is null ? script.Summary : Summary.TryCreate(payload.Summary.Value),
+        payload.Content is null ? script.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
     }
 
-    return await _scriptRepository.ReadAsync(script, cancellationToken);
+    await _scriptRepository.SaveAsync(script, cancellationToken);
+
+    return await _scriptQuerier.ReadAsync(script, cancellationToken);
   }
 }

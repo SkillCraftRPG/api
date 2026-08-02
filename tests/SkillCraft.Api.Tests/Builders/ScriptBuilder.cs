@@ -1,4 +1,6 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Worlds;
 
@@ -6,7 +8,7 @@ namespace SkillCraft.Api.Builders;
 
 public interface IScriptBuilder
 {
-  IScriptBuilder WithId(Guid id);
+  IScriptBuilder WithId(ScriptId scriptId);
   IScriptBuilder WithWorld(World? world);
   IScriptBuilder WithName(string name);
   IScriptBuilder WithSummary(string? summary);
@@ -20,8 +22,8 @@ public class ScriptBuilder : IScriptBuilder
   private readonly Faker _faker;
 
   private string? _content = null;
-  private Guid? _id = null;
   private string _name = "Script";
+  private ScriptId? _scriptId = null;
   private string? _summary = null;
   private World? _world = null;
 
@@ -30,9 +32,9 @@ public class ScriptBuilder : IScriptBuilder
     _faker = faker ?? new();
   }
 
-  public IScriptBuilder WithId(Guid id)
+  public IScriptBuilder WithId(ScriptId scriptId)
   {
-    _id = id;
+    _scriptId = scriptId;
     return this;
   }
 
@@ -63,12 +65,16 @@ public class ScriptBuilder : IScriptBuilder
   public Script Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Script(world, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content
-    };
+    ActorId actorId = world.OwnerId.ActorId;
+    Name name = new(_name);
+
+    Script script = _scriptId.HasValue
+      ? new(_scriptId.Value, name, actorId)
+      : new(world, name, actorId);
+
+    script.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+
+    return script;
   }
 
   public static Script Renon(Faker? faker = null, World? world = null) => new ScriptBuilder(faker)

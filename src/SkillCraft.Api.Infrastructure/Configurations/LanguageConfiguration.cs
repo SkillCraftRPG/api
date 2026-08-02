@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Validation;
 using SkillCraft.Api.Infrastructure.Db;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
@@ -23,12 +24,16 @@ internal class LanguageConfiguration : IEntityTypeConfiguration<Language>
     builder.HasIndex(x => new { x.WorldId, x.UpdatedBy });
     builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
+    builder.Ignore(x => x.ScriptUid);
+
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
 
     //builder.HasOne(x => x.World).WithMany(x => x.Languages)
     //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
     //  .OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.Script).WithMany(x => x.Languages).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne<ScriptEntity>().WithMany(x => x.Languages)
+      .HasForeignKey(x => x.ScriptId)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }

@@ -13,7 +13,6 @@ using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Models;
-using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Spells;
 using SkillCraft.Api.Core.Spells.Models;
@@ -100,7 +99,7 @@ internal class MapperOld // TODO(fpion): remove this
     return destination;
   }
 
-  public LanguageModel ToLanguage(Language source)
+  public LanguageModel ToLanguage(Language source, ScriptModel? script = null)
   {
     LanguageModel destination = new()
     {
@@ -108,24 +107,16 @@ internal class MapperOld // TODO(fpion): remove this
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content,
-      TypicalSpeakers = source.TypicalSpeakers
+      TypicalSpeakers = source.TypicalSpeakers,
+      Script = script
     };
-
-    if (source.ScriptId.HasValue)
-    {
-      if (source.Script is null)
-      {
-        throw new ArgumentException("The script is required.", nameof(source));
-      }
-      destination.Script = ToScript(source.Script);
-    }
 
     MapAggregate(source, destination);
 
     return destination;
   }
 
-  public LineageModel ToLineage(Lineage source)
+  public LineageModel ToLineage(Lineage source, IReadOnlyDictionary<int, ScriptModel>? scripts = null)
   {
     LineageModel destination = new()
     {
@@ -137,7 +128,7 @@ internal class MapperOld // TODO(fpion): remove this
 
     if (source.Parent is not null)
     {
-      destination.Parent = ToLineage(source.Parent);
+      destination.Parent = ToLineage(source.Parent, scripts);
     }
 
     foreach (LineageFeature feature in source.Features)
@@ -147,7 +138,12 @@ internal class MapperOld // TODO(fpion): remove this
 
     foreach (Language language in source.Languages)
     {
-      destination.Languages.Granted.Add(ToLanguage(language));
+      ScriptModel? script = null;
+      if (language.ScriptId is int key && scripts is not null)
+      {
+        scripts.TryGetValue(key, out script);
+      }
+      destination.Languages.Granted.Add(ToLanguage(language, script));
     }
     destination.Languages.Extra = source.ExtraLanguages;
     destination.Languages.Content = source.LanguagesContent;
@@ -195,21 +191,6 @@ internal class MapperOld // TODO(fpion): remove this
     UpdatedBy = FindActor(feature.UpdatedBy),
     UpdatedOn = feature.UpdatedOn.AsUniversalTime()
   };
-
-  public ScriptModel ToScript(Script source)
-  {
-    ScriptModel destination = new()
-    {
-      Id = source.Id,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content
-    };
-
-    MapAggregate(source, destination);
-
-    return destination;
-  }
 
   public SpellModel ToSpell(Spell source)
   {

@@ -1,12 +1,15 @@
 ﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
+using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Lineages.Events;
 using SkillCraft.Api.Core.Lineages.Models;
+using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
@@ -75,9 +78,9 @@ internal class LineageRepository : Repository, ILineageRepository
     Lineage? lineage = await Database.Lineages.AsNoTracking().AsSplitQuery()
       .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .Include(x => x.Features)
-      .Include(x => x.Languages).ThenInclude(x => x.Script)
+      .Include(x => x.Languages)
       .Include(x => x.Parent).ThenInclude(x => x!.Features)
-      .Include(x => x.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
+      .Include(x => x.Parent).ThenInclude(x => x!.Languages)
       .SingleOrDefaultAsync(cancellationToken);
 
     return lineage is null ? null : await MapAsync(lineage, cancellationToken);
@@ -150,10 +153,36 @@ internal class LineageRepository : Repository, ILineageRepository
   }
   private async Task<IReadOnlyCollection<LineageModel>> MapAsync(IEnumerable<Lineage> lineages, CancellationToken cancellationToken)
   {
-    IEnumerable<Guid> userIds = lineages.SelectMany(lineage => lineage.GetUserIds());
+    Lineage[] lineageList = [.. lineages];
+    Dictionary<int, ScriptModel> scripts = await LoadScriptsAsync(lineageList, cancellationToken);
+
+    IEnumerable<Guid> userIds = lineageList.SelectMany(lineage => lineage.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
     MapperOld mapper = new(actors);
 
-    return lineages.Select(mapper.ToLineage).ToList().AsReadOnly();
+    return lineageList.Select(lineage => mapper.ToLineage(lineage, scripts)).ToList().AsReadOnly();
+  }
+
+  private async Task<Dictionary<int, ScriptModel>> LoadScriptsAsync(IEnumerable<Lineage> lineages, CancellationToken cancellationToken)
+  {
+    int[] keys = [.. lineages
+      .SelectMany(lineage => lineage.Languages.Concat(lineage.Parent?.Languages ?? []))
+      .Where(language => language.ScriptId.HasValue)
+      .Select(language => language.ScriptId!.Value)
+      .Distinct()];
+    if (keys.Length < 1)
+    {
+      return [];
+    }
+
+    ScriptEntity[] entities = await Database.Scripts.AsNoTracking()
+      .Where(script => keys.Contains(script.ScriptId))
+      .ToArrayAsync(cancellationToken);
+
+    IEnumerable<ActorId> actorIds = entities.SelectMany(script => script.GetActorIds());
+    IReadOnlyDictionary<ActorId, Actor> actors = await _actorService.FindAsync(actorIds, cancellationToken);
+    Mapper mapper = new(actors);
+
+    return entities.ToDictionary(script => script.ScriptId, mapper.ToScript);
   }
 }

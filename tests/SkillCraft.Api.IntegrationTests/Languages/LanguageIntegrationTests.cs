@@ -15,8 +15,10 @@ public class LanguageIntegrationTests : IntegrationTests
 {
   private readonly ILanguageRepository _languageRepository;
   private readonly ILanguageService _languageService;
+  private readonly IScriptQuerier _scriptQuerier;
   private readonly IScriptRepository _scriptRepository;
 
+  private int _renonKey;
   private Script _renon = null!;
   private Language _language = null!;
 
@@ -24,6 +26,7 @@ public class LanguageIntegrationTests : IntegrationTests
   {
     _languageRepository = ServiceProvider.GetRequiredService<ILanguageRepository>();
     _languageService = ServiceProvider.GetRequiredService<ILanguageService>();
+    _scriptQuerier = ServiceProvider.GetRequiredService<IScriptQuerier>();
     _scriptRepository = ServiceProvider.GetRequiredService<IScriptRepository>();
   }
 
@@ -32,7 +35,8 @@ public class LanguageIntegrationTests : IntegrationTests
     await base.InitializeAsync();
 
     _renon = ScriptBuilder.Renon(Faker, Context.World);
-    _scriptRepository.Add(_renon);
+    await _scriptRepository.SaveAsync(_renon);
+    _renonKey = (await _scriptQuerier.FindKeyAsync(_renon.ResourceId))!.Value;
 
     _language = new LanguageBuilder(Faker).WithWorld(Context.World).Build();
     _languageRepository.Add(_language);
@@ -50,7 +54,7 @@ public class LanguageIntegrationTests : IntegrationTests
       Name = " Commun ",
       Summary = "  Langue véhiculaire pragmatique et évolutive, parlée sur tout Ouespéro.  ",
       Content = "   Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.   ",
-      ScriptId = _renon.Id,
+      ScriptId = _renon.ResourceId,
       TypicalSpeakers = "   Humains   "
     };
     Guid? id = withId ? Guid.NewGuid() : null;
@@ -79,20 +83,20 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content?.CleanTrim(), language.Content);
 
     Assert.NotNull(language.Script);
-    Assert.Equal(_renon.Id, language.Script.Id);
+    Assert.Equal(_renon.ResourceId, language.Script.Id);
     Assert.Equal(payload.TypicalSpeakers?.CleanTrim(), language.TypicalSpeakers);
   }
 
   [Fact(DisplayName = "It should filter search results by script ID.")]
   public async Task Given_ScriptId_When_Search_Then_Results()
   {
-    Language commun = LanguageBuilder.Common(Faker, Context.World, _renon);
+    Language commun = LanguageBuilder.Common(Faker, Context.World, _renonKey, _renon.ResourceId);
     _languageRepository.Add(commun);
     await Context.SaveChangesAsync();
 
     SearchLanguagesPayload payload = new()
     {
-      ScriptId = _renon.Id
+      ScriptId = _renon.ResourceId
     };
 
     SearchResults<LanguageModel> results = await _languageService.SearchAsync(payload);
@@ -118,7 +122,7 @@ public class LanguageIntegrationTests : IntegrationTests
       Name = " Commun ",
       Summary = "  Langue véhiculaire pragmatique et évolutive, parlée sur tout Ouespéro.  ",
       Content = "   Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.   ",
-      ScriptId = _renon.Id,
+      ScriptId = _renon.ResourceId,
       TypicalSpeakers = "   Humains   "
     };
     Guid id = _language.Id;
@@ -140,7 +144,7 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content?.CleanTrim(), language.Content);
 
     Assert.NotNull(language.Script);
-    Assert.Equal(_renon.Id, language.Script.Id);
+    Assert.Equal(_renon.ResourceId, language.Script.Id);
     Assert.Equal(payload.TypicalSpeakers?.CleanTrim(), language.TypicalSpeakers);
   }
 
@@ -260,7 +264,7 @@ public class LanguageIntegrationTests : IntegrationTests
       Name = " Commun ",
       Summary = "  Langue véhiculaire pragmatique et évolutive, parlée sur tout Ouespéro.  ",
       Content = "   Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.   ",
-      ScriptId = _renon.Id,
+      ScriptId = _renon.ResourceId,
       TypicalSpeakers = "   Humains   "
     };
 
@@ -280,7 +284,7 @@ public class LanguageIntegrationTests : IntegrationTests
       Name = " Commun ",
       Summary = "  Langue véhiculaire pragmatique et évolutive, parlée sur tout Ouespéro.  ",
       Content = "   Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.   ",
-      ScriptId = _renon.Id,
+      ScriptId = _renon.ResourceId,
       TypicalSpeakers = "   Humains   "
     };
 
@@ -312,7 +316,7 @@ public class LanguageIntegrationTests : IntegrationTests
       Name = " Commun ",
       Summary = new Optional<string>("  Langue véhiculaire pragmatique et évolutive, parlée sur tout Ouespéro.  "),
       Content = new Optional<string>("   Le Rénon commun, souvent abrégé en _Commun_, est la langue véhiculaire la plus répandue sur le continent d’Ouespéro. Héritier direct de la langue populaire de l’ancien empire occidental, il s’est imposé comme langue du commerce, de la diplomatie et des échanges quotidiens, en particulier dans l’Ouest et le Sud du continent. Il est parlé sous six grands dialectes régionaux, mutuellement intelligibles à l’oral. Tous utilisent le même alphabet, mais diffèrent par leurs conventions orthographiques, leurs choix graphiques et leurs traditions scribales.\n\nLe Rénon commun est une langue fonctionnelle, pragmatique et évolutive, issue de la langue parlée plutôt que de la norme savante. Il privilégie l’efficacité communicative et l’intercompréhension entre peuples d’origines diverses. Il est parfaitement adapté aux usages quotidiens, commerciaux et diplomatiques, mais reste peu apte à exprimer des concepts abstraits complexes sans périphrases. Ses traits généraux incluent :\n\n- une grammaire simplifiée par rapport à la [langue impériale ancienne](/regles/langues/imperial),\n- une syntaxe plus stable, généralement sujet–verbe–objet,\n- un affaiblissement des flexions anciennes, compensé par l’usage accru de prépositions,\n- un vocabulaire composite mêlant héritage impérial, innovations populaires et emprunts régionaux.   "),
-      ScriptId = new Optional<Guid?>(_renon.Id),
+      ScriptId = new Optional<Guid?>(_renon.ResourceId),
       TypicalSpeakers = new Optional<string>("   Humains   ")
     };
 
@@ -331,7 +335,7 @@ public class LanguageIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content.Value?.CleanTrim(), language.Content);
 
     Assert.NotNull(language.Script);
-    Assert.Equal(_renon.Id, language.Script.Id);
+    Assert.Equal(_renon.ResourceId, language.Script.Id);
     Assert.Equal(payload.TypicalSpeakers.Value?.CleanTrim(), language.TypicalSpeakers);
   }
 }
