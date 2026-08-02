@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
@@ -176,7 +176,7 @@ public class LineageFeatureIntegrationTests : IntegrationTests
     Guid lineageId = Guid.Empty;
 
     var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _lineageService.CreateOrReplaceFeatureAsync(lineageId, payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Lineage.ResourceKind, exception.ResourceKind);
     Assert.Equal(lineageId, exception.ResourceId);
     Assert.Equal("LineageId", exception.PropertyName);

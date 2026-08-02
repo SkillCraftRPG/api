@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -210,7 +210,7 @@ public class LanguageIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Script.ResourceKind, exception.ResourceKind);
     Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
     Assert.Equal("ScriptId", exception.PropertyName);
@@ -229,7 +229,7 @@ public class LanguageIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.CreateOrReplaceAsync(payload, _language.Id));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Script.ResourceKind, exception.ResourceKind);
     Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
     Assert.Equal("ScriptId", exception.PropertyName);
@@ -244,7 +244,7 @@ public class LanguageIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _languageService.UpdateAsync(_language.Id, payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Script.ResourceKind, exception.ResourceKind);
     Assert.Equal(payload.ScriptId.Value, exception.ResourceId);
     Assert.Equal("ScriptId", exception.PropertyName);

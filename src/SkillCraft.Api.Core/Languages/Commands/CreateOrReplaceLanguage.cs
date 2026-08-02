@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
@@ -44,7 +44,7 @@ internal class CreateOrReplaceLanguageCommandHandler : ICommandHandler<CreateOrR
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     Script? script = null;
     if (payload.ScriptId.HasValue)

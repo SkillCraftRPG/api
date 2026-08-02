@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
@@ -7,7 +7,6 @@ using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Spells;
-using SkillCraft.Api.Core.Talents;
 
 namespace SkillCraft.Api.Core.Worlds;
 
@@ -40,7 +39,6 @@ public class World : IAuditable, IResource, IVersioned
   public List<Lineage> Lineages { get; private set; } = [];
   public List<Script> Scripts { get; private set; } = [];
   public List<Spell> Spells { get; private set; } = [];
-  public List<Talent> Talents { get; private set; } = [];
 
   public World(Guid ownerId, Guid? id = null, DateTime? createdOn = null)
   {

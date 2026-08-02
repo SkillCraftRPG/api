@@ -1,143 +1,66 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Search;
-using Logitar.Data;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
-using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
-using SkillCraft.Api.Core.Talents.Events;
-using SkillCraft.Api.Core.Talents.Models;
-using SkillCraft.Api.Infrastructure.Actors;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal class TalentRepository : Repository, ITalentRepository
+internal class TalentRepository : Logitar.EventSourcing.Repository, ITalentRepository // TODO(fpion): namespace
 {
-  private readonly IActorService _actorService;
-  private readonly IContext _context;
-  private readonly ISqlHelper _sqlHelper;
+  private readonly GameContext _database;
 
-  public TalentRepository(IActorService actorService, IContext context, GameContext game, ISqlHelper sqlHelper) : base(game)
+  public TalentRepository(GameContext database, IEventStore eventStore) : base(eventStore)
   {
-    _actorService = actorService;
-    _context = context;
-    _sqlHelper = sqlHelper;
+    _database = database;
   }
 
-  public void Add(params Talent[] talents)
+  public async Task<Talent?> LoadAsync(TalentId id, CancellationToken cancellationToken)
   {
+    return await base.LoadAsync<Talent>(id.StreamId, isDeleted: false, cancellationToken);
+  }
+  public async Task<IReadOnlyCollection<Talent>> LoadAsync(IEnumerable<TalentId> ids, CancellationToken cancellationToken)
+  {
+    return await base.LoadAsync<Talent>(ids.Select(id => id.StreamId), isDeleted: false, cancellationToken);
+  }
+
+  public async Task SaveAsync(Talent talent, CancellationToken cancellationToken)
+  {
+    await base.SaveAsync(talent, cancellationToken);
+
+    await SynchronizeAsync(talent, cancellationToken);
+  }
+  public async Task SaveAsync(IEnumerable<Talent> talents, CancellationToken cancellationToken)
+  {
+    await base.SaveAsync(talents, cancellationToken);
+
     foreach (Talent talent in talents)
     {
-      Database.Talents.Add(talent);
-      base.RecordChange(new TalentCreated(talent));
+      await SynchronizeAsync(talent, cancellationToken);
     }
   }
-  public void Remove(Talent talent)
-  {
-    Database.Talents.Remove(talent);
-    base.RecordChange(new TalentDeleted(talent, _context.UserId));
-  }
-  public void Update(Talent talent, TalentUpdated record)
-  {
-    Database.Talents.Update(talent);
-    base.RecordChange(record);
-  }
 
-  public async Task<Talent?> LoadAsync(Guid id, CancellationToken cancellationToken)
+  private async Task SynchronizeAsync(Talent talent, CancellationToken cancellationToken)
   {
-    return await Database.Talents
-      .Include(x => x.RequiredTalent)
-      .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
-  }
-
-  public async Task<TalentModel> ReadAsync(Talent talent, CancellationToken cancellationToken)
-  {
-    return await ReadAsync(talent.Id, cancellationToken) ?? throw new InvalidOperationException($"The talent 'Id={talent.Id}' was not found.");
-  }
-  public async Task<TalentModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
-  {
-    Talent? talent = await Database.Talents.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
-      .Include(x => x.RequiredTalent)
-      .SingleOrDefaultAsync(cancellationToken);
-
-    return talent is null ? null : await MapAsync(talent, cancellationToken);
-  }
-
-  public virtual async Task<SearchResults<TalentModel>> SearchAsync(SearchTalentsPayload payload, CancellationToken cancellationToken)
-  {
-    IQueryBuilder builder = _sqlHelper.Query(Db.Talents.Table).SelectAll(Db.Talents.Table)
-      .Where(Db.Talents.WorldId, Operators.IsEqualTo(_context.WorldId))
-      .ApplyIdFilter(Db.Talents.Id, payload.Ids);
-    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Talents.Name, Db.Talents.Summary);
-
-    if (payload.Tiers.Count > 0)
+    int? requiredTalentId = null;
+    if (talent.RequiredTalentId.HasValue)
     {
-      builder.Where(Db.Talents.Tier, Operators.IsIn(payload.Tiers.Select(tier => (object)tier).ToArray()));
+      requiredTalentId = await _database.Talents
+        .Where(x => x.StreamId == talent.RequiredTalentId.Value.Value)
+        .Select(x => (int?)x.TalentId)
+        .SingleOrDefaultAsync(cancellationToken)
+        ?? throw new InvalidOperationException($"The talent 'StreamId={talent.RequiredTalentId}' was not found.");
     }
-    if (payload.AllowMultiplePurchases.HasValue)
+
+    TalentEntity? entity = await _database.Talents.SingleOrDefaultAsync(x => x.StreamId == talent.Id.Value, cancellationToken);
+    if (entity is null)
     {
-      builder.Where(Db.Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
+      entity = new TalentEntity(talent, requiredTalentId);
+      _database.Talents.Add(entity);
     }
-    if (payload.Skill.HasValue)
+    else
     {
-      builder.Where(Db.Talents.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
+      entity.Update(talent, requiredTalentId);
     }
-    if (payload.RequiredTalentId.HasValue)
-    {
-      TableId requiredTalents = new(Db.Talents.Table.Schema, Db.Talents.Table.Table!, "RequiredTalents");
-      ColumnId requiredTalentId = new(nameof(Talent.TalentId), requiredTalents);
-      ColumnId requiredTalentUid = new(nameof(Talent.Id), requiredTalents);
-      OperatorCondition condition = new(requiredTalentUid, Operators.IsEqualTo(payload.RequiredTalentId.Value));
-      builder.Join(requiredTalentId, Db.Talents.RequiredTalentId, condition);
-    }
-
-    IQueryable<Talent> query = Database.Talents.FromQuery(builder).AsNoTracking()
-      .Include(x => x.RequiredTalent);
-
-    long total = await query.LongCountAsync(cancellationToken);
-
-    IOrderedQueryable<Talent>? ordered = null;
-    foreach (TalentSortOption sort in payload.Sort)
-    {
-      switch (sort.Field)
-      {
-        case TalentSort.CreatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
-          break;
-        case TalentSort.Name:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name) : ordered.ThenBy(x => x.Name));
-          break;
-        case TalentSort.UpdatedOn:
-          ordered = (ordered is null)
-            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
-            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
-          break;
-      }
-    }
-    query = ordered ?? query;
-
-    query = query.ApplyPaging(payload);
-
-    Talent[] talents = await query.ToArrayAsync(cancellationToken);
-    IReadOnlyCollection<TalentModel> items = await MapAsync(talents, cancellationToken);
-
-    return new SearchResults<TalentModel>(items, total);
-  }
-
-  private async Task<TalentModel> MapAsync(Talent talent, CancellationToken cancellationToken)
-  {
-    return (await MapAsync([talent], cancellationToken)).Single();
-  }
-  private async Task<IReadOnlyCollection<TalentModel>> MapAsync(IEnumerable<Talent> talents, CancellationToken cancellationToken)
-  {
-    IEnumerable<Guid> userIds = talents.SelectMany(talent => talent.GetUserIds());
-    IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
-
-    return talents.Select(mapper.ToTalent).ToList().AsReadOnly();
+    await _database.SaveChangesAsync(cancellationToken);
   }
 }

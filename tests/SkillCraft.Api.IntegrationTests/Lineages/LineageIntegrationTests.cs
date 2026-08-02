@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
@@ -207,7 +207,7 @@ public class LineageIntegrationTests : IntegrationTests
     payload.ParentId = null;
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid?>>(async () => await _lineageService.CreateOrReplaceAsync(payload, hautElfe.Id));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Lineage.ResourceKind, exception.ResourceKind);
     Assert.Equal(hautElfe.Id, exception.ResourceId);
     Assert.Equal(_elfe.Id, exception.ExpectedValue);
@@ -227,7 +227,7 @@ public class LineageIntegrationTests : IntegrationTests
     payload.Name = " Sous-ethnie ";
 
     var exception = await Assert.ThrowsAsync<InvalidParentLineageException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(hautElfe.Id, exception.ParentId);
     Assert.Equal("ParentId", exception.PropertyName);
   }
@@ -239,7 +239,7 @@ public class LineageIntegrationTests : IntegrationTests
     payload.Languages.Ids = [Guid.Empty];
 
     var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Contains(Guid.Empty, exception.LanguageIds);
     Assert.Equal("Languages.Ids", exception.PropertyName);
   }
@@ -251,7 +251,7 @@ public class LineageIntegrationTests : IntegrationTests
     payload.Languages.Ids = [Guid.Empty];
 
     var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload, _lineage.Id));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Contains(Guid.Empty, exception.LanguageIds);
     Assert.Equal("Languages.Ids", exception.PropertyName);
   }
@@ -269,7 +269,7 @@ public class LineageIntegrationTests : IntegrationTests
     };
 
     var exception = await Assert.ThrowsAsync<LanguagesNotFoundException>(async () => await _lineageService.UpdateAsync(_lineage.Id, payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Contains(Guid.Empty, exception.LanguageIds);
     Assert.Equal("Languages.Ids", exception.PropertyName);
   }
@@ -281,7 +281,7 @@ public class LineageIntegrationTests : IntegrationTests
     payload.ParentId = Guid.Empty;
 
     var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await _lineageService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId, exception.WorldId);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Lineage.ResourceKind, exception.ResourceKind);
     Assert.Equal(payload.ParentId.Value, exception.ResourceId);
     Assert.Equal("ParentId", exception.PropertyName);

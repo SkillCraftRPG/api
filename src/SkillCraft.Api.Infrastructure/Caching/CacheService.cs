@@ -1,7 +1,10 @@
-﻿using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Users;
+using Logitar.EventSourcing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Caching;
 
 namespace SkillCraft.Api.Infrastructure.Caching;
@@ -23,6 +26,23 @@ internal class CacheService : ICacheService
     _cache = cache;
     _settings = settings;
   }
+
+  public Actor? GetActor(ActorId id)
+  {
+    string key = GetActorKey(id);
+    return _cache.TryGetValue(key, out object? value) ? (Actor?)value : null;
+  }
+  public void RemoveActor(ActorId id)
+  {
+    string key = GetActorKey(id);
+    _cache.Remove(key);
+  }
+  public void SetActor(Actor actor)
+  {
+    string key = GetActorKey(actor.GetActorId());
+    _cache.Set(key, actor, _settings.ActorLifetime);
+  }
+  private static string GetActorKey(ActorId id) => $"Actor.Id={id}";
 
   public User? GetUser(Guid id)
   {

@@ -7,9 +7,9 @@ using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Spells;
-using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Configurations;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure;
 
@@ -30,7 +30,7 @@ public class GameContext : DbContext
   internal DbSet<LineageLanguage> LineageLanguages => Set<LineageLanguage>();
   internal DbSet<Script> Scripts => Set<Script>();
   internal DbSet<Spell> Spells => Set<Spell>();
-  internal DbSet<Talent> Talents => Set<Talent>();
+  internal DbSet<TalentEntity> Talents => Set<TalentEntity>();
   internal DbSet<World> Worlds => Set<World>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

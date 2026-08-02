@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using SkillCraft.Api.Core.Talents.Models;
 
 namespace SkillCraft.Api.Core.Talents.Queries;
@@ -7,15 +7,15 @@ internal record ReadTalentQuery(Guid Id) : IQuery<TalentModel?>;
 
 internal class ReadTalentQueryHandler : IQueryHandler<ReadTalentQuery, TalentModel?>
 {
-  private readonly ITalentRepository _talentRepository;
+  private readonly ITalentQuerier _talentQuerier;
 
-  public ReadTalentQueryHandler(ITalentRepository talentRepository)
+  public ReadTalentQueryHandler(ITalentQuerier talentQuerier)
   {
-    _talentRepository = talentRepository;
+    _talentQuerier = talentQuerier;
   }
 
   public async Task<TalentModel?> HandleAsync(ReadTalentQuery query, CancellationToken cancellationToken)
   {
-    return await _talentRepository.ReadAsync(query.Id, cancellationToken);
+    return await _talentQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

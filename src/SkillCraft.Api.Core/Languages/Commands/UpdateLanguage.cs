@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Languages.Events;
 using SkillCraft.Api.Core.Languages.Models;
@@ -61,7 +61,7 @@ internal class UpdateLanguageCommandHandler : ICommandHandler<UpdateLanguageComm
       if (payload.ScriptId.Value.HasValue)
       {
         script = await _scriptRepository.LoadAsync(payload.ScriptId.Value.Value, cancellationToken)
-          ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value.Value, _context.WorldId), nameof(Language.ScriptId));
+          ?? throw new ResourceNotFoundException(new ResourceIdentifier(Script.ResourceKind, payload.ScriptId.Value.Value, _context.WorldUid), nameof(Language.ScriptId));
       }
       language.SetScript(script);
     }

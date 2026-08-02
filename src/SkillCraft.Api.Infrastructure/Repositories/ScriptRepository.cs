@@ -44,7 +44,7 @@ internal class ScriptRepository : Repository, IScriptRepository
 
   public async Task<Script?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Scripts.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+    return await Database.Scripts.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<ScriptModel> ReadAsync(Script script, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ internal class ScriptRepository : Repository, IScriptRepository
   public async Task<ScriptModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Script? script = await Database.Scripts.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
 
     return script is null ? null : await MapAsync(script, cancellationToken);
@@ -63,7 +63,7 @@ internal class ScriptRepository : Repository, IScriptRepository
   public virtual async Task<SearchResults<ScriptModel>> SearchAsync(SearchScriptsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Scripts.Table).SelectAll(Db.Scripts.Table)
-      .Where(Db.Scripts.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Scripts.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Scripts.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Scripts.Name, Db.Scripts.Summary);
 
@@ -111,7 +111,7 @@ internal class ScriptRepository : Repository, IScriptRepository
   {
     IEnumerable<Guid> userIds = scripts.SelectMany(script => script.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return scripts.Select(mapper.ToScript).ToList().AsReadOnly();
   }

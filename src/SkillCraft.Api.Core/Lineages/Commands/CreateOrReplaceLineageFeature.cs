@@ -28,7 +28,7 @@ internal class CreateOrReplaceLineageFeatureCommandHandler : ICommandHandler<Cre
     payload.Validate();
 
     Lineage lineage = await _lineageRepository.LoadAsync(command.LineageId, cancellationToken)
-      ?? throw new ResourceNotFoundException(new ResourceIdentifier(Lineage.ResourceKind, command.LineageId, _context.WorldId), nameof(command.LineageId));
+      ?? throw new ResourceNotFoundException(new ResourceIdentifier(Lineage.ResourceKind, command.LineageId, _context.WorldUid), nameof(command.LineageId));
     await _permissionService.CheckAsync(Actions.Update, lineage, cancellationToken);
 
     LineageFeature? feature = command.FeatureId.HasValue

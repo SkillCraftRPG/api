@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Castes.Events;
 using SkillCraft.Api.Core.Castes.Models;
@@ -41,7 +41,7 @@ internal class CreateOrReplaceCasteCommandHandler : ICommandHandler<CreateOrRepl
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     CasteSnapshot? snapshot = null;
     if (caste is null)

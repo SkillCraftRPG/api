@@ -3,7 +3,7 @@ using SkillCraft.Api.Core;
 
 namespace SkillCraft.Api.Infrastructure;
 
-internal class HistoryRecord
+internal class HistoryRecord // TODO(fpion): remove this
 {
   public int HistoryRecordId { get; private set; }
   public Guid EventId { get; private set; }
@@ -32,7 +32,7 @@ internal class HistoryRecord
     UserId = @event.UserId;
 
     EventType = @event.GetType().GetNamespaceQualifiedName();
-    EventData = EventSerializer.Instance.Serialize(@event);
+    EventData = RecordSerializer.Instance.Serialize(@event);
   }
 
   private HistoryRecord()

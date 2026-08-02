@@ -1,30 +1,18 @@
-﻿using SkillCraft.Api.Core;
+﻿using SkillCraft.Api.Infrastructure.Converters;
 
 namespace SkillCraft.Api.Infrastructure;
 
-public interface IEventSerializer
+internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSerializer
 {
-  string Serialize(ChangeEvent @event);
-}
-
-internal class EventSerializer : IEventSerializer
-{
-  private static EventSerializer? _instance = null;
-  public static IEventSerializer Instance
+  protected override void RegisterConverters()
   {
-    get
-    {
-      _instance ??= new();
-      return _instance;
-    }
+    base.RegisterConverters();
+
+    SerializerOptions.Converters.Add(new ContentConverter());
+    SerializerOptions.Converters.Add(new NameConverter());
+    SerializerOptions.Converters.Add(new SummaryConverter());
+    SerializerOptions.Converters.Add(new TalentIdConverter());
+    SerializerOptions.Converters.Add(new TalentTierConverter());
+    SerializerOptions.Converters.Add(new WorldIdConverter());
   }
-
-  private readonly JsonSerializerOptions _serializerOptions = new();
-
-  public EventSerializer()
-  {
-    _serializerOptions.Converters.Add(new JsonStringEnumConverter());
-  }
-
-  public string Serialize(ChangeEvent @event) => JsonSerializer.Serialize(@event, _serializerOptions);
 }

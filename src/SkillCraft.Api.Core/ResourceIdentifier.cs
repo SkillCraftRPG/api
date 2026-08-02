@@ -3,7 +3,7 @@ using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core;
 
-public class ResourceIdentifier
+public class ResourceIdentifier // TODO(fpion): deprecate this
 {
   private const char Separator = '|';
   private const char ResourceSeparator = ':';

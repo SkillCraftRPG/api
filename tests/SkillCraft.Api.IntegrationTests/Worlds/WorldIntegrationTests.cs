@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
@@ -131,7 +131,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     Context.User = new UserBuilder(Faker).Build();
 
-    Assert.Null(await _worldService.ReadAsync(Context.WorldId, _world.Key));
+    Assert.Null(await _worldService.ReadAsync(Context.WorldUid, _world.Key));
   }
 
   [Fact(DisplayName = "It should return null when the world was not found.")]
@@ -154,7 +154,7 @@ public class WorldIntegrationTests : IntegrationTests
       Limit = 1
     };
     payload.Search.Terms.Add(new SearchTerm("%world%"));
-    payload.Ids.AddRange([Context.WorldId, _world.Id, newWorld.Id, Guid.Empty]);
+    payload.Ids.AddRange([Context.WorldUid, _world.Id, newWorld.Id, Guid.Empty]);
     payload.Sort.Add(new WorldSortOption(WorldSort.Key, isDescending: true));
 
     SearchResults<WorldModel> results = await _worldService.SearchAsync(payload);
@@ -189,7 +189,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = _world.Key
     };
-    Guid id = Context.WorldId;
+    Guid id = Context.WorldUid;
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _worldService.CreateOrReplaceAsync(payload, id));
     Assert.Null(exception.WorldId);
@@ -207,7 +207,7 @@ public class WorldIntegrationTests : IntegrationTests
     {
       Key = _world.Key
     };
-    Guid id = Context.WorldId;
+    Guid id = Context.WorldUid;
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _worldService.UpdateAsync(id, payload));
     Assert.Null(exception.WorldId);
@@ -273,7 +273,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {
-    var exception = await Assert.ThrowsAsync<TooManyResultsException<WorldModel>>(async () => await _worldService.ReadAsync(Context.WorldId, _world.Key));
+    var exception = await Assert.ThrowsAsync<TooManyResultsException<WorldModel>>(async () => await _worldService.ReadAsync(Context.WorldUid, _world.Key));
     Assert.Equal(1, exception.ExpectedCount);
     Assert.Equal(2, exception.ActualCount);
   }

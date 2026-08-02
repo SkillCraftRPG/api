@@ -63,7 +63,7 @@ internal class LineageRepository : Repository, ILineageRepository
       .Include(x => x.Features)
       .Include(x => x.Languages)
       .Include(x => x.Parent)
-      .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+      .SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<LineageModel> ReadAsync(Lineage lineage, CancellationToken cancellationToken)
@@ -73,7 +73,7 @@ internal class LineageRepository : Repository, ILineageRepository
   public async Task<LineageModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Lineage? lineage = await Database.Lineages.AsNoTracking().AsSplitQuery()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .Include(x => x.Features)
       .Include(x => x.Languages).ThenInclude(x => x.Script)
       .Include(x => x.Parent).ThenInclude(x => x!.Features)
@@ -86,7 +86,7 @@ internal class LineageRepository : Repository, ILineageRepository
   public virtual async Task<SearchResults<LineageModel>> SearchAsync(SearchLineagesPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Lineages.Table).SelectAll(Db.Lineages.Table)
-      .Where(Db.Lineages.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Lineages.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Lineages.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Lineages.Name, Db.Lineages.Summary);
 
@@ -152,7 +152,7 @@ internal class LineageRepository : Repository, ILineageRepository
   {
     IEnumerable<Guid> userIds = lineages.SelectMany(lineage => lineage.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return lineages.Select(mapper.ToLineage).ToList().AsReadOnly();
   }

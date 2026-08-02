@@ -44,7 +44,7 @@ internal class ItemRepository : Repository, IItemRepository
 
   public async Task<Item?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Items.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+    return await Database.Items.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<ItemModel> ReadAsync(Item item, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ internal class ItemRepository : Repository, IItemRepository
   public async Task<ItemModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Item? item = await Database.Items.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
 
     return item is null ? null : await MapAsync(item, cancellationToken);
@@ -63,7 +63,7 @@ internal class ItemRepository : Repository, IItemRepository
   public virtual async Task<SearchResults<ItemModel>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Items.Table).SelectAll(Db.Items.Table)
-      .Where(Db.Items.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Items.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Items.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Items.Name, Db.Items.Summary);
 
@@ -129,7 +129,7 @@ internal class ItemRepository : Repository, IItemRepository
   {
     IEnumerable<Guid> userIds = items.SelectMany(item => item.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return items.Select(mapper.ToItem).ToList().AsReadOnly();
   }

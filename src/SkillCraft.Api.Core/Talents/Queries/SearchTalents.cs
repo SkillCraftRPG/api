@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Talents.Models;
 
@@ -8,15 +8,15 @@ internal record SearchTalentsQuery(SearchTalentsPayload Payload) : IQuery<Search
 
 internal class SearchTalentsQueryHandler : IQueryHandler<SearchTalentsQuery, SearchResults<TalentModel>>
 {
-  private readonly ITalentRepository _talentRepository;
+  private readonly ITalentQuerier _talentQuerier;
 
-  public SearchTalentsQueryHandler(ITalentRepository talentRepository)
+  public SearchTalentsQueryHandler(ITalentQuerier talentQuerier)
   {
-    _talentRepository = talentRepository;
+    _talentQuerier = talentQuerier;
   }
 
   public async Task<SearchResults<TalentModel>> HandleAsync(SearchTalentsQuery query, CancellationToken cancellationToken)
   {
-    return await _talentRepository.SearchAsync(query.Payload, cancellationToken);
+    return await _talentQuerier.SearchAsync(query.Payload, cancellationToken);
   }
 }

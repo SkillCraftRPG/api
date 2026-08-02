@@ -2,7 +2,7 @@
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
-internal abstract class Repository
+internal abstract class Repository // TODO(fpion): remove this
 {
   protected virtual GameContext Database { get; set; }
 

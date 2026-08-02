@@ -1,106 +1,126 @@
-using Logitar;
+﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Talents.Events;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Talents;
 
-public class Talent : IAuditable, IResource, IVersioned
+public class Talent : AggregateRoot, IResource
 {
   public const string ResourceKind = "Talent";
 
-  public int TalentId { get; private set; }
+  public new TalentId Id => new(base.Id);
+  public WorldId WorldId => Id.WorldId;
+  public Guid ResourceId => Id.ResourceId;
 
-  public World? World { get; private set; }
-  public Guid WorldId { get; private set; }
-  public Guid Id { get; private set; }
+  private TalentTier? _tier = null;
+  public TalentTier Tier => _tier ?? throw new InvalidOperationException("The talent tier has not been initialized.");
 
-  public int Tier { get; private set; }
+  private Name? _name = null;
+  public Name Name => _name ?? throw new InvalidOperationException("The talent name has not been initialized.");
 
-  public string Name { get; set; } = string.Empty;
-  public string? Summary { get; set; }
-  public string? Content { get; set; }
+  public Summary? Summary { get; private set; }
+  public Content? Content { get; private set; }
 
   public bool AllowMultiplePurchases { get; private set; }
   public Skill? Skill { get; private set; }
+  public TalentId? RequiredTalentId { get; private set; }
 
-  public Talent? RequiredTalent { get; private set; }
-  public int? RequiredTalentId { get; private set; }
+  public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId.ResourceId);
 
-  public long Version { get; private set; }
-  public Guid CreatedBy { get; private set; }
-  public DateTime CreatedOn { get; private set; }
-  public Guid UpdatedBy { get; private set; }
-  public DateTime UpdatedOn { get; private set; }
-
-  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
-
-  public List<Talent> RequiringTalents { get; private set; } = [];
-
-  public Talent(World world, int tier, Guid? id = null, Guid? userId = null, DateTime? createdOn = null)
-  {
-    World = world;
-    WorldId = world.Id;
-    Id = id ?? Guid.NewGuid();
-
-    Tier = tier;
-
-    Version = 1;
-    CreatedBy = UpdatedBy = userId ?? world.OwnerId;
-    CreatedOn = UpdatedOn = (createdOn ?? DateTime.Now).AsUniversalTime();
-  }
-
-  private Talent()
+  public Talent() : base()
   {
   }
 
-  public IReadOnlyCollection<Guid> GetUserIds()
+  public Talent(World world, TalentTier tier, Name name, ActorId? actorId = null)
+    : this(TalentId.NewId(new WorldId(world.Id)), tier, name, actorId)
   {
-    List<Guid> userIds = [CreatedBy, UpdatedBy];
-    if (RequiredTalent is not null)
+  }
+
+  public Talent(TalentId talentId, TalentTier tier, Name name, ActorId? actorId = null)
+    : base(talentId.StreamId)
+  {
+    Raise(new TalentCreated(tier, name), actorId);
+  }
+  protected virtual void Handle(TalentCreated @event)
+  {
+    _tier = @event.Tier;
+
+    _name = @event.Name;
+  }
+
+  public void Delete(ActorId? actorId = null)
+  {
+    if (!IsDeleted)
     {
-      userIds.AddRange(RequiredTalent.GetUserIds());
+      Raise(new TalentDeleted(), actorId);
     }
-    return userIds.AsReadOnly();
   }
 
-  public void SetAllowMultiplePurchases(bool allowMultiplePurchases)
+  public void Edit(Summary? summary, Content? content, ActorId? actorId = null)
   {
-    if (allowMultiplePurchases && Skill.HasValue)
+    if (!Equals(Summary, summary) || !Equals(Content, content))
     {
-      throw new InvalidTalentSkillException(this, Skill.Value);
+      Raise(new TalentEdited(summary, content), actorId);
     }
-
-    AllowMultiplePurchases = allowMultiplePurchases;
+  }
+  protected virtual void Handle(TalentEdited @event)
+  {
+    Summary = @event.Summary;
+    Content = @event.Content;
   }
 
-  public void SetSkill(Skill? skill)
+  public void Rename(Name name, ActorId? actorId = null)
   {
-    if (AllowMultiplePurchases && skill.HasValue)
+    if (!Equals(Name, name))
+    {
+      Raise(new TalentRenamed(name), actorId);
+    }
+  }
+  protected virtual void Handle(TalentRenamed @event)
+  {
+    _name = @event.Name;
+  }
+
+  public void SetRequirements(Talent? talent, ActorId? actorId = null)
+  {
+    if (talent is not null)
+    {
+      WorldMismatchException.ThrowIfMismatch(WorldId, talent.WorldId);
+      InvalidRequiredTalentException.ThrowIfNotValid(this, talent);
+      // TODO(fpion): should not be the same talent
+    }
+
+    if (!Equals(RequiredTalentId, talent?.Id))
+    {
+      Raise(new TalentRequirementsChanged(talent?.Id), actorId);
+    }
+  }
+  protected virtual void Handle(TalentRequirementsChanged @event)
+  {
+    RequiredTalentId = @event.TalentId;
+  }
+
+  public void SetRules(bool allowMultiplePurchases, Skill? skill, ActorId? actorId = null)
+  {
+    if (allowMultiplePurchases && skill.HasValue)
     {
       throw new InvalidTalentSkillException(this, skill.Value);
     }
-
-    Skill = skill;
-  }
-
-  public void SetRequiredTalent(Talent? requiredTalent)
-  {
-    if (requiredTalent is not null && requiredTalent.Tier > Tier)
+    if (skill.HasValue && !Enum.IsDefined(skill.Value))
     {
-      throw new InvalidRequiredTalentException(this, requiredTalent);
+      throw new ArgumentOutOfRangeException(nameof(skill));
     }
 
-    RequiredTalent = requiredTalent;
-    RequiredTalentId = requiredTalent?.TalentId;
+    if (!Equals(AllowMultiplePurchases, allowMultiplePurchases) || !Equals(Skill, skill))
+    {
+      Raise(new TalentRulesChanged(allowMultiplePurchases, skill), actorId);
+    }
   }
-
-  public void Update(Guid userId, DateTime? updatedOn = null)
+  protected virtual void Handle(TalentRulesChanged @event)
   {
-    Version++;
-    UpdatedBy = userId;
-    UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
+    AllowMultiplePurchases = @event.AllowMultiplePurchases;
+    Skill = @event.Skill;
   }
 
-  public override bool Equals(object? obj) => obj is Talent talent && talent.TalentId == TalentId;
-  public override int GetHashCode() => TalentId.GetHashCode();
-  public override string ToString() => $"{Name} | {GetType()} (TalentId={TalentId})";
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }

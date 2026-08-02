@@ -44,7 +44,7 @@ internal class CasteRepository : Repository, ICasteRepository
 
   public async Task<Caste?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Castes.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
+    return await Database.Castes.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldUid, cancellationToken);
   }
 
   public async Task<CasteModel> ReadAsync(Caste caste, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ internal class CasteRepository : Repository, ICasteRepository
   public async Task<CasteModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Caste? caste = await Database.Castes.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
 
     return caste is null ? null : await MapAsync(caste, cancellationToken);
@@ -63,7 +63,7 @@ internal class CasteRepository : Repository, ICasteRepository
   public virtual async Task<SearchResults<CasteModel>> SearchAsync(SearchCastesPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Castes.Table).SelectAll(Db.Castes.Table)
-      .Where(Db.Castes.WorldId, Operators.IsEqualTo(_context.WorldId))
+      .Where(Db.Castes.WorldId, Operators.IsEqualTo(_context.WorldUid))
       .ApplyIdFilter(Db.Castes.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Castes.Name, Db.Castes.Summary, Db.Castes.FeatureName);
 
@@ -116,7 +116,7 @@ internal class CasteRepository : Repository, ICasteRepository
   {
     IEnumerable<Guid> userIds = castes.SelectMany(caste => caste.GetUserIds());
     IReadOnlyDictionary<Guid, Actor> actors = await _actorService.FindAsync(userIds, cancellationToken);
-    Mapper mapper = new(actors);
+    MapperOld mapper = new(actors);
 
     return castes.Select(mapper.ToCaste).ToList().AsReadOnly();
   }

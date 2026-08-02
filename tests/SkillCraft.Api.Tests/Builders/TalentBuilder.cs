@@ -1,4 +1,5 @@
-using Bogus;
+﻿using Bogus;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
@@ -7,7 +8,7 @@ namespace SkillCraft.Api.Builders;
 
 public interface ITalentBuilder
 {
-  ITalentBuilder WithId(Guid id);
+  ITalentBuilder WithId(TalentId talentId);
   ITalentBuilder WithWorld(World? world);
   ITalentBuilder WithTier(int tier);
   ITalentBuilder WithName(string name);
@@ -26,11 +27,11 @@ public class TalentBuilder : ITalentBuilder
 
   private bool _allowMultiplePurchases = false;
   private string? _content = null;
-  private Guid? _id = null;
   private string _name = "Talent";
   private Talent? _requiredTalent = null;
   private Skill? _skill = null;
   private string? _summary = null;
+  private TalentId? _talentId = null;
   private int _tier = 0;
   private World? _world = null;
 
@@ -39,9 +40,9 @@ public class TalentBuilder : ITalentBuilder
     _faker = faker ?? new();
   }
 
-  public ITalentBuilder WithId(Guid id)
+  public ITalentBuilder WithId(TalentId talentId)
   {
-    _id = id;
+    _talentId = talentId;
     return this;
   }
 
@@ -96,15 +97,18 @@ public class TalentBuilder : ITalentBuilder
   public Talent Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Talent talent = new Talent(world, _tier, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content
-    };
-    talent.SetAllowMultiplePurchases(_allowMultiplePurchases);
-    talent.SetSkill(_skill);
-    talent.SetRequiredTalent(_requiredTalent);
+    ActorId? actorId = null; // TODO(fpion): world.CreatedBy
+    TalentTier tier = new(_tier);
+    Name name = new(_name);
+
+    Talent talent = _talentId.HasValue
+      ? new(_talentId.Value, tier, name, actorId)
+      : new(world, tier, name, actorId);
+
+    talent.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    talent.SetRules(_allowMultiplePurchases, _skill, actorId);
+    talent.SetRequirements(_requiredTalent, actorId);
+
     return talent;
   }
 

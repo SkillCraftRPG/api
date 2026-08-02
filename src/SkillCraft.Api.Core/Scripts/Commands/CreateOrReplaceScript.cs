@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts.Events;
@@ -40,7 +40,7 @@ internal class CreateOrReplaceScriptCommandHandler : ICommandHandler<CreateOrRep
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     ScriptSnapshot? snapshot = null;
     if (script is null)

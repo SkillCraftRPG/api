@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Educations.Models;
@@ -41,7 +41,7 @@ internal class CreateOrReplaceEducationCommandHandler : ICommandHandler<CreateOr
     }
 
     Guid userId = _context.UserId;
-    Guid worldId = _context.WorldId;
+    Guid worldId = _context.WorldUid;
 
     EducationSnapshot? snapshot = null;
     if (education is null)

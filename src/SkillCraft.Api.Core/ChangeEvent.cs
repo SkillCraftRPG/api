@@ -1,6 +1,6 @@
 ﻿namespace SkillCraft.Api.Core;
 
-public abstract class ChangeEvent
+public abstract class ChangeEvent // TODO(fpion): remove this
 {
   public Guid EventId { get; set; } = Guid.NewGuid();
 
