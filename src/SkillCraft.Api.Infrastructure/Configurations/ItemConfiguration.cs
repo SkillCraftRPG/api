@@ -1,15 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SkillCraft.Api.Core.Items;
-using SkillCraft.Api.Core.Validation;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Infrastructure.Db;
+using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Configurations;
 
-internal class ItemConfiguration : IEntityTypeConfiguration<Item>
+internal class ItemConfiguration : AggregateConfiguration<ItemEntity>, IEntityTypeConfiguration<ItemEntity>
 {
-  public void Configure(EntityTypeBuilder<Item> builder)
+  public override void Configure(EntityTypeBuilder<ItemEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(GameContext.Items), Schemas.Game);
     builder.HasKey(x => x.ItemId);
 
@@ -18,17 +20,12 @@ internal class ItemConfiguration : IEntityTypeConfiguration<Item>
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Price });
     builder.HasIndex(x => new { x.WorldId, x.Weight });
-    builder.HasIndex(x => new { x.WorldId, x.Version });
-    builder.HasIndex(x => new { x.WorldId, x.CreatedBy });
-    builder.HasIndex(x => new { x.WorldId, x.CreatedOn });
-    builder.HasIndex(x => new { x.WorldId, x.UpdatedBy });
-    builder.HasIndex(x => new { x.WorldId, x.UpdatedOn });
 
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
-    builder.Property(x => x.Summary).HasMaxLength(Constants.SummaryMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
 
-    //builder.HasOne(x => x.World).WithMany(x => x.Items)
-    //  .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
-    //  .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.World).WithMany(x => x.Items)
+      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }

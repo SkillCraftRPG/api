@@ -3,6 +3,7 @@ using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Permissions;
@@ -27,9 +28,8 @@ public class ItemIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _item = ItemBuilder.Abaque(Faker, Context.World);
-    _itemRepository.Add(_item);
-    await Context.SaveChangesAsync();
+    _item = new ItemBuilder(Faker).WithWorld(Context.World).Build();
+    await _itemRepository.SaveAsync(_item);
   }
 
   [Theory(DisplayName = "It should create a new item.")]
@@ -53,11 +53,11 @@ public class ItemIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, item.Id);
     }
-    Assert.Equal(1, item.Version);
+    Assert.Equal(3, item.Version);
     Assert.Equal(Actor, item.CreatedBy);
     Assert.Equal(DateTime.UtcNow, item.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(item.CreatedBy, item.UpdatedBy);
-    Assert.Equal(item.CreatedOn, item.UpdatedOn);
+    Assert.True(item.CreatedOn < item.UpdatedOn);
 
     AssertCorde(payload, item);
   }
@@ -65,16 +65,16 @@ public class ItemIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read an item by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    ItemModel? item = await _itemService.ReadAsync(_item.Id);
+    ItemModel? item = await _itemService.ReadAsync(_item.ResourceId);
     Assert.NotNull(item);
-    Assert.Equal(_item.Id, item.Id);
+    Assert.Equal(_item.ResourceId, item.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing item.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceItemPayload payload = CreateCordePayload();
-    Guid id = _item.Id;
+    Guid id = _item.ResourceId;
 
     CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -82,9 +82,9 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.NotNull(item);
 
     Assert.Equal(id, item.Id);
-    Assert.Equal(2, item.Version);
-    Assert.Equal(_item.CreatedBy, item.CreatedBy.Id);
-    Assert.Equal(_item.CreatedOn, item.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, item.Version);
+    Assert.Equal(_item.CreatedBy, item.CreatedBy.GetActorId());
+    Assert.Equal(_item.CreatedOn.AsUniversalTime(), item.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -108,7 +108,7 @@ public class ItemIntegrationTests : IntegrationTests
   {
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _itemService.ReadAsync(_item.Id));
+    Assert.Null(await _itemService.ReadAsync(_item.ResourceId));
   }
 
   [Fact(DisplayName = "It should return null when the item was not found.")]
@@ -120,11 +120,11 @@ public class ItemIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
+    Item abaque = ItemBuilder.Abaque(Faker, Context.World);
     Item torche = ItemBuilder.Torche(Faker, Context.World);
     Item piedDeBiche = ItemBuilder.PiedDeBiche(Faker, Context.World);
     Item grimoire = ItemBuilder.Grimoire(Faker, Context.World);
-    _itemRepository.Add(torche, piedDeBiche, grimoire);
-    await Context.SaveChangesAsync();
+    await _itemRepository.SaveAsync([abaque, torche, piedDeBiche, grimoire]);
 
     SearchItemsPayload payload = new()
     {
@@ -132,14 +132,14 @@ public class ItemIntegrationTests : IntegrationTests
       Limit = 1
     };
     payload.Search.Terms.Add(new SearchTerm("%uti%"));
-    payload.Ids.AddRange([_item.Id, Guid.Empty, piedDeBiche.Id, grimoire.Id]);
+    payload.Ids.AddRange([abaque.ResourceId, Guid.Empty, piedDeBiche.ResourceId, grimoire.ResourceId]);
     payload.Sort.Add(new ItemSortOption(ItemSort.Name, isDescending: true));
 
     SearchResults<ItemModel> results = await _itemService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     ItemModel item = Assert.Single(results.Items);
-    Assert.Equal(_item.Id, item.Id);
+    Assert.Equal(abaque.ResourceId, item.Id);
   }
 
   [Fact(DisplayName = "It should sort items by price with nulls last.")]
@@ -148,20 +148,19 @@ public class ItemIntegrationTests : IntegrationTests
     Item corde = ItemBuilder.Corde(Faker, Context.World);
     Item lanterne = ItemBuilder.Lanterne(Faker, Context.World);
     Item sansPrix = new ItemBuilder(Faker).WithWorld(Context.World).WithName("Amulette sans prix").Build();
-    _itemRepository.Add(corde, lanterne, sansPrix);
-    await Context.SaveChangesAsync();
+    await _itemRepository.SaveAsync([corde, lanterne, sansPrix]);
 
     SearchItemsPayload payload = new();
-    payload.Ids.AddRange([corde.Id, lanterne.Id, sansPrix.Id]);
+    payload.Ids.AddRange([corde.ResourceId, lanterne.ResourceId, sansPrix.ResourceId]);
     payload.Sort.Add(new ItemSortOption(ItemSort.Price, isDescending: true));
 
     SearchResults<ItemModel> results = await _itemService.SearchAsync(payload);
     Assert.Equal(3, results.Total);
     Assert.Equal(3, results.Items.Count);
 
-    Assert.Equal(lanterne.Id, results.Items.ElementAt(0).Id);
-    Assert.Equal(corde.Id, results.Items.ElementAt(1).Id);
-    Assert.Equal(sansPrix.Id, results.Items.ElementAt(2).Id);
+    Assert.Equal(lanterne.ResourceId, results.Items.ElementAt(0).Id);
+    Assert.Equal(corde.ResourceId, results.Items.ElementAt(1).Id);
+    Assert.Equal(sansPrix.ResourceId, results.Items.ElementAt(2).Id);
     Assert.Null(results.Items.ElementAt(2).Price);
   }
 
@@ -185,7 +184,7 @@ public class ItemIntegrationTests : IntegrationTests
 
     CreateOrReplaceItemPayload payload = CreateCordePayload();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload, _item.Id));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.CreateOrReplaceAsync(payload, _item.ResourceId));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
@@ -198,7 +197,7 @@ public class ItemIntegrationTests : IntegrationTests
 
     UpdateItemPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.UpdateAsync(_item.Id, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _itemService.UpdateAsync(_item.ResourceId, payload));
     Assert.Equal(Context.UserUid, exception.UserId);
     Assert.Equal(Actions.Update, exception.Action);
     Assert.Equal(_item.Identifier.ToString(), exception.Resource);
@@ -207,7 +206,7 @@ public class ItemIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing item.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _item.Id;
+    Guid id = _item.ResourceId;
     CreateOrReplaceItemPayload create = CreateCordePayload();
     UpdateItemPayload payload = new()
     {
@@ -222,9 +221,9 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.NotNull(item);
 
     Assert.Equal(id, item.Id);
-    Assert.Equal(2, item.Version);
-    Assert.Equal(_item.CreatedBy, item.CreatedBy.Id);
-    Assert.Equal(_item.CreatedOn, item.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(4, item.Version);
+    Assert.Equal(_item.CreatedBy, item.CreatedBy.GetActorId());
+    Assert.Equal(_item.CreatedOn.AsUniversalTime(), item.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 

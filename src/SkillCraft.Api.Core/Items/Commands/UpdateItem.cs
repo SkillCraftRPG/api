@@ -1,8 +1,8 @@
-﻿using Logitar;
-using Logitar.CQRS;
-using SkillCraft.Api.Core.Items.Events;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Items.Commands;
 
@@ -11,14 +11,20 @@ internal record UpdateItemCommand(Guid Id, UpdateItemPayload Payload) : ICommand
 internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, ItemModel?>
 {
   private readonly IContext _context;
-  private readonly IPermissionService _permissionService;
+  private readonly IItemQuerier _itemQuerier;
   private readonly IItemRepository _itemRepository;
+  private readonly IPermissionService _permissionService;
 
-  public UpdateItemCommandHandler(IContext context, IPermissionService permissionService, IItemRepository itemRepository)
+  public UpdateItemCommandHandler(
+    IContext context,
+    IItemQuerier itemQuerier,
+    IItemRepository itemRepository,
+    IPermissionService permissionService)
   {
     _context = context;
-    _permissionService = permissionService;
+    _itemQuerier = itemQuerier;
     _itemRepository = itemRepository;
+    _permissionService = permissionService;
   }
 
   public async Task<ItemModel?> HandleAsync(UpdateItemCommand command, CancellationToken cancellationToken)
@@ -26,46 +32,41 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
     UpdateItemPayload payload = command.Payload;
     payload.Validate();
 
-    Item? item = await _itemRepository.LoadAsync(command.Id, cancellationToken);
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
+    ItemId itemId = new(worldId, command.Id);
+    Item? item = await _itemRepository.LoadAsync(itemId, cancellationToken);
     if (item is null)
     {
       return null;
     }
     await _permissionService.CheckAsync(Actions.Update, item, cancellationToken);
 
-    ItemSnapshot snapshot = new(item);
-
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
     {
-      item.Name = payload.Name.Trim();
-    }
-    if (payload.Summary is not null)
-    {
-      item.Summary = payload.Summary.Value?.CleanTrim();
-    }
-    if (payload.Content is not null)
-    {
-      item.Content = payload.Content.Value?.CleanTrim();
+      item.Rename(name, actorId);
     }
 
-    if (payload.Price is not null)
+    if (payload.Summary is not null || payload.Content is not null)
     {
-      item.Price = payload.Price.Value;
-    }
-    if (payload.Weight is not null)
-    {
-      item.Weight = payload.Weight.Value;
-    }
-
-    ItemUpdated? record = snapshot.Compare(item);
-    if (record is not null)
-    {
-      item.Update(_context.UserUid);
-      _itemRepository.Update(item, record);
-
-      await _context.SaveChangesAsync(cancellationToken);
+      item.Edit(
+        payload.Summary is null ? item.Summary : Summary.TryCreate(payload.Summary.Value),
+        payload.Content is null ? item.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
     }
 
-    return await _itemRepository.ReadAsync(item, cancellationToken);
+    if (payload.Price is not null || payload.Weight is not null)
+    {
+      item.SetRules(
+        payload.Price is null ? item.Price : Price.TryCreate(payload.Price.Value),
+        payload.Weight is null ? item.Weight : Weight.TryCreate(payload.Weight.Value),
+        actorId);
+    }
+
+    await _itemRepository.SaveAsync(item, cancellationToken);
+
+    return await _itemQuerier.ReadAsync(item, cancellationToken);
   }
 }

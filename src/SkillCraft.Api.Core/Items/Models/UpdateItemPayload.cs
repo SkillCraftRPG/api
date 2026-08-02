@@ -22,8 +22,8 @@ public record UpdateItemPayload
       When(x => !string.IsNullOrWhiteSpace(x.Summary?.Value), () => RuleFor(x => x.Summary!.Value!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content?.Value), () => RuleFor(x => x.Content!.Value!).Content());
 
-      When(x => x.Price?.Value is not null, () => RuleFor(x => x.Price!.Value!.Value).GreaterThan(0));
-      When(x => x.Weight?.Value is not null, () => RuleFor(x => x.Weight!.Value!.Value).GreaterThan(0));
+      When(x => x.Price?.Value is not null, () => RuleFor(x => x.Price!.Value!.Value).Price());
+      When(x => x.Weight?.Value is not null, () => RuleFor(x => x.Weight!.Value!.Value).Weight());
     }
   }
 }

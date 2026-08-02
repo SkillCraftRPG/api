@@ -11,7 +11,7 @@ public class Roll
 
   public Roll(string value)
   {
-    Value = value.Trim();
+    Value = value.Trim().ToLowerInvariant();
     new Validator().ValidateAndThrow(this);
   }
 

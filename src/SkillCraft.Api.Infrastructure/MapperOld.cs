@@ -3,8 +3,6 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Features;
-using SkillCraft.Api.Core.Items;
-using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Lineages;
@@ -30,23 +28,6 @@ internal class MapperOld // TODO(fpion): remove this
     {
       _actors[actor.Key] = actor.Value;
     }
-  }
-
-  public ItemModel ToItem(Item source)
-  {
-    ItemModel destination = new()
-    {
-      Id = source.Id,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content,
-      Price = source.Price,
-      Weight = source.Weight
-    };
-
-    MapAggregate(source, destination);
-
-    return destination;
   }
 
   public LanguageModel ToLanguage(Language source, ScriptModel? script = null)

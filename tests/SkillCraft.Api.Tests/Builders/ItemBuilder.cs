@@ -1,4 +1,6 @@
 ﻿using Bogus;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Worlds;
 
@@ -6,7 +8,7 @@ namespace SkillCraft.Api.Builders;
 
 public interface IItemBuilder
 {
-  IItemBuilder WithId(Guid id);
+  IItemBuilder WithId(ItemId itemId);
   IItemBuilder WithWorld(World? world);
   IItemBuilder WithName(string name);
   IItemBuilder WithSummary(string? summary);
@@ -22,7 +24,7 @@ public class ItemBuilder : IItemBuilder
   private readonly Faker _faker;
 
   private string? _content = null;
-  private Guid? _id = null;
+  private ItemId? _itemId = null;
   private string _name = "Item";
   private double? _price = null;
   private string? _summary = null;
@@ -34,9 +36,9 @@ public class ItemBuilder : IItemBuilder
     _faker = faker ?? new();
   }
 
-  public IItemBuilder WithId(Guid id)
+  public IItemBuilder WithId(ItemId itemId)
   {
-    _id = id;
+    _itemId = itemId;
     return this;
   }
 
@@ -79,14 +81,16 @@ public class ItemBuilder : IItemBuilder
   public Item Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Item item = new(world, _id)
-    {
-      Name = _name,
-      Summary = _summary,
-      Content = _content,
-      Price = _price,
-      Weight = _weight
-    };
+    ActorId actorId = world.OwnerId.ActorId;
+    Name name = new(_name);
+
+    Item item = _itemId.HasValue
+      ? new(_itemId.Value, name, actorId)
+      : new(world, name, actorId);
+
+    item.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), actorId);
+
     return item;
   }
 

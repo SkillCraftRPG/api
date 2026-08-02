@@ -7,15 +7,15 @@ internal record ReadItemQuery(Guid Id) : IQuery<ItemModel?>;
 
 internal class ReadItemQueryHandler : IQueryHandler<ReadItemQuery, ItemModel?>
 {
-  private readonly IItemRepository _itemRepository;
+  private readonly IItemQuerier _itemQuerier;
 
-  public ReadItemQueryHandler(IItemRepository itemRepository)
+  public ReadItemQueryHandler(IItemQuerier itemQuerier)
   {
-    _itemRepository = itemRepository;
+    _itemQuerier = itemQuerier;
   }
 
   public async Task<ItemModel?> HandleAsync(ReadItemQuery query, CancellationToken cancellationToken)
   {
-    return await _itemRepository.ReadAsync(query.Id, cancellationToken);
+    return await _itemQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }
