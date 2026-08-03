@@ -1,5 +1,4 @@
 ﻿using Krakenar.Contracts.Search;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
@@ -11,7 +10,6 @@ using SkillCraft.Api.Infrastructure.Compendium;
 namespace SkillCraft.Api.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("compendium")]
 public class CompendiumController : Controller
 {

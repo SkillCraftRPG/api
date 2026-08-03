@@ -45,7 +45,7 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    SearchResults<CasteEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<CasteEntry>>(cancellationToken) ?? new();
+    SearchResults<CasteEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<CasteEntry>>(_serializerOptions, cancellationToken) ?? new();
     return new SearchResults<CasteModel>(entries.Items.Select(CompendiumMapper.ToCaste), entries.Total);
   }
 
@@ -55,7 +55,7 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    SearchResults<CustomizationEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<CustomizationEntry>>(cancellationToken) ?? new();
+    SearchResults<CustomizationEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<CustomizationEntry>>(_serializerOptions, cancellationToken) ?? new();
     return new SearchResults<CustomizationModel>(entries.Items.Select(CompendiumMapper.ToCustomization), entries.Total);
   }
 
@@ -65,7 +65,7 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    SearchResults<EducationEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<EducationEntry>>(cancellationToken) ?? new();
+    SearchResults<EducationEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<EducationEntry>>(_serializerOptions, cancellationToken) ?? new();
     return new SearchResults<EducationModel>(entries.Items.Select(CompendiumMapper.ToEducation), entries.Total);
   }
 
@@ -75,7 +75,7 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    SearchResults<LanguageEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<LanguageEntry>>(cancellationToken) ?? new();
+    SearchResults<LanguageEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<LanguageEntry>>(_serializerOptions, cancellationToken) ?? new();
     return new SearchResults<LanguageModel>(entries.Items.Select(CompendiumMapper.ToLanguage), entries.Total);
   }
 
@@ -85,7 +85,7 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    SearchResults<ScriptEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<ScriptEntry>>(cancellationToken) ?? new();
+    SearchResults<ScriptEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<ScriptEntry>>(_serializerOptions, cancellationToken) ?? new();
     return new SearchResults<ScriptModel>(entries.Items.Select(CompendiumMapper.ToScript), entries.Total);
   }
 }
