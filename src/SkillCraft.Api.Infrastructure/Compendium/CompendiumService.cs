@@ -7,7 +7,6 @@ using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Text.Json.Nodes;
 
 namespace SkillCraft.Api.Infrastructure.Compendium;
 
@@ -79,44 +78,5 @@ internal class CompendiumService : ICompendiumService
     return JsonSerializer.Deserialize<SearchResults<ScriptModel>>(json, _serializerOptions) ?? new();
   }
 
-  private static string Format(string json)
-  {
-    JsonNode? root = JsonNode.Parse(json.Replace(@"""htmlContent"":", @"""content"":"));
-    if (root is null)
-    {
-      return json;
-    }
-
-    FormatSkills(root);
-    return root.ToJsonString();
-  }
-
-  private static void FormatSkills(JsonNode node)
-  {
-    if (node is JsonObject obj)
-    {
-      if (obj["skill"] is JsonObject skill && skill["value"] is JsonValue value)
-      {
-        obj["skill"] = value.DeepClone();
-      }
-
-      foreach (KeyValuePair<string, JsonNode?> property in obj.ToList())
-      {
-        if (property.Value is not null)
-        {
-          FormatSkills(property.Value);
-        }
-      }
-    }
-    else if (node is JsonArray array)
-    {
-      foreach (JsonNode? item in array)
-      {
-        if (item is not null)
-        {
-          FormatSkills(item);
-        }
-      }
-    }
-  }
+  private static string Format(string json) => json.Replace(@"""htmlContent"":", @"""content"":");
 }
