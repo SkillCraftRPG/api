@@ -5,6 +5,7 @@ using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
+using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Infrastructure.Compendium;
 
 namespace SkillCraft.Api.Controllers;
@@ -53,5 +54,12 @@ public class CompendiumController : Controller
   {
     SearchResults<ScriptModel> scripts = await _compendium.GetScriptsAsync(cancellationToken);
     return Ok(scripts);
+  }
+
+  [HttpGet("talents")]
+  public async Task<ActionResult<SearchResults<TalentModel>>> GetTalentsAsync(CancellationToken cancellationToken)
+  {
+    SearchResults<TalentModel> talents = await _compendium.GetTalentsAsync(cancellationToken);
+    return Ok(talents);
   }
 }
