@@ -5,6 +5,7 @@ using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Features;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
+using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Infrastructure.Compendium.Models;
 
 namespace SkillCraft.Api.Infrastructure.Compendium;
@@ -98,6 +99,28 @@ internal static class CompendiumMapper
       Summary = source.Summary,
       Content = source.HtmlContent
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public static TalentModel ToTalent(TalentEntry source)
+  {
+    TalentModel destination = new()
+    {
+      Tier = source.Tier,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.HtmlContent,
+      AllowMultiplePurchases = source.AllowMultiplePurchases,
+      Skill = source.Skill?.Value
+    };
+
+    if (source.RequiredTalent is not null)
+    {
+      destination.RequiredTalent = ToTalent(source.RequiredTalent);
+    }
 
     MapAggregate(source, destination);
 
