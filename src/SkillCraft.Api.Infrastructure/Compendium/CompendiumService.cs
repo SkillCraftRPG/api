@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
@@ -11,6 +12,7 @@ namespace SkillCraft.Api.Infrastructure.Compendium;
 
 public interface ICompendiumService
 {
+  Task<SearchResults<CasteModel>> GetCastesAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<ScriptModel>> GetScriptsAsync(CancellationToken cancellationToken = default);
@@ -34,6 +36,16 @@ internal class CompendiumService : ICompendiumService
     _client.Timeout = settings.Timeout;
 
     _serializerOptions.Converters.Add(new JsonStringEnumConverter());
+  }
+
+  public async Task<SearchResults<CasteModel>> GetCastesAsync(CancellationToken cancellationToken)
+  {
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/castes", UriKind.Relative));
+    using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+    response.EnsureSuccessStatusCode();
+
+    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
+    return JsonSerializer.Deserialize<SearchResults<CasteModel>>(json, _serializerOptions) ?? new();
   }
 
   public async Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken)

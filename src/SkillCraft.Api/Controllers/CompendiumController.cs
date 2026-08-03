@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
@@ -18,6 +19,13 @@ public class CompendiumController : Controller
   public CompendiumController(ICompendiumService compendium)
   {
     _compendium = compendium;
+  }
+
+  [HttpGet("castes")]
+  public async Task<ActionResult<SearchResults<CasteModel>>> GetCastesAsync(CancellationToken cancellationToken)
+  {
+    SearchResults<CasteModel> castes = await _compendium.GetCastesAsync(cancellationToken);
+    return Ok(castes);
   }
 
   [HttpGet("customizations")]
