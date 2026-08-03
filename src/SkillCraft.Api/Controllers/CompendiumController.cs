@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Infrastructure.Compendium;
@@ -32,6 +33,13 @@ public class CompendiumController : Controller
   public async Task<ActionResult<SearchResults<CustomizationModel>>> GetCustomizationsAsync(CancellationToken cancellationToken)
   {
     SearchResults<CustomizationModel> customizations = await _compendium.GetCustomizationsAsync(cancellationToken);
+    return Ok(customizations);
+  }
+
+  [HttpGet("educations")]
+  public async Task<ActionResult<SearchResults<EducationModel>>> GetEducationsAsync(CancellationToken cancellationToken)
+  {
+    SearchResults<EducationModel> customizations = await _compendium.GetEducationsAsync(cancellationToken);
     return Ok(customizations);
   }
 
