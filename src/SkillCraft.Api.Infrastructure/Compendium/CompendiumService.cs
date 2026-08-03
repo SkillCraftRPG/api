@@ -3,10 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
+using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Languages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
-using System.Net.Http.Headers;
-using System.Net.Mime;
+using SkillCraft.Api.Infrastructure.Compendium.Models;
 
 namespace SkillCraft.Api.Infrastructure.Compendium;
 
@@ -14,6 +14,7 @@ public interface ICompendiumService
 {
   Task<SearchResults<CasteModel>> GetCastesAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken = default);
+  Task<SearchResults<EducationModel>> GetEducationsAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<ScriptModel>> GetScriptsAsync(CancellationToken cancellationToken = default);
 }
@@ -44,8 +45,8 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
-    return JsonSerializer.Deserialize<SearchResults<CasteModel>>(json, _serializerOptions) ?? new();
+    SearchResults<CasteEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<CasteEntry>>(_serializerOptions, cancellationToken) ?? new();
+    return new SearchResults<CasteModel>(entries.Items.Select(CompendiumMapper.ToCaste), entries.Total);
   }
 
   public async Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken)
@@ -54,8 +55,18 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
-    return JsonSerializer.Deserialize<SearchResults<CustomizationModel>>(json, _serializerOptions) ?? new();
+    SearchResults<CustomizationEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<CustomizationEntry>>(_serializerOptions, cancellationToken) ?? new();
+    return new SearchResults<CustomizationModel>(entries.Items.Select(CompendiumMapper.ToCustomization), entries.Total);
+  }
+
+  public async Task<SearchResults<EducationModel>> GetEducationsAsync(CancellationToken cancellationToken)
+  {
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/educations", UriKind.Relative));
+    using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+    response.EnsureSuccessStatusCode();
+
+    SearchResults<EducationEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<EducationEntry>>(_serializerOptions, cancellationToken) ?? new();
+    return new SearchResults<EducationModel>(entries.Items.Select(CompendiumMapper.ToEducation), entries.Total);
   }
 
   public async Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken)
@@ -64,8 +75,8 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
-    return JsonSerializer.Deserialize<SearchResults<LanguageModel>>(json, _serializerOptions) ?? new();
+    SearchResults<LanguageEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<LanguageEntry>>(_serializerOptions, cancellationToken) ?? new();
+    return new SearchResults<LanguageModel>(entries.Items.Select(CompendiumMapper.ToLanguage), entries.Total);
   }
 
   public async Task<SearchResults<ScriptModel>> GetScriptsAsync(CancellationToken cancellationToken)
@@ -74,9 +85,7 @@ internal class CompendiumService : ICompendiumService
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
-    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
-    return JsonSerializer.Deserialize<SearchResults<ScriptModel>>(json, _serializerOptions) ?? new();
+    SearchResults<ScriptEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<ScriptEntry>>(_serializerOptions, cancellationToken) ?? new();
+    return new SearchResults<ScriptModel>(entries.Items.Select(CompendiumMapper.ToScript), entries.Total);
   }
-
-  private static string Format(string json) => json.Replace(@"""htmlContent"":", @"""content"":");
 }
