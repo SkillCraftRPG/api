@@ -34,7 +34,7 @@ internal class CompendiumService : ICompendiumService
 
   public async Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken)
   {
-    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/rules/languages", UriKind.Relative));
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/rules/languages?sort=Name", UriKind.Relative));
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
