@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Languages.Models;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -9,6 +10,7 @@ namespace SkillCraft.Api.Infrastructure.Compendium;
 
 public interface ICompendiumService
 {
+  Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken = default);
 }
 
@@ -32,9 +34,19 @@ internal class CompendiumService : ICompendiumService
     _serializerOptions.Converters.Add(new JsonStringEnumConverter());
   }
 
+  public async Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken)
+  {
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/customizations", UriKind.Relative));
+    using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+    response.EnsureSuccessStatusCode();
+
+    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
+    return JsonSerializer.Deserialize<SearchResults<CustomizationModel>>(json, _serializerOptions) ?? new();
+  }
+
   public async Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken)
   {
-    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/rules/languages?sort=Name", UriKind.Relative));
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/rules/languages", UriKind.Relative));
     using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
     response.EnsureSuccessStatusCode();
 
