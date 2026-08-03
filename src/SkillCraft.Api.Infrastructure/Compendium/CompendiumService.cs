@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Scripts.Models;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 
@@ -12,6 +13,7 @@ public interface ICompendiumService
 {
   Task<SearchResults<CustomizationModel>> GetCustomizationsAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken = default);
+  Task<SearchResults<ScriptModel>> GetScriptsAsync(CancellationToken cancellationToken = default);
 }
 
 internal class CompendiumService : ICompendiumService
@@ -52,6 +54,16 @@ internal class CompendiumService : ICompendiumService
 
     string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
     return JsonSerializer.Deserialize<SearchResults<LanguageModel>>(json, _serializerOptions) ?? new();
+  }
+
+  public async Task<SearchResults<ScriptModel>> GetScriptsAsync(CancellationToken cancellationToken)
+  {
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/scripts", UriKind.Relative));
+    using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+    response.EnsureSuccessStatusCode();
+
+    string json = Format(await response.Content.ReadAsStringAsync(cancellationToken));
+    return JsonSerializer.Deserialize<SearchResults<ScriptModel>>(json, _serializerOptions) ?? new();
   }
 
   private static string Format(string json) => json.Replace(@"""htmlContent"":", @"""content"":");

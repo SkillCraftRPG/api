@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Infrastructure.Compendium;
 
 namespace SkillCraft.Api.Controllers;
@@ -31,5 +32,12 @@ public class CompendiumController : Controller
   {
     SearchResults<LanguageModel> languages = await _compendium.GetLanguagesAsync(cancellationToken);
     return Ok(languages);
+  }
+
+  [HttpGet("scripts")]
+  public async Task<ActionResult<SearchResults<ScriptModel>>> GetScriptsAsync(CancellationToken cancellationToken)
+  {
+    SearchResults<ScriptModel> scripts = await _compendium.GetScriptsAsync(cancellationToken);
+    return Ok(scripts);
   }
 }
