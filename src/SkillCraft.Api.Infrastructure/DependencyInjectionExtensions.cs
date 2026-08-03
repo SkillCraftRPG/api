@@ -16,6 +16,7 @@ using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
 using SkillCraft.Api.Infrastructure.Caching;
+using SkillCraft.Api.Infrastructure.Compendium;
 using SkillCraft.Api.Infrastructure.Identity;
 using SkillCraft.Api.Infrastructure.Queriers;
 using SkillCraft.Api.Infrastructure.Repositories;
@@ -28,6 +29,7 @@ public static class DependencyInjectionExtensions
   {
     ActorService.Register(services);
     CacheService.Register(services);
+    CompendiumService.Register(services);
 
     return services
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
