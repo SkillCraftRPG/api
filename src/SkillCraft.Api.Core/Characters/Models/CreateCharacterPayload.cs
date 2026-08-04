@@ -12,6 +12,9 @@ public record CreateCharacterPayload
   public DominantHand? DominantHand { get; set; }
   public List<Guid> CustomizationIds { get; set; } = [];
 
+  public Guid CasteId { get; set; }
+  public Guid EducationId { get; set; }
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
