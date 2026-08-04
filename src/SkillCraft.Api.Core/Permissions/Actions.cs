@@ -3,6 +3,7 @@
 public static class Actions
 {
   public const string CreateCaste = "CreateCaste";
+  public const string CreateCharacter = "CreateCharacter";
   public const string CreateCustomization = "CreateCustomization";
   public const string CreateEducation = "CreateEducation";
   public const string CreateItem = "CreateItem";

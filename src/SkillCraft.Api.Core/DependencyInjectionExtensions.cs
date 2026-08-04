@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
+using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Identity;
@@ -22,6 +23,7 @@ public static class DependencyInjectionExtensions
   public static IServiceCollection AddSkillCraftApiCore(this IServiceCollection services)
   {
     CasteService.Register(services);
+    CharacterService.Register(services);
     CustomizationService.Register(services);
     EducationService.Register(services);
     IdentityService.Register(services);
