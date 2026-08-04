@@ -1,6 +1,7 @@
 ﻿using Logitar;
 using Logitar.CQRS;
 using SkillCraft.Api.Core.Characters.Models;
+using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
@@ -15,6 +16,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
   private readonly ICharacterQuerier _characterQuerier;
   private readonly ICharacterRepository _characterRepository;
   private readonly IContext _context;
+  private readonly ICustomizationRepository _customizationRepository;
   private readonly ILanguageRepository _languageRepository;
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
@@ -24,6 +26,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     ICharacterQuerier characterQuerier,
     ICharacterRepository characterRepository,
     IContext context,
+    ICustomizationRepository customizationRepository,
     ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
@@ -32,6 +35,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     _characterQuerier = characterQuerier;
     _characterRepository = characterRepository;
     _context = context;
+    _customizationRepository = customizationRepository;
     _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
@@ -66,7 +70,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       throw new NotImplementedException(); // TODO(fpion): implement
     }
 
-    IReadOnlyCollection<Language> languages = await LoadLanguagesAsync(payload.LanguageIds, nameof(payload.LanguageIds), cancellationToken);
+    IReadOnlyCollection<Language> languages = await LoadLanguagesAsync(worldId, payload.LanguageIds, nameof(payload.LanguageIds), cancellationToken);
     IEnumerable<Language> grantedLanguages = languages.Where(language => grantedLanguageIds.Contains(language.Id));
     if (grantedLanguages.Any())
     {
@@ -77,16 +81,32 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       throw new NotImplementedException(); // TODO(fpion): implement
     }
 
-    Character character = new(CharacterId.NewId(worldId), lineage, languages, _context.ActorId);
+    Name name = new(payload.Name);
+    IReadOnlyCollection<Customization> customizations = await LoadCustomizationsAsync(worldId, payload.CustomizationIds, nameof(payload.CustomizationIds), cancellationToken);
+
+    Character character = new(CharacterId.NewId(worldId), name, lineage, customizations, languages, _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);
 
     return await _characterQuerier.ReadAsync(character, cancellationToken);
   }
 
-  private async Task<IReadOnlyCollection<Language>> LoadLanguagesAsync(IEnumerable<Guid> ids, string propertyName, CancellationToken cancellationToken)
+  private async Task<IReadOnlyCollection<Customization>> LoadCustomizationsAsync(WorldId worldId, IEnumerable<Guid> ids, string propertyName, CancellationToken cancellationToken)
   {
-    WorldId worldId = _context.WorldId;
+    HashSet<CustomizationId> customizationIds = ids.Select(id => new CustomizationId(worldId, id)).ToHashSet();
+    IReadOnlyCollection<Customization> customizations = await _customizationRepository.LoadAsync(customizationIds, cancellationToken);
+
+    IEnumerable<CustomizationId> missingIds = customizationIds.Except(customizations.Select(customization => customization.Id));
+    if (missingIds.Any())
+    {
+      throw new CustomizationsNotFoundException(customizationIds, propertyName);
+    }
+
+    return customizations;
+  }
+
+  private async Task<IReadOnlyCollection<Language>> LoadLanguagesAsync(WorldId worldId, IEnumerable<Guid> ids, string propertyName, CancellationToken cancellationToken)
+  {
     HashSet<LanguageId> languageIds = ids.Select(id => new LanguageId(worldId, id)).ToHashSet();
     IReadOnlyCollection<Language> languages = await _languageRepository.LoadAsync(languageIds, cancellationToken);
 
