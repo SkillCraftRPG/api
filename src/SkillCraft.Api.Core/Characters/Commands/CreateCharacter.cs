@@ -1,7 +1,8 @@
-﻿using Logitar;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
+using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Models;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
@@ -13,29 +14,35 @@ internal record CreateCharacterCommand(CreateCharacterPayload Payload) : IComman
 
 internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCommand, CharacterModel>
 {
+  private readonly ICasteRepository _casteRepository;
   private readonly ICharacterQuerier _characterQuerier;
   private readonly ICharacterRepository _characterRepository;
   private readonly IContext _context;
   private readonly ICustomizationRepository _customizationRepository;
+  private readonly IEducationRepository _educationRepository;
   private readonly ILanguageRepository _languageRepository;
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
 
   public CreateCharacterCommandHandler(
+    ICasteRepository casteRepository,
     ICharacterQuerier characterQuerier,
     ICharacterRepository characterRepository,
     IContext context,
     ICustomizationRepository customizationRepository,
+    IEducationRepository educationRepository,
     ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
     IPermissionService permissionService)
   {
+    _casteRepository = casteRepository;
     _characterQuerier = characterQuerier;
     _characterRepository = characterRepository;
     _context = context;
     _customizationRepository = customizationRepository;
+    _educationRepository = educationRepository;
     _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
@@ -54,37 +61,40 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     LineageId lineageId = new(worldId, payload.LineageId);
     Lineage lineage = await _lineageRepository.LoadAsync(lineageId, cancellationToken)
       ?? throw new LineageNotFoundException(lineageId, nameof(payload.LineageId));
-    int extraLanguages = lineage.Languages.Extra;
-    HashSet<LanguageId> grantedLanguageIds = lineage.Languages.Ids.ToHashSet();
 
     Lineage? parent = null;
     if (lineage.ParentId.HasValue)
     {
       parent = await _lineageRepository.LoadAsync(lineage.ParentId.Value, cancellationToken)
         ?? throw new InvalidOperationException($"The lineage 'Id={lineage.ParentId}' was not found.");
-      extraLanguages += parent.Languages.Extra;
-      grantedLanguageIds.AddRange(parent.Languages.Ids);
     }
     else if (await _lineageQuerier.HasChildrenAsync(lineage, cancellationToken))
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new NotImplementedException(); // TODO(fpion): DomainException
     }
 
     IReadOnlyCollection<Language> languages = await LoadLanguagesAsync(worldId, payload.LanguageIds, nameof(payload.LanguageIds), cancellationToken);
-    IEnumerable<Language> grantedLanguages = languages.Where(language => grantedLanguageIds.Contains(language.Id));
-    if (grantedLanguages.Any())
-    {
-      throw new NotImplementedException(); // TODO(fpion): implement
-    }
-    else if (languages.Count != extraLanguages)
-    {
-      throw new NotImplementedException(); // TODO(fpion): implement
-    }
 
     Name name = new(payload.Name);
     IReadOnlyCollection<Customization> customizations = await LoadCustomizationsAsync(worldId, payload.CustomizationIds, nameof(payload.CustomizationIds), cancellationToken);
 
-    Character character = new(CharacterId.NewId(worldId), name, lineage, payload.DominantHand, customizations, languages, _context.ActorId);
+    CasteId casteId = new(worldId, payload.CasteId);
+    Caste caste = await _casteRepository.LoadAsync(casteId, cancellationToken) ?? throw new CasteNotFoundException(casteId, nameof(payload.CasteId));
+
+    EducationId educationId = new(worldId, payload.EducationId);
+    Education education = await _educationRepository.LoadAsync(educationId, cancellationToken) ?? throw new EducationNotFoundException(educationId, nameof(payload.EducationId));
+
+    Character character = new(
+      CharacterId.NewId(worldId),
+      name,
+      lineage,
+      caste,
+      education,
+      payload.DominantHand,
+      parent,
+      customizations,
+      languages,
+      _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);
 

@@ -1,6 +1,8 @@
 ﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Events;
 using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Worlds;
@@ -20,6 +22,8 @@ public class Character : AggregateRoot, IResource
   public DominantHand? DominantHand { get; private set; }
 
   public LineageId LineageId { get; private set; }
+  public CasteId CasteId { get; private set; }
+  public EducationId EducationId { get; private set; }
 
   private readonly List<CustomizationId> _customizationIds = [];
   public IReadOnlyCollection<CustomizationId> CustomizationIds => _customizationIds.AsReadOnly();
@@ -37,10 +41,13 @@ public class Character : AggregateRoot, IResource
     World world,
     Name name,
     Lineage lineage,
+    Caste caste,
+    Education education,
     DominantHand? dominantHand = null,
+    Lineage? parent = null,
     IEnumerable<Language>? languages = null,
     IEnumerable<Customization>? customizations = null,
-    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, dominantHand, customizations, languages, actorId)
+    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, caste, education, dominantHand, parent, customizations, languages, actorId)
   {
   }
 
@@ -48,52 +55,27 @@ public class Character : AggregateRoot, IResource
     CharacterId characterId,
     Name name,
     Lineage lineage,
+    Caste caste,
+    Education education,
     DominantHand? dominantHand = null,
+    Lineage? parent = null,
     IEnumerable<Customization>? customizations = null,
     IEnumerable<Language>? languages = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
-    WorldMismatchException.ThrowIfMismatch(WorldId, lineage.WorldId, nameof(lineage));
+    CharacterHelper.ValidateLineage(WorldId, lineage, parent, nameof(lineage));
+    WorldMismatchException.ThrowIfMismatch(WorldId, caste.WorldId, nameof(caste));
+    WorldMismatchException.ThrowIfMismatch(WorldId, education.WorldId, nameof(education));
 
     if (dominantHand.HasValue && !Enum.IsDefined(dominantHand.Value))
     {
       throw new ArgumentOutOfRangeException(nameof(dominantHand));
     }
 
-    if (customizations is not null)
-    {
-      int disabilities = 0;
-      int gifts = 0;
-      foreach (Customization customization in customizations)
-      {
-        WorldMismatchException.ThrowIfMismatch(WorldId, customization.WorldId, nameof(customizations));
-        switch (customization.Kind)
-        {
-          case CustomizationKind.Disability:
-            disabilities++;
-            break;
-          case CustomizationKind.Gift:
-            gifts++;
-            break;
-        }
-      }
-      if (disabilities != gifts)
-      {
-        throw new NotImplementedException(); // TODO(fpion): implement
-      }
-    }
+    IReadOnlyCollection<CustomizationId> customizationIds = CharacterHelper.ValidateCustomizations(WorldId, customizations ?? [], nameof(customizations));
+    IReadOnlyCollection<LanguageId> languageIds = CharacterHelper.ValidateLanguages(WorldId, languages ?? [], lineage, parent, nameof(languages));
 
-    if (languages is not null)
-    {
-      foreach (Language language in languages)
-      {
-        WorldMismatchException.ThrowIfMismatch(WorldId, language.WorldId, nameof(languages));
-      }
-    }
-
-    HashSet<CustomizationId> customizationIds = (customizations ?? []).Select(customization => customization.Id).ToHashSet();
-    HashSet<LanguageId> languageIds = (languages ?? []).Select(language => language.Id).ToHashSet();
-    Raise(new CharacterCreated(name, dominantHand, lineage.Id, customizationIds, languageIds), actorId);
+    Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
@@ -101,6 +83,8 @@ public class Character : AggregateRoot, IResource
     DominantHand = @event.DominantHand;
 
     LineageId = @event.LineageId;
+    CasteId = @event.CasteId;
+    EducationId = @event.EducationId;
 
     _customizationIds.Clear();
     _customizationIds.AddRange(@event.CustomizationIds);
