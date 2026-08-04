@@ -7,6 +7,7 @@ namespace SkillCraft.Api.Core.Characters.Events;
 
 public record CharacterCreated(
   Name Name,
+  DominantHand? DominantHand,
   LineageId LineageId,
   IReadOnlyCollection<CustomizationId> CustomizationIds,
   IReadOnlyCollection<LanguageId> LanguageIds) : DomainEvent;

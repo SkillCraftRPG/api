@@ -17,6 +17,7 @@ public class Character : AggregateRoot, IResource
 
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
+  public DominantHand? DominantHand { get; private set; }
 
   public LineageId LineageId { get; private set; }
 
@@ -36,9 +37,10 @@ public class Character : AggregateRoot, IResource
     World world,
     Name name,
     Lineage lineage,
+    DominantHand? dominantHand = null,
     IEnumerable<Language>? languages = null,
     IEnumerable<Customization>? customizations = null,
-    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, customizations, languages, actorId)
+    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, dominantHand, customizations, languages, actorId)
   {
   }
 
@@ -46,11 +48,17 @@ public class Character : AggregateRoot, IResource
     CharacterId characterId,
     Name name,
     Lineage lineage,
+    DominantHand? dominantHand = null,
     IEnumerable<Customization>? customizations = null,
     IEnumerable<Language>? languages = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(WorldId, lineage.WorldId, nameof(lineage));
+
+    if (dominantHand.HasValue && !Enum.IsDefined(dominantHand.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(dominantHand));
+    }
 
     if (customizations is not null)
     {
@@ -85,11 +93,12 @@ public class Character : AggregateRoot, IResource
 
     HashSet<CustomizationId> customizationIds = (customizations ?? []).Select(customization => customization.Id).ToHashSet();
     HashSet<LanguageId> languageIds = (languages ?? []).Select(language => language.Id).ToHashSet();
-    Raise(new CharacterCreated(name, lineage.Id, customizationIds, languageIds), actorId);
+    Raise(new CharacterCreated(name, dominantHand, lineage.Id, customizationIds, languageIds), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
     _name = @event.Name;
+    DominantHand = @event.DominantHand;
 
     LineageId = @event.LineageId;
 

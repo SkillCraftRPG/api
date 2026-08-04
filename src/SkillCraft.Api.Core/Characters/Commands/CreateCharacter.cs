@@ -84,7 +84,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     Name name = new(payload.Name);
     IReadOnlyCollection<Customization> customizations = await LoadCustomizationsAsync(worldId, payload.CustomizationIds, nameof(payload.CustomizationIds), cancellationToken);
 
-    Character character = new(CharacterId.NewId(worldId), name, lineage, customizations, languages, _context.ActorId);
+    Character character = new(CharacterId.NewId(worldId), name, lineage, payload.DominantHand, customizations, languages, _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);
 
