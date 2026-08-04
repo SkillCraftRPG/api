@@ -59,6 +59,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.CreateCaste:
+      case Actions.CreateCharacter:
       case Actions.CreateCustomization:
       case Actions.CreateEducation:
       case Actions.CreateItem:

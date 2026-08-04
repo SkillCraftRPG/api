@@ -15,7 +15,6 @@ internal class LineageQuerier : ILineageQuerier
 {
   private readonly IActorService _actorService;
   private readonly IContext _context;
-  private readonly GameContext _database;
   private readonly DbSet<LineageEntity> _lineages;
   private readonly ISqlHelper _sqlHelper;
 
@@ -23,9 +22,13 @@ internal class LineageQuerier : ILineageQuerier
   {
     _actorService = actorService;
     _context = context;
-    _database = database;
     _lineages = database.Lineages;
     _sqlHelper = sqlHelper;
+  }
+
+  public async Task<bool> HasChildrenAsync(Lineage lineage, CancellationToken cancellationToken)
+  {
+    return await _lineages.AnyAsync(x => x.Parent!.StreamId == lineage.Id.Value, cancellationToken);
   }
 
   public async Task<LineageModel> ReadAsync(Lineage lineage, CancellationToken cancellationToken)
