@@ -65,9 +65,24 @@ internal class TalentQuerier : ITalentQuerier
     {
       builder.Where(Db.Talents.AllowMultiplePurchases, Operators.IsEqualTo(payload.AllowMultiplePurchases.Value));
     }
-    if (payload.Skill.HasValue)
+    if (!string.IsNullOrWhiteSpace(payload.Skill))
     {
-      builder.Where(Db.Talents.Skill, Operators.IsEqualTo(payload.Skill.Value.ToString()));
+      string value = payload.Skill.Trim().ToLower();
+      switch (value)
+      {
+        case "any":
+          builder.Where(Db.Talents.Skill, Operators.IsNotNull());
+          break;
+        case "none":
+          builder.Where(Db.Talents.Skill, Operators.IsNull());
+          break;
+        default:
+          if (Enum.TryParse(value, ignoreCase: true, out Skill skill) && Enum.IsDefined(skill))
+          {
+            builder.Where(Db.Talents.Skill, Operators.IsEqualTo(skill.ToString()));
+          }
+          break;
+      }
     }
     if (payload.RequiredTalentId.HasValue)
     {
