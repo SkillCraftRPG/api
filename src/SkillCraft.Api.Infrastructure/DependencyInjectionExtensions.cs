@@ -4,6 +4,7 @@ using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Core.Castes;
+using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Identity;
@@ -59,6 +60,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<ICasteQuerier, CasteQuerier>()
+      .AddScoped<ICharacterQuerier, CharacterQuerier>()
       .AddScoped<ICustomizationQuerier, CustomizationQuerier>()
       .AddScoped<IEducationQuerier, EducationQuerier>()
       .AddScoped<IItemQuerier, ItemQuerier>()
@@ -74,6 +76,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<ICasteRepository, CasteRepository>()
+      .AddScoped<ICharacterRepository, CharacterRepository>()
       .AddScoped<ICustomizationRepository, CustomizationRepository>()
       .AddScoped<IEducationRepository, EducationRepository>()
       .AddScoped<IItemRepository, ItemRepository>()
