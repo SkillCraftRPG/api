@@ -31,6 +31,9 @@ public class Character : AggregateRoot, IResource
   private readonly List<LanguageId> _languageIds = [];
   public IReadOnlyCollection<LanguageId> LanguageIds => _languageIds.AsReadOnly();
 
+  private readonly Dictionary<Guid, CharacterTalent> _talents = [];
+  public IReadOnlyDictionary<Guid, CharacterTalent> Talents => _talents.AsReadOnly();
+
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Character() : base()
@@ -47,7 +50,8 @@ public class Character : AggregateRoot, IResource
     Lineage? parent = null,
     IEnumerable<Language>? languages = null,
     IEnumerable<Customization>? customizations = null,
-    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, caste, education, dominantHand, parent, customizations, languages, actorId)
+    IEnumerable<CharacterTalent>? talents = null,
+    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, caste, education, dominantHand, parent, customizations, languages, talents, actorId)
   {
   }
 
@@ -61,6 +65,7 @@ public class Character : AggregateRoot, IResource
     Lineage? parent = null,
     IEnumerable<Customization>? customizations = null,
     IEnumerable<Language>? languages = null,
+    IEnumerable<CharacterTalent>? talents = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
     CharacterHelper.ValidateLineage(WorldId, lineage, parent, nameof(lineage));
@@ -74,8 +79,9 @@ public class Character : AggregateRoot, IResource
 
     IReadOnlyCollection<CustomizationId> customizationIds = CharacterHelper.ValidateCustomizations(WorldId, customizations ?? [], nameof(customizations));
     IReadOnlyCollection<LanguageId> languageIds = CharacterHelper.ValidateLanguages(WorldId, languages ?? [], lineage, parent, nameof(languages));
+    IReadOnlyCollection<CharacterTalent> validTalents = CharacterHelper.ValidateTalents(WorldId, talents ?? [], caste, education, customizations ?? [], nameof(talents));
 
-    Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds), actorId);
+    Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, validTalents), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
@@ -91,6 +97,12 @@ public class Character : AggregateRoot, IResource
 
     _languageIds.Clear();
     _languageIds.AddRange(@event.LanguageIds);
+
+    _talents.Clear();
+    foreach (CharacterTalent talent in @event.Talents)
+    {
+      _talents[Guid.NewGuid()] = talent;
+    }
   }
 
   public void Delete(ActorId? actorId = null)

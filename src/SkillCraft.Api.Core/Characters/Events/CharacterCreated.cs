@@ -14,4 +14,5 @@ public record CharacterCreated(
   CasteId CasteId,
   EducationId EducationId,
   IReadOnlyCollection<CustomizationId> CustomizationIds,
-  IReadOnlyCollection<LanguageId> LanguageIds) : DomainEvent;
+  IReadOnlyCollection<LanguageId> LanguageIds,
+  IReadOnlyCollection<CharacterTalent> Talents) : DomainEvent;
