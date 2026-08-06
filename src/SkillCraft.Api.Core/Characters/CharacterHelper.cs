@@ -94,7 +94,7 @@ internal static class CharacterHelper
     }
   }
 
-  public static IReadOnlyCollection<CharacterTalent> ValidateTalents(
+  public static IReadOnlyDictionary<Guid, CharacterTalent> ValidateTalents(
     WorldId worldId,
     IEnumerable<CharacterTalent> talents,
     Lineage lineage,
@@ -201,6 +201,6 @@ internal static class CharacterHelper
       throw new NotImplementedException(); // TODO(fpion): DomainException
     }
 
-    return talents.ToList().AsReadOnly();
+    return talents.ToDictionary(x => Guid.NewGuid(), x => x).AsReadOnly();
   }
 }

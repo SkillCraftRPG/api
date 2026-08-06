@@ -79,9 +79,17 @@ public class Character : AggregateRoot, IResource
 
     IReadOnlyCollection<CustomizationId> customizationIds = CharacterHelper.ValidateCustomizations(WorldId, customizations ?? [], nameof(customizations));
     IReadOnlyCollection<LanguageId> languageIds = CharacterHelper.ValidateLanguages(WorldId, languages ?? [], lineage, parent, nameof(languages));
-    IReadOnlyCollection<CharacterTalent> validTalents = CharacterHelper.ValidateTalents(WorldId, talents ?? [], lineage, parent, caste, education, customizations ?? [], nameof(talents));
+    IReadOnlyDictionary<Guid, CharacterTalent> characterTalents = CharacterHelper.ValidateTalents(
+      WorldId,
+      talents ?? [],
+      lineage,
+      parent,
+      caste,
+      education,
+      customizations ?? [],
+      nameof(talents));
 
-    Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, validTalents), actorId);
+    Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, characterTalents), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
@@ -99,9 +107,9 @@ public class Character : AggregateRoot, IResource
     _languageIds.AddRange(@event.LanguageIds);
 
     _talents.Clear();
-    foreach (CharacterTalent talent in @event.Talents)
+    foreach (KeyValuePair<Guid, CharacterTalent> talent in @event.Talents)
     {
-      _talents[Guid.NewGuid()] = talent;
+      _talents[talent.Key] = talent.Value;
     }
   }
 

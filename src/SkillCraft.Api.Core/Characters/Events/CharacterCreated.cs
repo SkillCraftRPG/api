@@ -15,4 +15,4 @@ public record CharacterCreated(
   EducationId EducationId,
   IReadOnlyCollection<CustomizationId> CustomizationIds,
   IReadOnlyCollection<LanguageId> LanguageIds,
-  IReadOnlyCollection<CharacterTalent> Talents) : DomainEvent;
+  IReadOnlyDictionary<Guid, CharacterTalent> Talents) : DomainEvent;
