@@ -17,6 +17,8 @@ public record CreateCharacterPayload
 
   public List<AddCharacterTalentPayload> Talents { get; set; } = [];
 
+  public StartingAttributesModel Attributes { get; set; } = new();
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
@@ -27,6 +29,8 @@ public record CreateCharacterPayload
       RuleFor(x => x.DominantHand).IsInEnum();
 
       RuleForEach(x => x.Talents).SetValidator(new CharacterTalentValidator());
+
+      RuleFor(x => x.Attributes).SetValidator(new StartingAttributesValidator());
     }
   }
 }
