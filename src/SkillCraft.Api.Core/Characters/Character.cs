@@ -79,7 +79,7 @@ public class Character : AggregateRoot, IResource
 
     IReadOnlyCollection<CustomizationId> customizationIds = CharacterHelper.ValidateCustomizations(WorldId, customizations ?? [], nameof(customizations));
     IReadOnlyCollection<LanguageId> languageIds = CharacterHelper.ValidateLanguages(WorldId, languages ?? [], lineage, parent, nameof(languages));
-    IReadOnlyCollection<CharacterTalent> validTalents = CharacterHelper.ValidateTalents(WorldId, talents ?? [], caste, education, customizations ?? [], nameof(talents));
+    IReadOnlyCollection<CharacterTalent> validTalents = CharacterHelper.ValidateTalents(WorldId, talents ?? [], lineage, parent, caste, education, customizations ?? [], nameof(talents));
 
     Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, validTalents), actorId);
   }
