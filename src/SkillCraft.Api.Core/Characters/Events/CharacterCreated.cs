@@ -10,6 +10,7 @@ namespace SkillCraft.Api.Core.Characters.Events;
 public record CharacterCreated(
   Name Name,
   DominantHand? DominantHand,
+  StartingAttributes Attributes,
   LineageId LineageId,
   CasteId CasteId,
   EducationId EducationId,

@@ -93,6 +93,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     Character character = new(
       CharacterId.NewId(worldId),
       name,
+      new StartingAttributes(payload.Attributes),
       lineage,
       caste,
       education,

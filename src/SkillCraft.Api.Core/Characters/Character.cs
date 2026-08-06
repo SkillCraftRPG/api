@@ -43,6 +43,7 @@ public class Character : AggregateRoot, IResource
   public Character(
     World world,
     Name name,
+    StartingAttributes attributes,
     Lineage lineage,
     Caste caste,
     Education education,
@@ -51,13 +52,15 @@ public class Character : AggregateRoot, IResource
     IEnumerable<Language>? languages = null,
     IEnumerable<Customization>? customizations = null,
     IEnumerable<CharacterTalent>? talents = null,
-    ActorId? actorId = null) : this(CharacterId.NewId(world.Id), name, lineage, caste, education, dominantHand, parent, customizations, languages, talents, actorId)
+    ActorId? actorId = null)
+    : this(CharacterId.NewId(world.Id), name, attributes, lineage, caste, education, dominantHand, parent, customizations, languages, talents, actorId)
   {
   }
 
   public Character(
     CharacterId characterId,
     Name name,
+    StartingAttributes attributes,
     Lineage lineage,
     Caste caste,
     Education education,
@@ -89,7 +92,7 @@ public class Character : AggregateRoot, IResource
       customizations ?? [],
       nameof(talents));
 
-    Raise(new CharacterCreated(name, dominantHand, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, characterTalents), actorId);
+    Raise(new CharacterCreated(name, dominantHand, attributes, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, characterTalents), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
