@@ -100,12 +100,12 @@ public class TalentIntegrationTests : IntegrationTests
     Assert.Equal(formationMartiale.ResourceId, talent.Id);
   }
 
-  [Fact(DisplayName = "It should filter search results by skill.")]
-  public async Task Given_Skill_When_Search_Then_Results()
+  [Fact(DisplayName = "It should filter search results by any skill.")]
+  public async Task Given_AnySkill_When_Search_Then_Results()
   {
     SearchTalentsPayload payload = new()
     {
-      Skill = Skill.Melee
+      Skill = " AnY   "
     };
 
     SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
@@ -113,6 +113,36 @@ public class TalentIntegrationTests : IntegrationTests
 
     TalentModel talent = Assert.Single(results.Items);
     Assert.Equal(_melee.ResourceId, talent.Id);
+  }
+
+  [Fact(DisplayName = "It should filter search results by a specific skill.")]
+  public async Task Given_SpecificSkill_When_Search_Then_Results()
+  {
+    SearchTalentsPayload payload = new()
+    {
+      Skill = Skill.Melee.ToString()
+    };
+
+    SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    TalentModel talent = Assert.Single(results.Items);
+    Assert.Equal(_melee.ResourceId, talent.Id);
+  }
+
+  [Fact(DisplayName = "It should filter search results by no skill.")]
+  public async Task Given_NoneSkill_When_Search_Then_Results()
+  {
+    SearchTalentsPayload payload = new()
+    {
+      Skill = " NoNe   "
+    };
+
+    SearchResults<TalentModel> results = await _talentService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    TalentModel talent = Assert.Single(results.Items);
+    Assert.Equal(_talent.ResourceId, talent.Id);
   }
 
   [Fact(DisplayName = "It should filter search results by tiers.")]

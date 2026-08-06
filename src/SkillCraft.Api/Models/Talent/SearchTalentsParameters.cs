@@ -1,6 +1,5 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Mvc;
-using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Talents.Models;
 
 namespace SkillCraft.Api.Models.Talent;
@@ -14,7 +13,7 @@ public record SearchTalentsParameters : SearchParameters
   public bool? AllowMultiplePurchases { get; set; }
 
   [FromQuery(Name = "skill")]
-  public Skill? Skill { get; set; }
+  public string? Skill { get; set; }
 
   [FromQuery(Name = "required")]
   public Guid? RequiredTalentId { get; set; }

@@ -15,6 +15,8 @@ public record CreateCharacterPayload
   public Guid CasteId { get; set; }
   public Guid EducationId { get; set; }
 
+  public List<AddCharacterTalentPayload> Talents { get; set; } = [];
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
@@ -23,6 +25,8 @@ public record CreateCharacterPayload
     {
       RuleFor(x => x.Name).Name();
       RuleFor(x => x.DominantHand).IsInEnum();
+
+      RuleForEach(x => x.Talents).SetValidator(new CharacterTalentValidator());
     }
   }
 }

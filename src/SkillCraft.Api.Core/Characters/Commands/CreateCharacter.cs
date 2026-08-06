@@ -6,6 +6,7 @@ using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
+using SkillCraft.Api.Core.Talents;
 using SkillCraft.Api.Core.Worlds;
 
 namespace SkillCraft.Api.Core.Characters.Commands;
@@ -24,6 +25,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
   private readonly IPermissionService _permissionService;
+  private readonly ITalentRepository _talentRepository;
 
   public CreateCharacterCommandHandler(
     ICasteRepository casteRepository,
@@ -35,7 +37,8 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
-    IPermissionService permissionService)
+    IPermissionService permissionService,
+    ITalentRepository talentRepository)
   {
     _casteRepository = casteRepository;
     _characterQuerier = characterQuerier;
@@ -47,6 +50,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
     _permissionService = permissionService;
+    _talentRepository = talentRepository;
   }
 
   public async Task<CharacterModel> HandleAsync(CreateCharacterCommand command, CancellationToken cancellationToken)
@@ -84,6 +88,8 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     EducationId educationId = new(worldId, payload.EducationId);
     Education education = await _educationRepository.LoadAsync(educationId, cancellationToken) ?? throw new EducationNotFoundException(educationId, nameof(payload.EducationId));
 
+    IReadOnlyCollection<CharacterTalent> talents = await LoadTalentsAsync(worldId, payload.Talents, nameof(payload.Talents), cancellationToken);
+
     Character character = new(
       CharacterId.NewId(worldId),
       name,
@@ -94,6 +100,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       parent,
       customizations,
       languages,
+      talents,
       _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);
@@ -109,7 +116,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     IEnumerable<CustomizationId> missingIds = customizationIds.Except(customizations.Select(customization => customization.Id));
     if (missingIds.Any())
     {
-      throw new CustomizationsNotFoundException(customizationIds, propertyName);
+      throw new CustomizationsNotFoundException(missingIds, propertyName);
     }
 
     return customizations;
@@ -123,9 +130,33 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     IEnumerable<LanguageId> missingIds = languageIds.Except(languages.Select(language => language.Id));
     if (missingIds.Any())
     {
-      throw new LanguagesNotFoundException(languageIds, propertyName);
+      throw new LanguagesNotFoundException(missingIds, propertyName);
     }
 
     return languages;
+  }
+
+  private async Task<IReadOnlyCollection<CharacterTalent>> LoadTalentsAsync(
+    WorldId worldId,
+    IEnumerable<AddCharacterTalentPayload> payloads,
+    string propertyName,
+    CancellationToken cancellationToken)
+  {
+    HashSet<TalentId> talentIds = payloads.Select(payload => new TalentId(worldId, payload.TalentId)).ToHashSet();
+    IReadOnlyCollection<Talent> talents = await _talentRepository.LoadAsync(talentIds, cancellationToken);
+
+    IEnumerable<TalentId> missingIds = talentIds.Except(talents.Select(talent => talent.Id));
+    if (missingIds.Any())
+    {
+      throw new TalentsNotFoundException(missingIds, propertyName);
+    }
+
+    Dictionary<Guid, Talent> talentsById = talents.ToDictionary(x => x.ResourceId, x => x);
+    List<CharacterTalent> characterTalents = new(capacity: payloads.Count());
+    foreach (AddCharacterTalentPayload payload in payloads)
+    {
+      characterTalents.Add(new CharacterTalent(talentsById[payload.TalentId], Name.TryCreate(payload.Qualifier), Notes.TryCreate(payload.Notes)));
+    }
+    return characterTalents.AsReadOnly();
   }
 }

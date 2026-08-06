@@ -14,6 +14,7 @@ public class Talent : AggregateRoot, IResource
 
   private TalentTier? _tier = null;
   public TalentTier Tier => _tier ?? throw new InvalidOperationException("The tier has not been initialized.");
+  public int Cost => 2 + Tier.Value;
 
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
