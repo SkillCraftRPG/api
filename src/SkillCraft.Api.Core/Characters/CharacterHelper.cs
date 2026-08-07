@@ -14,6 +14,8 @@ internal static class CharacterHelper
   private const int MinimumSkillsTrained = 6;
   private const int MinimumSpentPoints = 10;
   private const int MaximumSpentPoints = 12;
+  private const int MinimumSkillRank = 0;
+  private const int MaximumSkillRank = 2;
 
   public static IReadOnlyCollection<CustomizationId> ValidateCustomizations(WorldId worldId, IEnumerable<Customization> customizations, string propertyName)
   {
@@ -138,14 +140,7 @@ internal static class CharacterHelper
 
       if (!talent.AllowMultiplePurchases)
       {
-        if (duplicates.TryGetValue(talent.Id, out int count))
-        {
-          duplicates[talent.Id] = count + 1;
-        }
-        else
-        {
-          duplicates[talent.Id] = 1;
-        }
+        duplicates[talent.Id] = duplicates.GetValueOrDefault(talent.Id) + 1;
       }
 
       if (talent.Skill.HasValue)
@@ -202,5 +197,32 @@ internal static class CharacterHelper
     }
 
     return talents.ToDictionary(x => Guid.NewGuid(), x => x).AsReadOnly();
+  }
+
+  public static void ValidateSkills(IReadOnlyDictionary<Skill, int> skills, IEnumerable<Talent> talents)
+  {
+    Dictionary<Skill, int> skillTalents = new(capacity: talents.Count());
+    foreach (Talent talent in talents)
+    {
+      if (talent.Skill.HasValue)
+      {
+        skillTalents[talent.Skill.Value] = skillTalents.GetValueOrDefault(talent.Skill.Value) + 1;
+      }
+    }
+
+    foreach (KeyValuePair<Skill, int> skill in skills)
+    {
+      int rank = skill.Value;
+      if (!Enum.IsDefined(skill.Key) || rank < MinimumSkillRank || rank > MaximumSkillRank)
+      {
+        throw new ArgumentOutOfRangeException(nameof(skills));
+      }
+
+      rank += skills.GetValueOrDefault(skill.Key);
+      if (rank > MaximumSkillRank)
+      {
+        throw new NotImplementedException(); // TODO(fpion): DomainException
+      }
+    }
   }
 }

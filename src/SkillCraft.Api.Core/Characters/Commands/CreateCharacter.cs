@@ -90,6 +90,8 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
     IReadOnlyCollection<CharacterTalent> talents = await LoadTalentsAsync(worldId, payload.Talents, nameof(payload.Talents), cancellationToken);
 
+    IReadOnlyDictionary<Skill, int> skills = payload.Skills.GroupBy(x => x.Skill).ToDictionary(x => x.Key, x => x.Sum(y => y.Rank)).AsReadOnly();
+
     Character character = new(
       CharacterId.NewId(worldId),
       name,
@@ -102,6 +104,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       customizations,
       languages,
       talents,
+      skills,
       _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);

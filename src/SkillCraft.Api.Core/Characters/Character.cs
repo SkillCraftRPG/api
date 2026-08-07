@@ -52,8 +52,9 @@ public class Character : AggregateRoot, IResource
     IEnumerable<Language>? languages = null,
     IEnumerable<Customization>? customizations = null,
     IEnumerable<CharacterTalent>? talents = null,
+    IReadOnlyDictionary<Skill, int>? skills = null,
     ActorId? actorId = null)
-    : this(CharacterId.NewId(world.Id), name, attributes, lineage, caste, education, dominantHand, parent, customizations, languages, talents, actorId)
+    : this(CharacterId.NewId(world.Id), name, attributes, lineage, caste, education, dominantHand, parent, customizations, languages, talents, skills, actorId)
   {
   }
 
@@ -69,6 +70,7 @@ public class Character : AggregateRoot, IResource
     IEnumerable<Customization>? customizations = null,
     IEnumerable<Language>? languages = null,
     IEnumerable<CharacterTalent>? talents = null,
+    IReadOnlyDictionary<Skill, int>? skills = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
     CharacterHelper.ValidateLineage(WorldId, lineage, parent, nameof(lineage));
@@ -91,6 +93,9 @@ public class Character : AggregateRoot, IResource
       education,
       customizations ?? [],
       nameof(talents));
+
+    skills ??= new Dictionary<Skill, int>().AsReadOnly();
+    CharacterHelper.ValidateSkills(skills, characterTalents.Values.Select(acquired => acquired.Talent!));
 
     Raise(new CharacterCreated(name, dominantHand, attributes, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, characterTalents), actorId);
   }
