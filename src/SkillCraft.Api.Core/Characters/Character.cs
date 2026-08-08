@@ -34,6 +34,12 @@ public class Character : AggregateRoot, IResource
   private readonly Dictionary<Guid, CharacterTalent> _talents = [];
   public IReadOnlyDictionary<Guid, CharacterTalent> Talents => _talents.AsReadOnly();
 
+  public StartingAttributes StartingAttributes { get; private set; } = new();
+  private readonly Dictionary<Skill, int> _skills = [];
+  public IReadOnlyDictionary<Skill, int> Skills => _skills.AsReadOnly();
+
+  public CharacterAppearance Appearance { get; private set; } = new();
+
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Character() : base()
@@ -41,36 +47,19 @@ public class Character : AggregateRoot, IResource
   }
 
   public Character(
-    World world,
-    Name name,
-    StartingAttributes attributes,
-    Lineage lineage,
-    Caste caste,
-    Education education,
-    DominantHand? dominantHand = null,
-    Lineage? parent = null,
-    IEnumerable<Language>? languages = null,
-    IEnumerable<Customization>? customizations = null,
-    IEnumerable<CharacterTalent>? talents = null,
-    IReadOnlyDictionary<Skill, int>? skills = null,
-    ActorId? actorId = null)
-    : this(CharacterId.NewId(world.Id), name, attributes, lineage, caste, education, dominantHand, parent, customizations, languages, talents, skills, actorId)
-  {
-  }
-
-  public Character(
     CharacterId characterId,
-    Name name,
-    StartingAttributes attributes,
     Lineage lineage,
+    Name name,
     Caste caste,
     Education education,
-    DominantHand? dominantHand = null,
     Lineage? parent = null,
-    IEnumerable<Customization>? customizations = null,
     IEnumerable<Language>? languages = null,
+    DominantHand? dominantHand = null,
+    IEnumerable<Customization>? customizations = null,
     IEnumerable<CharacterTalent>? talents = null,
+    StartingAttributes? attributes = null,
     IReadOnlyDictionary<Skill, int>? skills = null,
+    CharacterAppearance? appearance = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
     CharacterHelper.ValidateLineage(WorldId, lineage, parent, nameof(lineage));
@@ -94,10 +83,14 @@ public class Character : AggregateRoot, IResource
       customizations ?? [],
       nameof(talents));
 
+    attributes ??= new();
+
     skills ??= new Dictionary<Skill, int>().AsReadOnly();
     CharacterHelper.ValidateSkills(skills, characterTalents.Values.Select(acquired => acquired.Talent!));
 
-    Raise(new CharacterCreated(name, dominantHand, attributes, lineage.Id, caste.Id, education.Id, customizationIds, languageIds, characterTalents), actorId);
+    appearance ??= new();
+
+    Raise(new CharacterCreated(lineage.Id, languageIds, name, dominantHand, customizationIds, caste.Id, education.Id, characterTalents, attributes, skills, appearance), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
@@ -119,6 +112,15 @@ public class Character : AggregateRoot, IResource
     {
       _talents[talent.Key] = talent.Value;
     }
+
+    StartingAttributes = @event.Attributes;
+    _skills.Clear();
+    foreach (KeyValuePair<Skill, int> skill in @event.Skills)
+    {
+      _skills[skill.Key] = skill.Value;
+    }
+
+    Appearance = @event.Appearance;
   }
 
   public void Delete(ActorId? actorId = null)
