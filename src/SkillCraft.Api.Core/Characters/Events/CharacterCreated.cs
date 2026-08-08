@@ -8,12 +8,14 @@ using SkillCraft.Api.Core.Lineages;
 namespace SkillCraft.Api.Core.Characters.Events;
 
 public record CharacterCreated(
+  LineageId LineageId,
+  IReadOnlyCollection<LanguageId> LanguageIds,
   Name Name,
   DominantHand? DominantHand,
-  StartingAttributes Attributes,
-  LineageId LineageId,
+  IReadOnlyCollection<CustomizationId> CustomizationIds,
   CasteId CasteId,
   EducationId EducationId,
-  IReadOnlyCollection<CustomizationId> CustomizationIds,
-  IReadOnlyCollection<LanguageId> LanguageIds,
-  IReadOnlyDictionary<Guid, CharacterTalent> Talents) : DomainEvent;
+  IReadOnlyDictionary<Guid, CharacterTalent> Talents,
+  StartingAttributes Attributes,
+  IReadOnlyDictionary<Skill, int> Skills,
+  CharacterAppearance Appearance) : DomainEvent;

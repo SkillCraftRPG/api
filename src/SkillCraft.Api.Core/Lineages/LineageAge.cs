@@ -17,8 +17,12 @@ public record LineageAge : ILineageAge
   public int? Mature { get; }
   public int? Venerable { get; }
 
+  public LineageAge()
+  {
+  }
+
   [JsonConstructor]
-  public LineageAge(int? teenager = null, int? adult = null, int? mature = null, int? venerable = null)
+  public LineageAge(int? teenager, int? adult, int? mature, int? venerable)
   {
     Teenager = teenager;
     Adult = adult;

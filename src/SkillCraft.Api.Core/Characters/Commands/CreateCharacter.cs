@@ -94,17 +94,18 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
     Character character = new(
       CharacterId.NewId(worldId),
-      name,
-      new StartingAttributes(payload.Attributes),
       lineage,
+      name,
       caste,
       education,
-      payload.DominantHand,
       parent,
-      customizations,
       languages,
+      payload.DominantHand,
+      customizations,
       talents,
+      new StartingAttributes(payload.Attributes),
       skills,
+      new CharacterAppearance(payload.Appearance),
       _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);

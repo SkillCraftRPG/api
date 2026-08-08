@@ -19,6 +19,10 @@ public record StartingAttributes : IStartingAttributes
   public int Senses { get; }
   public int Vigor { get; }
 
+  public StartingAttributes()
+  {
+  }
+
   [JsonConstructor]
   public StartingAttributes(int dexterity, int health, int intellect, int senses, int vigor)
   {

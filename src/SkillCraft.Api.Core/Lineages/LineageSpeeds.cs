@@ -21,8 +21,12 @@ public record LineageSpeeds : ILineageSpeeds
   public bool Hover { get; }
   public int? Burrow { get; }
 
+  public LineageSpeeds()
+  {
+  }
+
   [JsonConstructor]
-  public LineageSpeeds(int? walk = null, int? climb = null, int? swim = null, int? fly = null, bool hover = false, int? burrow = null)
+  public LineageSpeeds(int? walk, int? climb, int? swim, int? fly, bool hover, int? burrow)
   {
     Walk = walk;
     Climb = climb;
