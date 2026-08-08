@@ -21,6 +21,8 @@ public record CreateCharacterPayload
 
   public List<SkillRankPayload> Skills { get; set; } = [];
 
+  public CharacterAppearanceModel Appearance { get; set; } = new();
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
@@ -35,6 +37,8 @@ public record CreateCharacterPayload
       RuleFor(x => x.Attributes).SetValidator(new StartingAttributesValidator());
 
       RuleForEach(x => x.Skills).SetValidator(new SkillRankValidator());
+
+      RuleFor(x => x.Appearance).SetValidator(new CharacterAppearanceValidator());
     }
   }
 }
