@@ -26,6 +26,8 @@ public record CreateCharacterPayload
   public Alignment? Alignment { get; set; }
   public CharacterPersonalityModel Personality { get; set; } = new();
 
+  public string? Background { get; set; }
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
@@ -45,6 +47,8 @@ public record CreateCharacterPayload
 
       RuleFor(x => x.Alignment).IsInEnum();
       RuleFor(x => x.Personality).SetValidator(new CharacterPersonalityValidator());
+
+      When(x => !string.IsNullOrWhiteSpace(x.Background), () => RuleFor(x => x.Background!).Background());
     }
   }
 }

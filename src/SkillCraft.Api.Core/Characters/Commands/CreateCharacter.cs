@@ -108,6 +108,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       new CharacterAppearance(payload.Appearance),
       payload.Alignment,
       new CharacterPersonality(payload.Personality),
+      Background.TryCreate(payload.Background),
       _context.ActorId);
 
     await _characterRepository.SaveAsync(character, cancellationToken);

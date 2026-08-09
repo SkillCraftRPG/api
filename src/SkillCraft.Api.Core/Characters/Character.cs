@@ -43,6 +43,8 @@ public class Character : AggregateRoot, IResource
   public Alignment? Alignment { get; private set; }
   public CharacterPersonality Personality { get; private set; } = new();
 
+  public Background? Background { get; private set; }
+
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Character() : base()
@@ -65,6 +67,7 @@ public class Character : AggregateRoot, IResource
     CharacterAppearance? appearance = null,
     Alignment? alignment = null,
     CharacterPersonality? personality = null,
+    Background? background = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
     CharacterHelper.ValidateLineage(WorldId, lineage, parent, nameof(lineage));
@@ -114,7 +117,8 @@ public class Character : AggregateRoot, IResource
       skills,
       appearance,
       alignment,
-      personality), actorId);
+      personality,
+      background), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
