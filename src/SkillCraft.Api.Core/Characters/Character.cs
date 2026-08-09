@@ -40,6 +40,9 @@ public class Character : AggregateRoot, IResource
 
   public CharacterAppearance Appearance { get; private set; } = new();
 
+  public Alignment? Alignment { get; private set; }
+  public CharacterPersonality Personality { get; private set; } = new();
+
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Character() : base()
@@ -60,6 +63,8 @@ public class Character : AggregateRoot, IResource
     StartingAttributes? attributes = null,
     IReadOnlyDictionary<Skill, int>? skills = null,
     CharacterAppearance? appearance = null,
+    Alignment? alignment = null,
+    CharacterPersonality? personality = null,
     ActorId? actorId = null) : base(characterId.StreamId)
   {
     CharacterHelper.ValidateLineage(WorldId, lineage, parent, nameof(lineage));
@@ -90,7 +95,26 @@ public class Character : AggregateRoot, IResource
 
     appearance ??= new();
 
-    Raise(new CharacterCreated(lineage.Id, languageIds, name, dominantHand, customizationIds, caste.Id, education.Id, characterTalents, attributes, skills, appearance), actorId);
+    if (alignment.HasValue && !Enum.IsDefined(alignment.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(alignment));
+    }
+    personality ??= new();
+
+    Raise(new CharacterCreated(
+      lineage.Id,
+      languageIds,
+      name,
+      dominantHand,
+      customizationIds,
+      caste.Id,
+      education.Id,
+      characterTalents,
+      attributes,
+      skills,
+      appearance,
+      alignment,
+      personality), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
   {
@@ -121,6 +145,9 @@ public class Character : AggregateRoot, IResource
     }
 
     Appearance = @event.Appearance;
+
+    Alignment = @event.Alignment;
+    Personality = @event.Personality;
   }
 
   public void Delete(ActorId? actorId = null)

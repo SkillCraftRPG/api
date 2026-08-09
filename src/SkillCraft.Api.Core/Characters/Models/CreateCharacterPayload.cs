@@ -23,6 +23,9 @@ public record CreateCharacterPayload
 
   public CharacterAppearanceModel Appearance { get; set; } = new();
 
+  public Alignment? Alignment { get; set; }
+  public CharacterPersonalityModel Personality { get; set; } = new();
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
@@ -39,6 +42,9 @@ public record CreateCharacterPayload
       RuleForEach(x => x.Skills).SetValidator(new SkillRankValidator());
 
       RuleFor(x => x.Appearance).SetValidator(new CharacterAppearanceValidator());
+
+      RuleFor(x => x.Alignment).IsInEnum();
+      RuleFor(x => x.Personality).SetValidator(new CharacterPersonalityValidator());
     }
   }
 }

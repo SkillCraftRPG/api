@@ -18,4 +18,6 @@ public record CharacterCreated(
   IReadOnlyDictionary<Guid, CharacterTalent> Talents,
   StartingAttributes Attributes,
   IReadOnlyDictionary<Skill, int> Skills,
-  CharacterAppearance Appearance) : DomainEvent;
+  CharacterAppearance Appearance,
+  Alignment? Alignment,
+  CharacterPersonality Personality) : DomainEvent;
