@@ -5,6 +5,11 @@ namespace SkillCraft.Api.Core.Validation;
 
 internal static class ValidationExtensions
 {
+  public static IRuleBuilderOptions<T, string> Background<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty();
+  }
+
   public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty();
