@@ -152,6 +152,8 @@ public class Character : AggregateRoot, IResource
 
     Alignment = @event.Alignment;
     Personality = @event.Personality;
+
+    Background = @event.Background;
   }
 
   public void Delete(ActorId? actorId = null)
