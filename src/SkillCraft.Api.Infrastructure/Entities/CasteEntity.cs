@@ -22,6 +22,8 @@ internal class CasteEntity : AggregateEntity
   public string? FeatureName { get; private set; }
   public string? FeatureContent { get; private set; }
 
+  public List<CharacterEntity> Characters { get; private set; } = [];
+
   public CasteEntity(Caste caste) : base(caste)
   {
     WorldId = caste.WorldId.ResourceId;
