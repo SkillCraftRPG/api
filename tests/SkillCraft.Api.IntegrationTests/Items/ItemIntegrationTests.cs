@@ -117,6 +117,25 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Null(await _itemService.UpdateAsync(Guid.Empty, new UpdateItemPayload()));
   }
 
+  [Fact(DisplayName = "It should filter search results by category.")]
+  public async Task Given_Category_When_Search_Then_Results()
+  {
+    Item tool = new ItemBuilder(Faker).WithWorld(Context.World).WithCategory(ItemCategory.Tool).WithName("Pied de biche").Build();
+    Item weapon = new ItemBuilder(Faker).WithWorld(Context.World).WithCategory(ItemCategory.Weapon).WithName("Dague").Build();
+    await _itemRepository.SaveAsync([tool, weapon]);
+
+    SearchItemsPayload payload = new()
+    {
+      Category = ItemCategory.Tool
+    };
+
+    SearchResults<ItemModel> results = await _itemService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    ItemModel item = Assert.Single(results.Items);
+    Assert.Equal(tool.ResourceId, item.Id);
+  }
+
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
@@ -216,8 +235,8 @@ public class ItemIntegrationTests : IntegrationTests
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
       Content = new Optional<string>(create.Content),
-      Price = new Optional<double?>(create.Price),
-      Weight = new Optional<double?>(create.Weight)
+      Price = new Optional<int?>(create.Price),
+      Weight = new Optional<int?>(create.Weight)
     };
 
     ItemModel? item = await _itemService.UpdateAsync(id, payload);
@@ -230,6 +249,7 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
+    Assert.Equal(_item.Category, item.Category);
     Assert.Equal(payload.Name.CleanTrim(), item.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), item.Summary);
     Assert.Equal(payload.Content.Value?.CleanTrim(), item.Content);
@@ -239,6 +259,7 @@ public class ItemIntegrationTests : IntegrationTests
 
   private static CreateOrReplaceItemPayload CreateCordePayload() => new()
   {
+    Category = ItemCategory.Miscellaneous,
     Name = " Corde (15 mètres) ",
     Summary = "  Corde de chanvre de 15 mètres, 2 points de Vitalité.  ",
     Content = "   Une corde de chanvre dotée de 2 points de Vitalité. On peut la briser en réussissant un test d’Athlétisme de difficulté élevée. La longueur standard est de 15 mètres.   ",
@@ -248,6 +269,7 @@ public class ItemIntegrationTests : IntegrationTests
 
   private static void AssertCorde(CreateOrReplaceItemPayload payload, ItemModel item)
   {
+    Assert.Equal(payload.Category, item.Category);
     Assert.Equal(payload.Name.CleanTrim(), item.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), item.Summary);
     Assert.Equal(payload.Content?.CleanTrim(), item.Content);

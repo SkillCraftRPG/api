@@ -1,13 +1,21 @@
 ﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Mvc;
+using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Items.Models;
 
 namespace SkillCraft.Api.Models.Item;
 
 public record SearchItemsParameters : SearchParameters
 {
+  [FromQuery(Name = "category")]
+  public ItemCategory? Category { get; set; }
+
   public virtual SearchItemsPayload ToPayload()
   {
-    SearchItemsPayload payload = new();
+    SearchItemsPayload payload = new()
+    {
+      Category = Category
+    };
     Fill(payload);
 
     foreach (SortOption sort in ((SearchPayload)payload).Sort)

@@ -1,16 +1,18 @@
-using FluentValidation;
+﻿using FluentValidation;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Items.Models;
 
 public record CreateOrReplaceItemPayload
 {
+  public ItemCategory Category { get; set; }
+
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
-  public double? Price { get; set; }
-  public double? Weight { get; set; }
+  public int? Price { get; set; }
+  public int? Weight { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
@@ -18,6 +20,8 @@ public record CreateOrReplaceItemPayload
   {
     public Validator()
     {
+      RuleFor(x => x.Category).IsInEnum();
+
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());

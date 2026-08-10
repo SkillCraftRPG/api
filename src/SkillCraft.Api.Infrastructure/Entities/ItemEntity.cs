@@ -1,4 +1,4 @@
-using SkillCraft.Api.Core.Items;
+﻿using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Items.Events;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -11,17 +11,23 @@ internal class ItemEntity : AggregateEntity
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
+  public ItemCategory Category { get; private set; }
+
   public string Name { get; private set; } = string.Empty;
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
-  public double? Price { get; private set; }
-  public double? Weight { get; private set; }
+  public int? Price { get; private set; }
+  public int? Weight { get; private set; }
+
+  public string? Properties { get; private set; }
 
   public ItemEntity(Item item) : base(item)
   {
     WorldId = item.WorldId.ResourceId;
     Id = item.ResourceId;
+
+    Category = item.Category;
 
     Update(item);
   }
@@ -31,6 +37,8 @@ internal class ItemEntity : AggregateEntity
     ItemId itemId = new(@event.StreamId);
     WorldId = itemId.WorldId.ResourceId;
     Id = itemId.ResourceId;
+
+    Category = @event.Category;
 
     Name = @event.Name.Value;
   }
