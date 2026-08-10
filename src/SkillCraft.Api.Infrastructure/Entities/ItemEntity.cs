@@ -27,6 +27,8 @@ internal class ItemEntity : AggregateEntity
     WorldId = item.WorldId.ResourceId;
     Id = item.ResourceId;
 
+    Category = item.Category;
+
     Update(item);
   }
 

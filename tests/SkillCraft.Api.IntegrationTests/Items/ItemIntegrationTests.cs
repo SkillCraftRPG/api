@@ -117,6 +117,25 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Null(await _itemService.UpdateAsync(Guid.Empty, new UpdateItemPayload()));
   }
 
+  [Fact(DisplayName = "It should filter search results by category.")]
+  public async Task Given_Category_When_Search_Then_Results()
+  {
+    Item tool = new ItemBuilder(Faker).WithWorld(Context.World).WithCategory(ItemCategory.Tool).WithName("Pied de biche").Build();
+    Item weapon = new ItemBuilder(Faker).WithWorld(Context.World).WithCategory(ItemCategory.Weapon).WithName("Dague").Build();
+    await _itemRepository.SaveAsync([tool, weapon]);
+
+    SearchItemsPayload payload = new()
+    {
+      Category = ItemCategory.Tool
+    };
+
+    SearchResults<ItemModel> results = await _itemService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    ItemModel item = Assert.Single(results.Items);
+    Assert.Equal(tool.ResourceId, item.Id);
+  }
+
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
