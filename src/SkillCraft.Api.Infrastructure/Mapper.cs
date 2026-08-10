@@ -99,6 +99,7 @@ internal class Mapper
     ItemModel destination = new()
     {
       Id = source.Id,
+      Category = source.Category,
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content,

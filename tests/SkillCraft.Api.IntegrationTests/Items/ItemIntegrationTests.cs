@@ -216,8 +216,8 @@ public class ItemIntegrationTests : IntegrationTests
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
       Content = new Optional<string>(create.Content),
-      Price = new Optional<double?>(create.Price),
-      Weight = new Optional<double?>(create.Weight)
+      Price = new Optional<int?>(create.Price),
+      Weight = new Optional<int?>(create.Weight)
     };
 
     ItemModel? item = await _itemService.UpdateAsync(id, payload);

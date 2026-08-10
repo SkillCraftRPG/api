@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
@@ -54,6 +54,11 @@ internal class ItemQuerier : IItemQuerier
       .Where(Db.Items.WorldId, Operators.IsEqualTo(_context.WorldId.ResourceId))
       .ApplyIdFilter(Db.Items.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Items.Name, Db.Items.Summary);
+
+    if (payload.Category.HasValue)
+    {
+      builder.Where(Db.Items.Category, Operators.IsEqualTo(payload.Category.Value.ToString()));
+    }
 
     IQueryable<ItemEntity> query = _items.FromQuery(builder).AsNoTracking();
 

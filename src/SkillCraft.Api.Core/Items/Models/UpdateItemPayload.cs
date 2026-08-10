@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using SkillCraft.Api.Core.Validation;
 
 namespace SkillCraft.Api.Core.Items.Models;
@@ -9,8 +9,8 @@ public record UpdateItemPayload
   public Optional<string>? Summary { get; set; }
   public Optional<string>? Content { get; set; }
 
-  public Optional<double?>? Price { get; set; }
-  public Optional<double?>? Weight { get; set; }
+  public Optional<int?>? Price { get; set; }
+  public Optional<int?>? Weight { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

@@ -5,15 +5,15 @@ namespace SkillCraft.Api.Core.Items;
 
 public class Price
 {
-  public double Value { get; }
+  public int Value { get; }
 
-  public Price(double value)
+  public Price(int value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);
   }
 
-  public static Price? TryCreate(double? value) => value.HasValue ? new(value.Value) : null;
+  public static Price? TryCreate(int? value) => value.HasValue ? new(value.Value) : null;
 
   public override bool Equals(object? obj) => obj is Price price && price.Value.Equals(Value);
   public override int GetHashCode() => Value.GetHashCode();

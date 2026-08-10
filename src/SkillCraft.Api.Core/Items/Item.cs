@@ -12,6 +12,8 @@ public class Item : AggregateRoot, IResource
   public WorldId WorldId => Id.WorldId;
   public Guid ResourceId => Id.ResourceId;
 
+  public ItemCategory Category { get; private set; }
+
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
   public Summary? Summary { get; private set; }
@@ -26,18 +28,25 @@ public class Item : AggregateRoot, IResource
   {
   }
 
-  public Item(World world, Name name, ActorId? actorId = null)
-    : this(ItemId.NewId(world.Id), name, actorId)
+  public Item(World world, ItemCategory category, Name name, ActorId? actorId = null)
+    : this(ItemId.NewId(world.Id), category, name, actorId)
   {
   }
 
-  public Item(ItemId itemId, Name name, ActorId? actorId = null)
+  public Item(ItemId itemId, ItemCategory category, Name name, ActorId? actorId = null)
     : base(itemId.StreamId)
   {
-    Raise(new ItemCreated(name), actorId);
+    if (!Enum.IsDefined(category))
+    {
+      throw new ArgumentOutOfRangeException(nameof(category));
+    }
+
+    Raise(new ItemCreated(category, name), actorId);
   }
   protected virtual void Handle(ItemCreated @event)
   {
+    Category = @event.Category;
+
     _name = @event.Name;
   }
 

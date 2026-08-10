@@ -98,6 +98,11 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue);
   }
 
+  public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
   public static IRuleBuilderOptions<T, string> Roll<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Roll.MaximumLength).SetValidator(new RollValidator<T>());
@@ -123,17 +128,12 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty();
   }
 
-  public static IRuleBuilderOptions<T, double> Price<T>(this IRuleBuilder<T, double> ruleBuilder)
-  {
-    return ruleBuilder.GreaterThan(0);
-  }
-
   public static IRuleBuilderOptions<T, int> WealthMultiplier<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(Educations.WealthMultiplier.MinimumValue, Educations.WealthMultiplier.MaximumValue);
   }
 
-  public static IRuleBuilderOptions<T, double> Weight<T>(this IRuleBuilder<T, double> ruleBuilder)
+  public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.GreaterThan(0);
   }

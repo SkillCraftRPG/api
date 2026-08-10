@@ -50,12 +50,17 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateItem, cancellationToken);
 
-      item = new Item(itemId, name, actorId);
+      item = new Item(itemId, payload.Category, name, actorId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, item, cancellationToken);
+
+      if (item.Category != payload.Category)
+      {
+        throw new ImmutablePropertyException<ItemCategory>(item, item.Category, payload.Category, nameof(payload.Category));
+      }
 
       item.Rename(name, actorId);
     }

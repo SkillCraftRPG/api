@@ -2,4 +2,4 @@
 
 namespace SkillCraft.Api.Core.Items.Events;
 
-public record ItemCreated(Name Name) : DomainEvent;
+public record ItemCreated(ItemCategory Category, Name Name) : DomainEvent;
