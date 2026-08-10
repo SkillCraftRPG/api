@@ -1,10 +1,12 @@
-﻿using SkillCraft.Api.Core.Characters;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Characters;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
 internal class CharacterTalentEntity
 {
-  private static readonly JsonSerializerOptions _serializerOptions = new();
+  private static readonly JsonSerializerOptions _serializerOptions = new(); // TODO(fpion): remove this
   static CharacterTalentEntity()
   {
     _serializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -22,7 +24,12 @@ internal class CharacterTalentEntity
   public string? Notes { get; private set; }
   public string? Discounts { get; private set; }
 
-  public CharacterTalentEntity(CharacterEntity character, TalentEntity talent, CharacterTalent detail, Guid? id = null)
+  public string? CreatedBy { get; private set; }
+  public DateTime CreatedOn { get; private set; }
+  public string? UpdatedBy { get; private set; }
+  public DateTime UpdatedOn { get; private set; }
+
+  public CharacterTalentEntity(CharacterEntity character, TalentEntity talent, CharacterTalent detail, DomainEvent @event, Guid? id = null)
   {
     Character = character;
     CharacterId = character.CharacterId;
@@ -35,6 +42,9 @@ internal class CharacterTalentEntity
     Qualifier = detail.Qualifier?.Value;
     Notes = detail.Notes?.Value;
     Discounts = detail.Discounts.Count < 1 ? null : JsonSerializer.Serialize(detail.Discounts, _serializerOptions);
+
+    CreatedBy = UpdatedBy = @event.ActorId?.Value;
+    CreatedOn = UpdatedOn = @event.OccurredOn.AsUniversalTime();
   }
 
   private CharacterTalentEntity()

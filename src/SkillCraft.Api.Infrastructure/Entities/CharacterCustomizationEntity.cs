@@ -2,8 +2,20 @@
 
 internal class CharacterCustomizationEntity
 {
+  public CharacterEntity? Character { get; private set; }
   public int CharacterId { get; private set; }
+
+  public CustomizationEntity? Customization { get; private set; }
   public int CustomizationId { get; private set; }
+
+  public CharacterCustomizationEntity(CharacterEntity character, CustomizationEntity customization)
+  {
+    Character = character;
+    CharacterId = character.CharacterId;
+
+    Customization = customization;
+    CustomizationId = customization.CustomizationId;
+  }
 
   private CharacterCustomizationEntity()
   {

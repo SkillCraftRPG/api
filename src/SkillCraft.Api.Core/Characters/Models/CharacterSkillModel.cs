@@ -6,5 +6,5 @@ public record CharacterSkillModel
   public int Talents { get; set; }
   public int Attribute { get; set; }
   public int Bonus { get; set; }
-  public int Total { get; set; }
+  public int Total => (Talents < 1 ? (Rank / 2) : Rank) + Talents + Attribute + Bonus;
 }

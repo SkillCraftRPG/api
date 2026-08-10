@@ -1,6 +1,8 @@
-﻿using SkillCraft.Api.Core;
+﻿using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Events;
+using SkillCraft.Api.Core.Characters.Models;
 using SkillCraft.Api.Infrastructure.Compendium.Models;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
@@ -42,8 +44,8 @@ internal class CharacterEntity : AggregateEntity
   public string? Attributes { get; private set; }
   public string? Skills { get; private set; }
 
-  public List<CustomizationEntity> Customizations { get; private set; } = [];
-  public List<LanguageEntity> Languages { get; private set; } = [];
+  public List<CharacterCustomizationEntity> Customizations { get; private set; } = [];
+  public List<CharacterLanguageEntity> Languages { get; private set; } = [];
   public List<CharacterTalentEntity> Talents { get; private set; } = [];
 
   public CharacterEntity(
@@ -65,13 +67,11 @@ internal class CharacterEntity : AggregateEntity
     Attributes = EncodeAttributes(character.StartingAttributes);
     Skills = EncodeSkills(character.Skills);
 
-    Customizations.Clear();
-    Customizations.AddRange(customizations);
+    SetCustomizations(customizations);
 
-    Languages.Clear();
-    Languages.AddRange(languages);
+    SetLanguages(languages, null!); // TODO(fpion): event
 
-    SetTalents(character.Talents, talents);
+    SetTalents(character.Talents, talents, null!); // TODO(fpion): event
 
     Update(character);
   }
@@ -104,13 +104,11 @@ internal class CharacterEntity : AggregateEntity
     Attributes = EncodeAttributes(@event.Attributes);
     Skills = EncodeSkills(@event.Skills);
 
-    Customizations.Clear();
-    Customizations.AddRange(customizations);
+    SetCustomizations(customizations);
 
-    Languages.Clear();
-    Languages.AddRange(languages);
+    SetLanguages(languages, @event);
 
-    SetTalents(@event.Talents, talents);
+    SetTalents(@event.Talents, talents, @event);
   }
 
   private CharacterEntity() : base()
@@ -141,6 +139,24 @@ internal class CharacterEntity : AggregateEntity
     Hair = appearance.Hair;
   }
 
+  private void SetCustomizations(IEnumerable<CustomizationEntity> customizations)
+  {
+    Customizations.Clear();
+    foreach (CustomizationEntity customization in customizations)
+    {
+      Customizations.Add(new CharacterCustomizationEntity(this, customization));
+    }
+  }
+
+  private void SetLanguages(IEnumerable<LanguageEntity> languages, DomainEvent @event)
+  {
+    Languages.Clear();
+    foreach (LanguageEntity language in languages)
+    {
+      Languages.Add(new CharacterLanguageEntity(this, language, @event));
+    }
+  }
+
   private void SetPersonality(ICharacterPersonality personality)
   {
     Traits = personality.Traits;
@@ -148,7 +164,7 @@ internal class CharacterEntity : AggregateEntity
     Flaws = personality.Flaws;
   }
 
-  private void SetTalents(IReadOnlyDictionary<Guid, CharacterTalent> talents, IEnumerable<TalentEntity> entities)
+  private void SetTalents(IReadOnlyDictionary<Guid, CharacterTalent> talents, IEnumerable<TalentEntity> entities, DomainEvent @event)
   {
     Dictionary<string, TalentEntity> entitiesById = entities.ToDictionary(x => x.StreamId, x => x);
 
@@ -157,7 +173,7 @@ internal class CharacterEntity : AggregateEntity
     {
       if (entitiesById.TryGetValue(talent.Value.TalentId.Value, out TalentEntity? entity))
       {
-        Talents.Add(new CharacterTalentEntity(this, entity, talent.Value, talent.Key));
+        Talents.Add(new CharacterTalentEntity(this, entity, talent.Value, @event, talent.Key));
       }
       else
       {
@@ -166,6 +182,40 @@ internal class CharacterEntity : AggregateEntity
     }
   }
 
+  public IStartingAttributes DecodeAttributes()
+  {
+    StartingAttributesModel attributes = new();
+    if (Attributes is not null)
+    {
+      string[] values = Attributes.Split('|');
+      foreach (string value in values)
+      {
+        string[] parts = value.Split(':');
+        if (parts.Length == 2 && Enum.TryParse(parts.First(), out GameAttribute attribute) && Enum.IsDefined(attribute) && int.TryParse(parts.Last(), out int starting))
+        {
+          switch (attribute)
+          {
+            case GameAttribute.Dexterity:
+              attributes.Dexterity = starting;
+              break;
+            case GameAttribute.Health:
+              attributes.Health = starting;
+              break;
+            case GameAttribute.Intellect:
+              attributes.Intellect = starting;
+              break;
+            case GameAttribute.Senses:
+              attributes.Senses = starting;
+              break;
+            case GameAttribute.Vigor:
+              attributes.Vigor = starting;
+              break;
+          }
+        }
+      }
+    }
+    return attributes;
+  } // TODO(fpion): refactor
   private static string? EncodeAttributes(IStartingAttributes attributes)
   {
     Dictionary<GameAttribute, int> data = new(capacity: 5);
@@ -190,13 +240,30 @@ internal class CharacterEntity : AggregateEntity
       data[GameAttribute.Vigor] = attributes.Vigor;
     }
     return data.Count < 1 ? null : string.Join('|', data.Select(pair => string.Join(':', pair.Key, pair.Value)));
-  }
+  } // TODO(fpion): refactor
 
+  public IReadOnlyDictionary<Skill, int> DecodeSkills()
+  {
+    Dictionary<Skill, int> skillRanks = new(capacity: 20);
+    if (Skills is not null)
+    {
+      string[] values = Skills.Split('|');
+      foreach (string value in values)
+      {
+        string[] parts = value.Split(':');
+        if (parts.Length == 2 && Enum.TryParse(parts.First(), out Skill skill) && Enum.IsDefined(skill) && int.TryParse(parts.Last(), out int rank))
+        {
+          skillRanks[skill] = rank;
+        }
+      }
+    }
+    return skillRanks.AsReadOnly();
+  } // TODO(fpion): refactor
   private static string? EncodeSkills(IReadOnlyDictionary<Skill, int> skills)
   {
     string encoded = string.Join('|', skills.Where(x => x.Value > 0).Select(pair => string.Join(':', pair.Key, pair.Value)));
     return string.IsNullOrWhiteSpace(encoded) ? null : encoded.Trim();
-  }
+  } // TODO(fpion): refactor
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

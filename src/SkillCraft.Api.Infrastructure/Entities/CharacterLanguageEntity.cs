@@ -1,9 +1,39 @@
-﻿namespace SkillCraft.Api.Infrastructure.Entities;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Characters;
+
+namespace SkillCraft.Api.Infrastructure.Entities;
 
 internal class CharacterLanguageEntity
 {
+  public CharacterEntity? Character { get; private set; }
   public int CharacterId { get; private set; }
+
+  public LanguageEntity? Language { get; private set; }
   public int LanguageId { get; private set; }
+
+  public CharacterLanguageSource Source { get; private set; }
+  public string? Target { get; private set; }
+  public string? Notes { get; private set; }
+
+  public string? CreatedBy { get; private set; }
+  public DateTime CreatedOn { get; private set; }
+  public string? UpdatedBy { get; private set; }
+  public DateTime UpdatedOn { get; private set; }
+
+  public CharacterLanguageEntity(CharacterEntity character, LanguageEntity language, DomainEvent @event)
+  {
+    Character = character;
+    CharacterId = character.CharacterId;
+
+    Language = language;
+    LanguageId = language.LanguageId;
+
+    Source = CharacterLanguageSource.Extra;
+
+    CreatedBy = UpdatedBy = @event.ActorId?.Value;
+    CreatedOn = UpdatedOn = @event.OccurredOn.AsUniversalTime();
+  }
 
   private CharacterLanguageEntity()
   {

@@ -7,4 +7,6 @@ public record CharacterAttributesModel
   public CharacterAttributeModel Intellect { get; set; } = new();
   public CharacterAttributeModel Senses { get; set; } = new();
   public CharacterAttributeModel Vigor { get; set; } = new();
+
+  public int PointsSpent => Dexterity.Progression + Health.Progression + Intellect.Progression + Senses.Progression + Vigor.Progression;
 }

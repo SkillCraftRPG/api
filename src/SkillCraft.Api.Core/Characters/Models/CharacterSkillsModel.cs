@@ -22,4 +22,8 @@ public record CharacterSkillsModel
   public CharacterSkillModel Stealth { get; set; } = new();
   public CharacterSkillModel Survival { get; set; } = new();
   public CharacterSkillModel Thievery { get; set; } = new();
+
+  public int PointsSpent => Acrobatics.Rank + Athletics.Rank + Crafting.Rank + Deception.Rank + Diplomacy.Rank + Discipline.Rank
+    + Insight.Rank + Investigation.Rank + Knowledge.Rank + Linguistics.Rank + Medicine.Rank + Melee.Rank + Occultism.Rank
+    + Orientation.Rank + Perception.Rank + Performance.Rank + Resistance.Rank + Stealth.Rank + Survival.Rank + Thievery.Rank;
 }

@@ -264,7 +264,7 @@ internal class Mapper
     return destination;
   }
 
-  private void MapAggregate(AggregateEntity source, Aggregate destination)
+  protected virtual void MapAggregate(AggregateEntity source, Aggregate destination)
   {
     destination.Version = source.Version;
     destination.CreatedBy = FindActor(source.CreatedBy);
@@ -273,8 +273,8 @@ internal class Mapper
     destination.UpdatedOn = source.UpdatedOn.AsUniversalTime();
   }
 
-  private Actor FindActor(string? id) => TryFindActor(id) ?? _system;
-  private Actor FindActor(ActorId? id) => TryFindActor(id) ?? _system;
-  private Actor? TryFindActor(string? id) => TryFindActor(id is null ? null : new ActorId(id));
-  private Actor? TryFindActor(ActorId? id) => id.HasValue ? (_actors.TryGetValue(id.Value, out Actor? actor) ? actor : null) : null;
+  protected virtual Actor FindActor(string? id) => TryFindActor(id) ?? _system;
+  protected virtual Actor FindActor(ActorId? id) => TryFindActor(id) ?? _system;
+  protected virtual Actor? TryFindActor(string? id) => TryFindActor(id is null ? null : new ActorId(id));
+  protected virtual Actor? TryFindActor(ActorId? id) => id.HasValue ? (_actors.TryGetValue(id.Value, out Actor? actor) ? actor : null) : null;
 }

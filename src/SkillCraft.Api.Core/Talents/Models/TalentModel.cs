@@ -1,10 +1,11 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 
 namespace SkillCraft.Api.Core.Talents.Models;
 
 public class TalentModel : Aggregate
 {
   public int Tier { get; set; }
+  public int Cost => 2 + Tier;
 
   public string Name { get; set; } = string.Empty;
   public string? Summary { get; set; }
