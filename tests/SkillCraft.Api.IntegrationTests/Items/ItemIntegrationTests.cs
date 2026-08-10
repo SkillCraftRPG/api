@@ -249,6 +249,7 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
+    Assert.Equal(_item.Category, item.Category);
     Assert.Equal(payload.Name.CleanTrim(), item.Name);
     Assert.Equal(payload.Summary.Value?.CleanTrim(), item.Summary);
     Assert.Equal(payload.Content.Value?.CleanTrim(), item.Content);
@@ -258,6 +259,7 @@ public class ItemIntegrationTests : IntegrationTests
 
   private static CreateOrReplaceItemPayload CreateCordePayload() => new()
   {
+    Category = ItemCategory.Miscellaneous,
     Name = " Corde (15 mètres) ",
     Summary = "  Corde de chanvre de 15 mètres, 2 points de Vitalité.  ",
     Content = "   Une corde de chanvre dotée de 2 points de Vitalité. On peut la briser en réussissant un test d’Athlétisme de difficulté élevée. La longueur standard est de 15 mètres.   ",
@@ -267,6 +269,7 @@ public class ItemIntegrationTests : IntegrationTests
 
   private static void AssertCorde(CreateOrReplaceItemPayload payload, ItemModel item)
   {
+    Assert.Equal(payload.Category, item.Category);
     Assert.Equal(payload.Name.CleanTrim(), item.Name);
     Assert.Equal(payload.Summary?.CleanTrim(), item.Summary);
     Assert.Equal(payload.Content?.CleanTrim(), item.Content);
