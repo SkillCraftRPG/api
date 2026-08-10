@@ -1,8 +1,10 @@
 ﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Models;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
+using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Permissions;
@@ -15,12 +17,15 @@ internal record CreateCharacterCommand(CreateCharacterPayload Payload) : IComman
 
 internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCommand, CharacterModel>
 {
+  private const int StartingCurrencyValue = 100;
+
   private readonly ICasteRepository _casteRepository;
   private readonly ICharacterQuerier _characterQuerier;
   private readonly ICharacterRepository _characterRepository;
   private readonly IContext _context;
   private readonly ICustomizationRepository _customizationRepository;
   private readonly IEducationRepository _educationRepository;
+  private readonly IItemRepository _itemRepository;
   private readonly ILanguageRepository _languageRepository;
   private readonly ILineageQuerier _lineageQuerier;
   private readonly ILineageRepository _lineageRepository;
@@ -34,6 +39,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     IContext context,
     ICustomizationRepository customizationRepository,
     IEducationRepository educationRepository,
+    IItemRepository itemRepository,
     ILanguageRepository languageRepository,
     ILineageQuerier lineageQuerier,
     ILineageRepository lineageRepository,
@@ -46,6 +52,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     _context = context;
     _customizationRepository = customizationRepository;
     _educationRepository = educationRepository;
+    _itemRepository = itemRepository;
     _languageRepository = languageRepository;
     _lineageQuerier = lineageQuerier;
     _lineageRepository = lineageRepository;
@@ -60,6 +67,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
 
     await _permissionService.CheckAsync(Actions.CreateCharacter, cancellationToken);
 
+    ActorId? actorId = _context.ActorId;
     WorldId worldId = _context.WorldId;
 
     LineageId lineageId = new(worldId, payload.LineageId);
@@ -109,7 +117,19 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
       payload.Alignment,
       new CharacterPersonality(payload.Personality),
       Background.TryCreate(payload.Background),
-      _context.ActorId);
+      actorId);
+
+    if (payload.StartingWealth is not null)
+    {
+      ItemId itemId = new(worldId, payload.StartingWealth.ItemId);
+      string propertyName = $"{nameof(payload.StartingWealth)}.{nameof(payload.StartingWealth.ItemId)}";
+      Item currency = await _itemRepository.LoadAsync(itemId, cancellationToken) ?? throw new ItemNotFoundException(itemId, propertyName);
+      if (currency.Category != ItemCategory.Currency || currency.Price is null || currency.Price.Value != StartingCurrencyValue)
+      {
+        throw new NotImplementedException(); // TODO(fpion): DomainException
+      }
+      character.Add(currency, payload.StartingWealth.Quantity, actorId);
+    }
 
     await _characterRepository.SaveAsync(character, cancellationToken);
 
