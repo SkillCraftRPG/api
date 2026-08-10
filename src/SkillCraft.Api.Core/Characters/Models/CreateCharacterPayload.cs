@@ -28,6 +28,8 @@ public record CreateCharacterPayload
 
   public string? Background { get; set; }
 
+  public StartingWealthPayload? StartingWealth { get; set; }
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateCharacterPayload>
@@ -49,6 +51,8 @@ public record CreateCharacterPayload
       RuleFor(x => x.Personality).SetValidator(new CharacterPersonalityValidator());
 
       When(x => !string.IsNullOrWhiteSpace(x.Background), () => RuleFor(x => x.Background!).Background());
+
+      When(x => x.StartingWealth is not null, () => RuleFor(x => x.StartingWealth!).SetValidator(new StartingWealthValidator()));
     }
   }
 }

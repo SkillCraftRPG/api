@@ -3,6 +3,7 @@ using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Events;
 using SkillCraft.Api.Core.Customizations;
 using SkillCraft.Api.Core.Educations;
+using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
 using SkillCraft.Api.Core.Worlds;
@@ -44,6 +45,9 @@ public class Character : AggregateRoot, IResource
   public CharacterPersonality Personality { get; private set; } = new();
 
   public Background? Background { get; private set; }
+
+  private readonly Dictionary<ItemId, int> _inventory = [];
+  public IReadOnlyDictionary<ItemId, int> Inventory => _inventory.AsReadOnly();
 
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
@@ -154,6 +158,19 @@ public class Character : AggregateRoot, IResource
     Personality = @event.Personality;
 
     Background = @event.Background;
+  }
+
+  public void Add(Item item, int quantity, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(WorldId, item.WorldId, nameof(item));
+    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
+
+    Raise(new CharacterInventoryAdded(item.Id, quantity), actorId);
+  }
+  protected virtual void Handle(CharacterInventoryAdded @event)
+  {
+    int quantity = _inventory.GetValueOrDefault(@event.ItemId);
+    _inventory[@event.ItemId] = quantity + @event.Quantity;
   }
 
   public void Delete(ActorId? actorId = null)
