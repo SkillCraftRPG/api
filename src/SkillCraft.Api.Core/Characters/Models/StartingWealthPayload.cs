@@ -4,7 +4,7 @@ namespace SkillCraft.Api.Core.Characters.Models;
 
 public record StartingWealthPayload
 {
-  public Guid ItemId { get; set; }
+  public Guid CurrencyId { get; set; }
   public int Quantity { get; set; }
 }
 
