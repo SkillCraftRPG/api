@@ -16,6 +16,7 @@ public static class Lineages
   public static readonly ColumnId CustomNames = new(nameof(LineageEntity.CustomNames), Table);
   public static readonly ColumnId ExtraLanguages = new(nameof(LineageEntity.ExtraLanguages), Table);
   public static readonly ColumnId FamilyNames = new(nameof(LineageEntity.FamilyNames), Table);
+  public static readonly ColumnId Features = new(nameof(LineageEntity.Features), Table);
   public static readonly ColumnId FemaleNames = new(nameof(LineageEntity.FemaleNames), Table);
   public static readonly ColumnId Fly = new(nameof(LineageEntity.Fly), Table);
   public static readonly ColumnId HeightRoll = new(nameof(LineageEntity.HeightRoll), Table);
