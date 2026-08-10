@@ -1,4 +1,4 @@
-using Logitar.Data;
+﻿using Logitar.Data;
 using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Db;
@@ -8,6 +8,7 @@ public static class CharacterTalents
   public static readonly TableId Table = new(Schemas.Game, nameof(GameContext.CharacterTalents), alias: null);
 
   public static readonly ColumnId CharacterId = new(nameof(CharacterTalentEntity.CharacterId), Table);
+  public static readonly ColumnId CharacterTalentId = new(nameof(CharacterTalentEntity.CharacterTalentId), Table);
   public static readonly ColumnId CreatedBy = new(nameof(CharacterTalentEntity.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(CharacterTalentEntity.CreatedOn), Table);
   public static readonly ColumnId Discounts = new(nameof(CharacterTalentEntity.Discounts), Table);

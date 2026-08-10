@@ -12,9 +12,10 @@ internal class CharacterTalentEntity
     _serializerOptions.Converters.Add(new JsonStringEnumConverter());
   }
 
+  public int CharacterTalentId { get; private set; }
+
   public CharacterEntity? Character { get; private set; }
   public int CharacterId { get; private set; }
-
   public Guid Id { get; private set; }
 
   public TalentEntity? Talent { get; private set; }
