@@ -1,4 +1,6 @@
-﻿using SkillCraft.Api.Core;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Events;
 using SkillCraft.Api.Core.Customizations;
@@ -106,6 +108,39 @@ internal class CharacterEntity : AggregateEntity
 
   private CharacterEntity() : base()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Lineage is not null)
+    {
+      actorIds.AddRange(Lineage.GetActorIds());
+    }
+    if (Caste is not null)
+    {
+      actorIds.AddRange(Caste.GetActorIds());
+    }
+    if (Education is not null)
+    {
+      actorIds.AddRange(Education.GetActorIds());
+    }
+    foreach (CharacterCustomizationEntity customization in Customizations)
+    {
+      if (customization.Customization is not null)
+      {
+        actorIds.AddRange(customization.Customization.GetActorIds());
+      }
+    }
+    foreach (CharacterLanguageEntity language in Languages)
+    {
+      actorIds.AddRange(language.GetActorIds());
+    }
+    foreach (CharacterTalentEntity talent in Talents)
+    {
+      actorIds.AddRange(talent.GetActorIds());
+    }
+    return actorIds.AsReadOnly();
   }
 
   private void SetAppearance(ICharacterAppearance appearance)

@@ -39,6 +39,24 @@ internal class CharacterLanguageEntity
   {
   }
 
+  public IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = [];
+    if (Language is not null)
+    {
+      actorIds.AddRange(Language.GetActorIds());
+    }
+    if (CreatedBy is not null)
+    {
+      actorIds.Add(new ActorId(CreatedBy));
+    }
+    if (UpdatedBy is not null)
+    {
+      actorIds.Add(new ActorId(UpdatedBy));
+    }
+    return actorIds.AsReadOnly();
+  }
+
   public override bool Equals(object? obj) => obj is CharacterLanguageEntity entity && entity.CharacterId == CharacterId && entity.LanguageId == LanguageId;
   public override int GetHashCode() => HashCode.Combine(CharacterId, LanguageId);
   public override string ToString() => $"{base.ToString()} (CharacterId={CharacterId}, LanguageId={LanguageId})";

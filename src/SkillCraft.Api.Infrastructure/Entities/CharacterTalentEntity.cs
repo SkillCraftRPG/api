@@ -47,6 +47,24 @@ internal class CharacterTalentEntity
   {
   }
 
+  public IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = [];
+    if (Talent is not null)
+    {
+      actorIds.AddRange(Talent.GetActorIds());
+    }
+    if (CreatedBy is not null)
+    {
+      actorIds.Add(new ActorId(CreatedBy));
+    }
+    if (UpdatedBy is not null)
+    {
+      actorIds.Add(new ActorId(UpdatedBy));
+    }
+    return actorIds.AsReadOnly();
+  }
+
   public IReadOnlyCollection<CharacterTalentDiscountModel> GetDiscounts()
   {
     return (Discounts is null ? null : EntitySerializer.Instance.Deserialize<IReadOnlyCollection<CharacterTalentDiscountModel>>(Discounts)) ?? [];
