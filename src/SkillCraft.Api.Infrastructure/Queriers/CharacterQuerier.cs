@@ -85,7 +85,10 @@ internal class CharacterQuerier : ICharacterQuerier
       builder.Join(Db.Educations.EducationId, Db.Characters.EducationId, condition);
     }
 
-    IQueryable<CharacterEntity> query = _characters.FromQuery(builder).AsNoTracking();
+    IQueryable<CharacterEntity> query = _characters.FromQuery(builder).AsNoTracking()
+      .Include(x => x.Caste)
+      .Include(x => x.Education)
+      .Include(x => x.Lineage).ThenInclude(x => x!.Parent);
 
     long total = await query.LongCountAsync(cancellationToken);
 
