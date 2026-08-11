@@ -244,24 +244,24 @@ internal class CharacterMapper : Mapper
     LineageModel? parent = lineage.Parent;
     if (parent is not null)
     {
-      if (parent.Speeds.Walk > speeds.Walk)
+      if ((parent.Speeds.Walk ?? 0) > (speeds.Walk ?? 0))
       {
         speeds.Walk = parent.Speeds.Walk;
       }
-      if (parent.Speeds.Climb > speeds.Climb)
+      if ((parent.Speeds.Climb ?? 0) > (speeds.Climb ?? 0))
       {
         speeds.Climb = parent.Speeds.Climb;
       }
-      if (parent.Speeds.Swim > speeds.Swim)
+      if ((parent.Speeds.Swim ?? 0) > (speeds.Swim ?? 0))
       {
         speeds.Swim = parent.Speeds.Swim;
       }
-      if ((parent.Speeds.Hover && !speeds.Hover) || (parent.Speeds.Hover == speeds.Hover && parent.Speeds.Fly > speeds.Fly))
+      if ((parent.Speeds.Hover && !speeds.Hover) || (parent.Speeds.Hover == speeds.Hover && (parent.Speeds.Fly ?? 0) > (speeds.Fly ?? 0)))
       {
         speeds.Fly = parent.Speeds.Fly;
         speeds.Hover = parent.Speeds.Hover;
       }
-      if (parent.Speeds.Climb > speeds.Climb)
+      if ((parent.Speeds.Climb ?? 0) > (speeds.Climb ?? 0))
       {
         speeds.Climb = parent.Speeds.Climb;
       }

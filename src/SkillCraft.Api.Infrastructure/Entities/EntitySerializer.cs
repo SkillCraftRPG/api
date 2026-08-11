@@ -25,6 +25,6 @@ internal class EntitySerializer : IEntitySerializer
     _serializerOptions.Converters.Add(new JsonStringEnumConverter());
   }
 
-  public T? Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json);
+  public T? Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, _serializerOptions);
   public string? Serialize<T>(T entity) => JsonSerializer.Serialize(entity, _serializerOptions);
 }

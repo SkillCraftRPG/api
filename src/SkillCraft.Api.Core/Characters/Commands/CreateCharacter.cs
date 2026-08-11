@@ -183,7 +183,11 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     List<CharacterTalent> characterTalents = new(capacity: payloads.Count());
     foreach (AddCharacterTalentPayload payload in payloads)
     {
-      characterTalents.Add(new CharacterTalent(talentsById[payload.TalentId], Name.TryCreate(payload.Qualifier), Notes.TryCreate(payload.Notes)));
+      characterTalents.Add(new CharacterTalent(
+        talentsById[payload.TalentId],
+        Name.TryCreate(payload.Qualifier),
+        Notes.TryCreate(payload.Notes),
+        payload.Discounts.Select(discount => new CharacterTalentDiscount(discount))));
     }
     return characterTalents.AsReadOnly();
   }

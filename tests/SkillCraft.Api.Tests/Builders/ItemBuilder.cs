@@ -120,6 +120,16 @@ public class ItemBuilder : IItemBuilder
     .WithWeight(500)
     .Build();
 
+  public static Item Denier(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithCategory(ItemCategory.Currency)
+    .WithName("Denier")
+    .WithSummary("Pièce de valeur 1 en argent.")
+    .WithContent("Une pièce d’argent couramment utilisée par la plupart des membres de la société pour leurs achats de plus grande valeur, comme le bétail de moyens de transport. Il s’agit de l’unité de référence de ce système.\r\n")
+    .WithPrice(100)
+    .WithWeight(1)
+    .Build();
+
   public static Item Grimoire(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)
     .WithName("Grimoire")

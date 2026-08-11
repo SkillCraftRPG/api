@@ -112,4 +112,13 @@ public class LanguageBuilder : ILanguageBuilder
     .WithScript(script)
     .WithTypicalSpeakers("Hauts-Elfes, Elfes des mers, Elfes cramoisis et Elfes sylvains")
     .Build();
+
+  public static Language Sylvestre(Faker? faker = null, World? world = null, Script? script = null) => new LanguageBuilder(faker)
+    .WithWorld(world)
+    .WithName("Sylvestre")
+    .WithSummary("Langue elfique ancienne, rituelle et identitaire des peuples sylvains.")
+    .WithContent("Le Sylvestre est une langue elfique ancienne appartenant à la famille glaïdique, un ensemble linguistique dont le nom signifie communément _« les parlers des bois »_. Issue d’un ancêtre commun partagé avec le [Celfique](/regles/langues/celfique), la langue Sylvestre a suivi une évolution distincte, conservant une forte cohérence interne tout en s’éloignant progressivement de ses parentes continentales.\n\nLe Sylvestre se caractérise par une morphologie riche, une syntaxe souple et une forte musicalité, particulièrement adaptée aux récits oraux, aux chants rituels et aux traditions mémorielles. Bien que rarement enseigné hors des communautés concernées, le Sylvestre reste l’un des piliers linguistiques du monde glaïdique, transmis avec soin par tradition orale et écrite.\n\nLe Sylvestre est une langue chantée plus que parlée : le rythme et l’intonation comptent autant que les mots eux-mêmes. Les noms de lieux, d’arbres et de rivières sont considérés comme anciens et vivants. Mal les prononcer est vu comme une insulte envers la forêt. Elle est naturellement appropriée aux récits, aux serments et aux pactes anciens.")
+    .WithScript(script)
+    .WithTypicalSpeakers("Le Sylvestre est parlé principalement dans les Triskîles, où il est la langue dominante des [Elfes sylvains](/regles/especes/elfe/sylvain), mais aussi de nombreuses fées, notamment les [Nemediens](/regles/especes/nemedien) et les [Fir Bolg](/regles/especes/fir-bolg). Il sert autant de langue quotidienne que de langue cérémonielle, et demeure volontairement peu partagé avec les peuples non glaïdiques, ce qui renforce son rôle identitaire et culturel.")
+    .Build();
 }
