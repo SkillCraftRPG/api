@@ -22,6 +22,8 @@ public class Item : AggregateRoot, IResource
   public Price? Price { get; private set; }
   public Weight? Weight { get; private set; }
 
+  public ItemCharges? Charges { get; private set; }
+
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Item() : base()
@@ -83,17 +85,19 @@ public class Item : AggregateRoot, IResource
     _name = @event.Name;
   }
 
-  public void SetRules(Price? price, Weight? weight, ActorId? actorId = null)
+  public void SetRules(Price? price, Weight? weight, ItemCharges? charges, ActorId? actorId = null)
   {
-    if (!Equals(Price, price) || !Equals(Weight, weight))
+    if (!Equals(Price, price) || !Equals(Weight, weight) || !Equals(Charges, charges))
     {
-      Raise(new ItemRulesChanged(price, weight), actorId);
+      Raise(new ItemRulesChanged(price, weight, charges), actorId);
     }
   }
   protected virtual void Handle(ItemRulesChanged @event)
   {
     Price = @event.Price;
     Weight = @event.Weight;
+
+    Charges = @event.Charges;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

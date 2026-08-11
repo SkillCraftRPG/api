@@ -122,7 +122,7 @@ internal class CreateCharacterCommandHandler : ICommandHandler<CreateCharacterCo
     if (payload.StartingWealth is not null)
     {
       ItemId currencyId = new(worldId, payload.StartingWealth.CurrencyId);
-      string propertyName = $"{nameof(payload.StartingWealth)}.{nameof(payload.StartingWealth.CurrencyId)}";
+      string propertyName = string.Join('.', nameof(payload.StartingWealth), nameof(payload.StartingWealth.CurrencyId));
       Item currency = await _itemRepository.LoadAsync(currencyId, cancellationToken) ?? throw new ItemNotFoundException(currencyId, propertyName);
       if (currency.Category != ItemCategory.Currency || currency.Price is null || currency.Price.Value != StartingCurrencyValue)
       {

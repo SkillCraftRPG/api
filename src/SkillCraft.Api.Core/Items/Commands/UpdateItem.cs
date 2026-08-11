@@ -57,11 +57,32 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
         actorId);
     }
 
-    if (payload.Price is not null || payload.Weight is not null)
+    if (payload.Price is not null || payload.Weight is not null || payload.Charges is not null)
     {
+      ItemCharges? charges = item.Charges;
+      if (payload.Charges is not null)
+      {
+        if (payload.Charges.Value is null)
+        {
+          charges = null;
+        }
+        else
+        {
+          Item? replacement = null;
+          if (payload.Charges.Value.ReplacementId.HasValue)
+          {
+            ItemId replacementId = new(worldId, payload.Charges.Value.ReplacementId.Value);
+            string propertyName = string.Join('.', nameof(payload.Charges), nameof(payload.Charges.Value), nameof(payload.Charges.Value.ReplacementId));
+            replacement = await _itemRepository.LoadAsync(replacementId, cancellationToken) ?? throw new ItemNotFoundException(replacementId, propertyName);
+          }
+          charges = new ItemCharges(payload.Charges.Value.Maximum, payload.Charges.Value.DepletionBehavior, replacement);
+        }
+      }
+
       item.SetRules(
         payload.Price is null ? item.Price : Price.TryCreate(payload.Price.Value),
         payload.Weight is null ? item.Weight : Weight.TryCreate(payload.Weight.Value),
+        charges,
         actorId);
     }
 

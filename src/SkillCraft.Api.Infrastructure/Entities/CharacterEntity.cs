@@ -79,6 +79,8 @@ internal class CharacterEntity : AggregateEntity
     Background = @event.Background?.Value;
 
     Attributes = new CharacterAttributesEntity(@event.Attributes).ToString();
+    // TODO(fpion): should set current Vitality = max. Vitality
+    // TODO(fpion): should set current Stamina = max. Stamina
     SetSkillRanks(@event.Skills);
 
     Dictionary<CustomizationId, CustomizationEntity> customizationsById = customizations.ToDictionary(x => new CustomizationId(x.StreamId), x => x);

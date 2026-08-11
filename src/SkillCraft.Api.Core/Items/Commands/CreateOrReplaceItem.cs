@@ -45,6 +45,19 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
 
     Name name = new(payload.Name);
 
+    ItemCharges? charges = null;
+    if (payload.Charges is not null)
+    {
+      Item? replacement = null;
+      if (payload.Charges.ReplacementId.HasValue)
+      {
+        ItemId replacementId = new(worldId, payload.Charges.ReplacementId.Value);
+        string propertyName = string.Join('.', nameof(payload.Charges), nameof(payload.Charges.ReplacementId));
+        replacement = await _itemRepository.LoadAsync(replacementId, cancellationToken) ?? throw new ItemNotFoundException(replacementId, propertyName);
+      }
+      charges = new ItemCharges(payload.Charges.Maximum, payload.Charges.DepletionBehavior, replacement);
+    }
+
     bool created = false;
     if (item is null)
     {
@@ -66,7 +79,7 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     }
 
     item.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
-    item.SetRules(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), actorId);
+    item.SetRules(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), charges, actorId);
 
     await _itemRepository.SaveAsync(item, cancellationToken);
 
