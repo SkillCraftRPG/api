@@ -19,13 +19,13 @@ internal record CharacterAttributesEntity
   {
   }
 
-  public CharacterAttributesEntity(IStartingAttributes attributes)
+  public CharacterAttributesEntity(IStartingAttributes starting)
   {
-    Dexterity = new CharacterAttributeEntity(attributes.Dexterity);
-    Health = new CharacterAttributeEntity(attributes.Health);
-    Intellect = new CharacterAttributeEntity(attributes.Intellect);
-    Senses = new CharacterAttributeEntity(attributes.Senses);
-    Vigor = new CharacterAttributeEntity(attributes.Vigor);
+    Dexterity = new CharacterAttributeEntity(starting.Dexterity);
+    Health = new CharacterAttributeEntity(starting.Health);
+    Intellect = new CharacterAttributeEntity(starting.Intellect);
+    Senses = new CharacterAttributeEntity(starting.Senses);
+    Vigor = new CharacterAttributeEntity(starting.Vigor);
   }
 
   public static CharacterAttributesEntity Parse(string? value)
