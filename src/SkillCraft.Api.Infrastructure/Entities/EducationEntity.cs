@@ -1,4 +1,4 @@
-using SkillCraft.Api.Core;
+﻿using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Educations.Events;
 using SkillCraft.Api.Core.Features;
@@ -21,6 +21,8 @@ internal class EducationEntity : AggregateEntity
   public int? WealthMultiplier { get; private set; }
   public string? FeatureName { get; private set; }
   public string? FeatureContent { get; private set; }
+
+  public List<CharacterEntity> Characters { get; private set; } = [];
 
   public EducationEntity(Education education) : base(education)
   {

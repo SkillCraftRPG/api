@@ -22,6 +22,7 @@ internal class LanguageEntity : AggregateEntity
   public ScriptEntity? Script { get; private set; }
   public int? ScriptId { get; private set; }
 
+  public List<CharacterLanguageEntity> Characters { get; private set; } = [];
   public List<LineageEntity> Lineages { get; private set; } = [];
 
   public LanguageEntity(Language language, int? scriptId) : base(language)

@@ -27,6 +27,8 @@ internal class TalentEntity : AggregateEntity
   public int? RequiredTalentId { get; private set; }
   public List<TalentEntity> RequiringTalents { get; private set; } = [];
 
+  public List<CharacterTalentEntity> Characters { get; private set; } = [];
+
   public TalentEntity(Talent talent, int? requiredTalentId) : base(talent)
   {
     WorldId = talent.WorldId.ResourceId;

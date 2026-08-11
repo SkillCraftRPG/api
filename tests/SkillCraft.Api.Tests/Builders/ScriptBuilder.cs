@@ -77,6 +77,13 @@ public class ScriptBuilder : IScriptBuilder
     return script;
   }
 
+  public static Script Elfique(Faker? faker = null, World? world = null) => new ScriptBuilder(faker)
+    .WithWorld(world)
+    .WithName("Elfique")
+    .WithSummary("Alphabet ancien des Elfes, utilisé pour les langues, rituels et archives.")
+    .WithContent("L’alphabet Elfique est un système d’écriture ancien, créé par les Elfes il y a plus de 5 000 ans. Il est principalement utilisé pour transcrire les langues elfiques et le [Sylvestre](/regles/langues/sylvestre), mais on le retrouve aussi dans des inscriptions rituelles, des marqueurs de frontière et des archives nobles. C’est un système majoritairement phonémique, écrit surtout de droite à gauche, dont les lettres linéaires s’organisent autour d’un axe central, avec des voyelles marquées par la position et la courbure, une écriture souvent liée, une ponctuation simple et des chiffres fondés sur des entailles de comptage. Il est employé aussi bien dans des contextes quotidiens que monumentaux ou savants, et se décline en plusieurs variantes graphiques (courante, monumentale et sacrée) adaptées à la vitesse d’écriture, au support et au caractère solennel du texte.")
+    .Build();
+
   public static Script Renon(Faker? faker = null, World? world = null) => new ScriptBuilder(faker)
     .WithWorld(world)
     .WithName("Rénon")

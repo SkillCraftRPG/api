@@ -17,6 +17,8 @@ internal class CustomizationEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
+  public List<CharacterCustomizationEntity> Characters { get; private set; } = [];
+
   public CustomizationEntity(Customization customization) : base(customization)
   {
     WorldId = customization.WorldId.ResourceId;

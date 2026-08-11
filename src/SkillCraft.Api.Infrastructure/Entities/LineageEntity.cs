@@ -56,6 +56,7 @@ internal class LineageEntity : AggregateEntity
   public int? Mature { get; private set; }
   public int? Venerable { get; private set; }
 
+  public List<CharacterEntity> Characters { get; private set; } = [];
   public List<LanguageEntity> Languages { get; private set; } = [];
 
   public LineageEntity(Lineage lineage, int? parentId, IEnumerable<LanguageEntity> languages) : base(lineage)

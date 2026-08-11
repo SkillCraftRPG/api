@@ -5,11 +5,8 @@ namespace SkillCraft.Api.Infrastructure.Repositories;
 
 internal class CharacterRepository : Repository, ICharacterRepository
 {
-  private readonly GameContext _database;
-
-  public CharacterRepository(GameContext database, IEventStore eventStore) : base(eventStore)
+  public CharacterRepository(IEventStore eventStore) : base(eventStore)
   {
-    _database = database;
   }
 
   public async Task<Character?> LoadAsync(CharacterId id, CancellationToken cancellationToken)
@@ -24,21 +21,9 @@ internal class CharacterRepository : Repository, ICharacterRepository
   public async Task SaveAsync(Character character, CancellationToken cancellationToken)
   {
     await base.SaveAsync(character, cancellationToken);
-
-    await SynchronizeAsync(character, cancellationToken);
   }
   public async Task SaveAsync(IEnumerable<Character> characters, CancellationToken cancellationToken)
   {
     await base.SaveAsync(characters, cancellationToken);
-
-    foreach (Character character in characters)
-    {
-      await SynchronizeAsync(character, cancellationToken);
-    }
-  }
-
-  private async Task SynchronizeAsync(Character character, CancellationToken cancellationToken)
-  {
-    // TOOD(fpion): implement
   }
 }

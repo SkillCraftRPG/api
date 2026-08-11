@@ -3,5 +3,6 @@
 public enum CharacterSort
 {
   CreatedOn,
+  Name,
   UpdatedOn
 }
