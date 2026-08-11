@@ -18,6 +18,7 @@ using SkillCraft.Api.Core.Worlds;
 using SkillCraft.Api.Infrastructure.Actors;
 using SkillCraft.Api.Infrastructure.Caching;
 using SkillCraft.Api.Infrastructure.Compendium;
+using SkillCraft.Api.Infrastructure.Handlers;
 using SkillCraft.Api.Infrastructure.Identity;
 using SkillCraft.Api.Infrastructure.Queriers;
 using SkillCraft.Api.Infrastructure.Repositories;
@@ -38,10 +39,17 @@ public static class DependencyInjectionExtensions
       .AddSingleton(serviceProvider => TokensSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton<IEventSerializer, EventSerializer>()
       .AddScoped<IEventBus, EventBus>()
+      .AddEventHandlers()
       .AddIdentityGateways()
       .AddQueriers()
       .AddRepositories()
       .AddTransient<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>();
+  }
+
+  private static IServiceCollection AddEventHandlers(this IServiceCollection services)
+  {
+    CharacterEvents.Register(services);
+    return services;
   }
 
   private static IServiceCollection AddIdentityGateways(this IServiceCollection services)

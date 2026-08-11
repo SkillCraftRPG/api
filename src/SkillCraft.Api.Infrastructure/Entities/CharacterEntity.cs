@@ -1,14 +1,17 @@
-﻿using Logitar.EventSourcing;
-using SkillCraft.Api.Core;
+﻿using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Events;
-using SkillCraft.Api.Core.Characters.Models;
-using SkillCraft.Api.Infrastructure.Compendium.Models;
+using SkillCraft.Api.Core.Customizations;
+using SkillCraft.Api.Core.Languages;
+using SkillCraft.Api.Core.Talents;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
 internal class CharacterEntity : AggregateEntity
 {
+  private const char Separator = '|';
+  private const char PairSeparator = ':';
+
   public int CharacterId { get; private set; }
 
   public WorldEntity? World { get; private set; }
@@ -49,34 +52,6 @@ internal class CharacterEntity : AggregateEntity
   public List<CharacterTalentEntity> Talents { get; private set; } = [];
 
   public CharacterEntity(
-    Character character,
-    int lineageId,
-    int casteId,
-    int educationId,
-    IEnumerable<CustomizationEntity> customizations,
-    IEnumerable<LanguageEntity> languages,
-    IEnumerable<TalentEntity> talents)
-  {
-    WorldId = character.WorldId.ResourceId;
-    Id = character.ResourceId;
-
-    LineageId = lineageId;
-    CasteId = casteId;
-    EducationId = educationId;
-
-    Attributes = EncodeAttributes(character.StartingAttributes);
-    Skills = EncodeSkills(character.Skills);
-
-    SetCustomizations(customizations);
-
-    SetLanguages(languages, null!); // TODO(fpion): event
-
-    SetTalents(character.Talents, talents, null!); // TODO(fpion): event
-
-    Update(character);
-  }
-
-  public CharacterEntity(
     int lineageId,
     int casteId,
     int educationId,
@@ -101,31 +76,36 @@ internal class CharacterEntity : AggregateEntity
     SetPersonality(@event.Personality);
     Background = @event.Background?.Value;
 
-    Attributes = EncodeAttributes(@event.Attributes);
-    Skills = EncodeSkills(@event.Skills);
+    Attributes = new CharacterAttributesEntity(@event.Attributes).ToString();
+    SetSkillRanks(@event.Skills);
 
-    SetCustomizations(customizations);
+    Dictionary<CustomizationId, CustomizationEntity> customizationsById = customizations.ToDictionary(x => new CustomizationId(x.StreamId), x => x);
+    foreach (CustomizationId customizationId in @event.CustomizationIds)
+    {
+      CustomizationEntity customization = customizationsById.GetValueOrDefault(customizationId)
+        ?? throw new ArgumentException($"The customization entity 'StreamId={customizationId}' was not found.", nameof(customizations));
+      Customizations.Add(new CharacterCustomizationEntity(this, customization));
+    }
 
-    SetLanguages(languages, @event);
+    Dictionary<LanguageId, LanguageEntity> languagesById = languages.ToDictionary(x => new LanguageId(x.StreamId), x => x);
+    foreach (LanguageId languageId in @event.LanguageIds)
+    {
+      LanguageEntity language = languagesById.GetValueOrDefault(languageId)
+        ?? throw new ArgumentException($"The language entity 'StreamId={languageId}' was not found.", nameof(languages));
+      Languages.Add(new CharacterLanguageEntity(this, language, @event));
+    }
 
-    SetTalents(@event.Talents, talents, @event);
+    Dictionary<TalentId, TalentEntity> talentsById = talents.ToDictionary(x => new TalentId(x.StreamId), x => x);
+    foreach (KeyValuePair<Guid, CharacterTalent> acquisition in @event.Talents)
+    {
+      TalentEntity talent = talentsById.GetValueOrDefault(acquisition.Value.TalentId)
+        ?? throw new ArgumentException($"The talent entity 'StreamId={acquisition.Value.TalentId}' was not found.", nameof(talents));
+      Talents.Add(new CharacterTalentEntity(this, talent, acquisition.Value, @event, acquisition.Key));
+    }
   }
 
   private CharacterEntity() : base()
   {
-  }
-
-  public void Update(Character character)
-  {
-    base.Update(character);
-
-    Name = character.Name.Value;
-    DominantHand = character.DominantHand;
-
-    SetAppearance(character.Appearance);
-    Alignment = character.Alignment;
-    SetPersonality(character.Personality);
-    Background = character.Background?.Value;
   }
 
   private void SetAppearance(ICharacterAppearance appearance)
@@ -139,24 +119,6 @@ internal class CharacterEntity : AggregateEntity
     Hair = appearance.Hair;
   }
 
-  private void SetCustomizations(IEnumerable<CustomizationEntity> customizations)
-  {
-    Customizations.Clear();
-    foreach (CustomizationEntity customization in customizations)
-    {
-      Customizations.Add(new CharacterCustomizationEntity(this, customization));
-    }
-  }
-
-  private void SetLanguages(IEnumerable<LanguageEntity> languages, DomainEvent @event)
-  {
-    Languages.Clear();
-    foreach (LanguageEntity language in languages)
-    {
-      Languages.Add(new CharacterLanguageEntity(this, language, @event));
-    }
-  }
-
   private void SetPersonality(ICharacterPersonality personality)
   {
     Traits = personality.Traits;
@@ -164,106 +126,28 @@ internal class CharacterEntity : AggregateEntity
     Flaws = personality.Flaws;
   }
 
-  private void SetTalents(IReadOnlyDictionary<Guid, CharacterTalent> talents, IEnumerable<TalentEntity> entities, DomainEvent @event)
-  {
-    Dictionary<string, TalentEntity> entitiesById = entities.ToDictionary(x => x.StreamId, x => x);
-
-    Talents.Clear();
-    foreach (KeyValuePair<Guid, CharacterTalent> talent in talents)
-    {
-      if (entitiesById.TryGetValue(talent.Value.TalentId.Value, out TalentEntity? entity))
-      {
-        Talents.Add(new CharacterTalentEntity(this, entity, talent.Value, @event, talent.Key));
-      }
-      else
-      {
-        throw new InvalidOperationException($"The talent entity 'StreamId={talent.Value.TalentId}' was not found.");
-      }
-    }
-  }
-
-  public IStartingAttributes DecodeAttributes()
-  {
-    StartingAttributesModel attributes = new();
-    if (Attributes is not null)
-    {
-      string[] values = Attributes.Split('|');
-      foreach (string value in values)
-      {
-        string[] parts = value.Split(':');
-        if (parts.Length == 2 && Enum.TryParse(parts.First(), out GameAttribute attribute) && Enum.IsDefined(attribute) && int.TryParse(parts.Last(), out int starting))
-        {
-          switch (attribute)
-          {
-            case GameAttribute.Dexterity:
-              attributes.Dexterity = starting;
-              break;
-            case GameAttribute.Health:
-              attributes.Health = starting;
-              break;
-            case GameAttribute.Intellect:
-              attributes.Intellect = starting;
-              break;
-            case GameAttribute.Senses:
-              attributes.Senses = starting;
-              break;
-            case GameAttribute.Vigor:
-              attributes.Vigor = starting;
-              break;
-          }
-        }
-      }
-    }
-    return attributes;
-  } // TODO(fpion): refactor
-  private static string? EncodeAttributes(IStartingAttributes attributes)
-  {
-    Dictionary<GameAttribute, int> data = new(capacity: 5);
-    if (attributes.Dexterity > 0)
-    {
-      data[GameAttribute.Dexterity] = attributes.Dexterity;
-    }
-    if (attributes.Health > 0)
-    {
-      data[GameAttribute.Health] = attributes.Health;
-    }
-    if (attributes.Intellect > 0)
-    {
-      data[GameAttribute.Intellect] = attributes.Intellect;
-    }
-    if (attributes.Senses > 0)
-    {
-      data[GameAttribute.Senses] = attributes.Senses;
-    }
-    if (attributes.Vigor > 0)
-    {
-      data[GameAttribute.Vigor] = attributes.Vigor;
-    }
-    return data.Count < 1 ? null : string.Join('|', data.Select(pair => string.Join(':', pair.Key, pair.Value)));
-  } // TODO(fpion): refactor
-
-  public IReadOnlyDictionary<Skill, int> DecodeSkills()
+  public IReadOnlyDictionary<Skill, int> GetSkillRanks()
   {
     Dictionary<Skill, int> skillRanks = new(capacity: 20);
     if (Skills is not null)
     {
-      string[] values = Skills.Split('|');
+      string[] values = Skills.Split(Separator);
       foreach (string value in values)
       {
-        string[] parts = value.Split(':');
-        if (parts.Length == 2 && Enum.TryParse(parts.First(), out Skill skill) && Enum.IsDefined(skill) && int.TryParse(parts.Last(), out int rank))
+        string[] parts = value.Split(PairSeparator);
+        if (parts.Length == 2 && Enum.TryParse(parts[0], out Skill skill) && Enum.IsDefined(skill) && int.TryParse(parts[1], out int rank))
         {
           skillRanks[skill] = rank;
         }
       }
     }
     return skillRanks.AsReadOnly();
-  } // TODO(fpion): refactor
-  private static string? EncodeSkills(IReadOnlyDictionary<Skill, int> skills)
+  }
+  private void SetSkillRanks(IReadOnlyDictionary<Skill, int> skills)
   {
-    string encoded = string.Join('|', skills.Where(x => x.Value > 0).Select(pair => string.Join(':', pair.Key, pair.Value)));
-    return string.IsNullOrWhiteSpace(encoded) ? null : encoded.Trim();
-  } // TODO(fpion): refactor
+    string encoded = string.Join(Separator, skills.Where(x => x.Value != 0).Select(pair => string.Join(PairSeparator, pair.Key, pair.Value)));
+    Skills = string.IsNullOrEmpty(encoded) ? null : encoded;
+  }
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

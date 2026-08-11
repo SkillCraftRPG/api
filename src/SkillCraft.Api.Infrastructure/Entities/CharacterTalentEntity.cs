@@ -1,17 +1,12 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Characters;
+using SkillCraft.Api.Core.Characters.Models;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
 internal class CharacterTalentEntity
 {
-  private static readonly JsonSerializerOptions _serializerOptions = new(); // TODO(fpion): remove this
-  static CharacterTalentEntity()
-  {
-    _serializerOptions.Converters.Add(new JsonStringEnumConverter());
-  }
-
   public int CharacterTalentId { get; private set; }
 
   public CharacterEntity? Character { get; private set; }
@@ -42,7 +37,7 @@ internal class CharacterTalentEntity
 
     Qualifier = detail.Qualifier?.Value;
     Notes = detail.Notes?.Value;
-    Discounts = detail.Discounts.Count < 1 ? null : JsonSerializer.Serialize(detail.Discounts, _serializerOptions);
+    SetDiscounts(detail.Discounts);
 
     CreatedBy = UpdatedBy = @event.ActorId?.Value;
     CreatedOn = UpdatedOn = @event.OccurredOn.AsUniversalTime();
@@ -50,6 +45,16 @@ internal class CharacterTalentEntity
 
   private CharacterTalentEntity()
   {
+  }
+
+  public IReadOnlyCollection<CharacterTalentDiscountModel> GetDiscounts()
+  {
+    return (Discounts is null ? null : EntitySerializer.Instance.Deserialize<IReadOnlyCollection<CharacterTalentDiscountModel>>(Discounts)) ?? [];
+  }
+  private void SetDiscounts(IReadOnlyCollection<CharacterTalentDiscount> discounts)
+  {
+    IEnumerable<CharacterTalentDiscountModel> models = discounts.Select(discount => new CharacterTalentDiscountModel(discount));
+    Discounts = models.Any() ? EntitySerializer.Instance.Serialize(models) : null;
   }
 
   public override bool Equals(object? obj) => obj is CharacterTalentEntity entity && entity.CharacterId == CharacterId && entity.Id == Id;

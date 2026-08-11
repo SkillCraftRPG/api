@@ -2,7 +2,6 @@
 using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
-using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Models;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -11,12 +10,6 @@ namespace SkillCraft.Api.Infrastructure;
 
 internal class CharacterMapper : Mapper
 {
-  private static readonly JsonSerializerOptions _serializerOptions = new(); // TODO(fpion): remove this
-  static CharacterMapper()
-  {
-    _serializerOptions.Converters.Add(new JsonStringEnumConverter());
-  }
-
   public CharacterMapper() : base()
   {
   }
@@ -110,25 +103,27 @@ internal class CharacterMapper : Mapper
       UpdatedBy = FindActor(source.UpdatedBy),
       UpdatedOn = source.UpdatedOn.AsUniversalTime()
     };
-    if (source.Discounts is not null)
-    {
-      destination.Discounts.AddRange(JsonSerializer.Deserialize<IEnumerable<CharacterTalentDiscountModel>>(source.Discounts, _serializerOptions) ?? []);
-    }
+    destination.Discounts.AddRange(source.GetDiscounts());
     return destination;
   }
 
   private static void CalculateAttributes(CharacterEntity source, CharacterModel destination)
   {
-    IStartingAttributes starting = source.DecodeAttributes();
-    destination.Attributes.Dexterity.Starting = starting.Dexterity;
-    destination.Attributes.Health.Starting = starting.Health;
-    destination.Attributes.Intellect.Starting = starting.Intellect;
-    destination.Attributes.Senses.Starting = starting.Senses;
-    destination.Attributes.Vigor.Starting = starting.Vigor;
+    CharacterAttributesEntity attributes = CharacterAttributesEntity.Parse(source.Attributes);
+
+    destination.Attributes.Dexterity.Starting = attributes.Dexterity.Starting;
+    destination.Attributes.Health.Starting = attributes.Health.Starting;
+    destination.Attributes.Intellect.Starting = attributes.Intellect.Starting;
+    destination.Attributes.Senses.Starting = attributes.Senses.Starting;
+    destination.Attributes.Vigor.Starting = attributes.Vigor.Starting;
+
+    destination.Attributes.Dexterity.Progression = attributes.Dexterity.Progression;
+    destination.Attributes.Health.Progression = attributes.Health.Progression;
+    destination.Attributes.Intellect.Progression = attributes.Intellect.Progression;
+    destination.Attributes.Senses.Progression = attributes.Senses.Progression;
+    destination.Attributes.Vigor.Progression = attributes.Vigor.Progression;
 
     // TODO(fpion): Bonuses
-
-    // TODO(fpion): Progression
   }
   private static void CalculateStatistics(CharacterModel character)
   {
@@ -151,7 +146,7 @@ internal class CharacterMapper : Mapper
   }
   private static void CalculateSkills(CharacterEntity source, CharacterModel destination)
   {
-    IReadOnlyDictionary<Skill, int> ranks = source.DecodeSkills();
+    IReadOnlyDictionary<Skill, int> ranks = source.GetSkillRanks();
 
     Dictionary<Skill, int> talents = new(capacity: 20);
     foreach (CharacterTalentModel acquired in destination.Talents)
