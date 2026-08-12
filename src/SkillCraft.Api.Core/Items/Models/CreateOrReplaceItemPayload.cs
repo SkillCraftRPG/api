@@ -14,6 +14,8 @@ public record CreateOrReplaceItemPayload
   public int? Price { get; set; }
   public int? Weight { get; set; }
 
+  public ItemChargesPayload? Charges { get; set; }
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateOrReplaceItemPayload>
@@ -28,6 +30,8 @@ public record CreateOrReplaceItemPayload
 
       When(x => x.Price.HasValue, () => RuleFor(x => x.Price!.Value).Price());
       When(x => x.Weight.HasValue, () => RuleFor(x => x.Weight!.Value).Weight());
+
+      When(x => x.Charges is not null, () => RuleFor(x => x.Charges!).SetValidator(new ItemChargesValidator()));
     }
   }
 }

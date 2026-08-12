@@ -12,6 +12,8 @@ public record UpdateItemPayload
   public Optional<int?>? Price { get; set; }
   public Optional<int?>? Weight { get; set; }
 
+  public Optional<ItemChargesPayload>? Charges { get; set; }
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<UpdateItemPayload>
@@ -24,6 +26,8 @@ public record UpdateItemPayload
 
       When(x => x.Price?.Value is not null, () => RuleFor(x => x.Price!.Value!.Value).Price());
       When(x => x.Weight?.Value is not null, () => RuleFor(x => x.Weight!.Value!.Value).Weight());
+
+      When(x => x.Charges?.Value is not null, () => RuleFor(x => x.Charges!.Value!).SetValidator(new ItemChargesValidator()));
     }
   }
 }

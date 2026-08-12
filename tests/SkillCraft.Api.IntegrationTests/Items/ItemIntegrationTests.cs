@@ -62,6 +62,40 @@ public class ItemIntegrationTests : IntegrationTests
     AssertCorde(payload, item);
   }
 
+  [Fact(DisplayName = "It should create an item with charges.")]
+  public async Task Given_Charges_When_CreateOrReplace_Then_Created()
+  {
+    Item fiole = ItemBuilder.Fiole(Faker, Context.World);
+    await _itemRepository.SaveAsync(fiole);
+
+    CreateOrReplaceItemPayload payload = CreatePotionDeGuerisonPayload(fiole.ResourceId);
+
+    CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload);
+    Assert.True(result.Created);
+    ItemModel item = result.Item;
+    Assert.NotNull(item);
+
+    Assert.NotEqual(Guid.Empty, item.Id);
+    Assert.Equal(3, item.Version);
+    Assert.Equal(Actor, item.CreatedBy);
+    Assert.Equal(DateTime.UtcNow, item.CreatedOn, TimeSpan.FromSeconds(10));
+    Assert.Equal(item.CreatedBy, item.UpdatedBy);
+    Assert.True(item.CreatedOn < item.UpdatedOn);
+
+    AssertPotionDeGuerison(payload, item, fiole);
+  }
+
+  [Fact(DisplayName = "It should throw ItemNotFoundException when the replacement item was not found.")]
+  public async Task Given_ReplacementNotFound_When_Create_Then_ItemNotFoundException()
+  {
+    CreateOrReplaceItemPayload payload = CreatePotionDeGuerisonPayload(Guid.Empty);
+
+    var exception = await Assert.ThrowsAsync<ItemNotFoundException>(async () => await _itemService.CreateOrReplaceAsync(payload));
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+    Assert.Equal(payload.Charges?.ReplacementId, exception.ItemId);
+    Assert.Equal("Charges.ReplacementId", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should read an item by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
@@ -275,5 +309,37 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content?.CleanTrim(), item.Content);
     Assert.Equal(payload.Price, item.Price);
     Assert.Equal(payload.Weight, item.Weight);
+  }
+
+  private static CreateOrReplaceItemPayload CreatePotionDeGuerisonPayload(Guid replacementId) => new()
+  {
+    Category = ItemCategory.Consumable,
+    Name = " Potion de guérison (3+3d4) ",
+    Summary = "  Restaure 3+3d4 points de Vitalité.  ",
+    Content = "   Une potion magique qui restaure 3+3d4 points de [Vitalité](/regles/statistiques/vitalite) lorsqu’elle est bue. Une fois vide, elle est remplacée par une [fiole](/regles/equipement/general/contenants).   ",
+    Charges = new ItemChargesPayload
+    {
+      Maximum = 1,
+      DepletionBehavior = DepletionBehavior.Replace,
+      ReplacementId = replacementId
+    }
+  };
+
+  private static void AssertPotionDeGuerison(CreateOrReplaceItemPayload payload, ItemModel item, Item fiole)
+  {
+    Assert.Equal(payload.Category, item.Category);
+    Assert.Equal(payload.Name.CleanTrim(), item.Name);
+    Assert.Equal(payload.Summary?.CleanTrim(), item.Summary);
+    Assert.Equal(payload.Content?.CleanTrim(), item.Content);
+    Assert.Null(item.Price);
+    Assert.Null(item.Weight);
+
+    Assert.NotNull(item.Charges);
+    Assert.Equal(payload.Charges?.Maximum, item.Charges.Maximum);
+    Assert.Equal(payload.Charges?.DepletionBehavior, item.Charges.DepletionBehavior);
+    Assert.NotNull(item.Charges.Replacement);
+    Assert.Equal(fiole.ResourceId, item.Charges.Replacement.Id);
+    Assert.Equal(fiole.Category, item.Charges.Replacement.Category);
+    Assert.Equal(fiole.Name.Value, item.Charges.Replacement.Name);
   }
 }

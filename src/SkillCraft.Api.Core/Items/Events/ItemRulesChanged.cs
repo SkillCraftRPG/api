@@ -1,5 +1,5 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 
 namespace SkillCraft.Api.Core.Items.Events;
 
-public record ItemRulesChanged(Price? Price, Weight? Weight) : DomainEvent;
+public record ItemRulesChanged(Price? Price, Weight? Weight, ItemCharges? Charges) : DomainEvent;

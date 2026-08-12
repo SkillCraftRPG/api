@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillCraft.Api.Core;
 using SkillCraft.Api.Core.Items;
+using SkillCraft.Api.Core.Items.Models;
 using SkillCraft.Api.Infrastructure.Db;
 using SkillCraft.Api.Infrastructure.Entities;
 
@@ -23,13 +24,18 @@ internal class ItemConfiguration : AggregateConfiguration<ItemEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Price });
     builder.HasIndex(x => new { x.WorldId, x.Weight });
+    builder.HasIndex(x => new { x.WorldId, x.ReplacementId });
 
     builder.Property(x => x.Category).HasMaxLength(16).HasConversion(new EnumToStringConverter<ItemCategory>());
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
+    builder.Property(x => x.ChargesDepletionBehavior).HasMaxLength(8).HasConversion(new EnumToStringConverter<DepletionBehavior>());
 
     builder.HasOne(x => x.World).WithMany(x => x.Items)
       .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+      .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Replacement).WithMany(x => x.ReplacedItems)
+      .HasForeignKey(x => x.ReplacementId).HasPrincipalKey(x => x.ItemId)
       .OnDelete(DeleteBehavior.Restrict);
   }
 }

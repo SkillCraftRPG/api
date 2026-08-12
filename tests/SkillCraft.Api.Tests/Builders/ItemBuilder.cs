@@ -16,6 +16,7 @@ public interface IItemBuilder
   IItemBuilder WithContent(string? content);
   IItemBuilder WithPrice(int? price);
   IItemBuilder WithWeight(int? weight);
+  ItemBuilder WithCharges(ItemCharges? charges);
 
   Item Build();
 }
@@ -24,6 +25,7 @@ public class ItemBuilder : IItemBuilder
 {
   private readonly Faker _faker;
 
+  private ItemCharges? _charges = null;
   private ItemCategory _category = ItemCategory.Miscellaneous;
   private string? _content = null;
   private ItemId? _itemId = null;
@@ -86,6 +88,12 @@ public class ItemBuilder : IItemBuilder
     return this;
   }
 
+  public ItemBuilder WithCharges(ItemCharges? charges)
+  {
+    _charges = charges;
+    return this;
+  }
+
   public Item Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
@@ -97,7 +105,7 @@ public class ItemBuilder : IItemBuilder
       : new(world, _category, name, actorId);
 
     item.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
-    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), actorId);
+    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), _charges, actorId);
 
     return item;
   }
@@ -128,6 +136,15 @@ public class ItemBuilder : IItemBuilder
     .WithContent("Une pièce d’argent couramment utilisée par la plupart des membres de la société pour leurs achats de plus grande valeur, comme le bétail de moyens de transport. Il s’agit de l’unité de référence de ce système.\r\n")
     .WithPrice(100)
     .WithWeight(1)
+    .Build();
+
+  public static Item Fiole(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithCategory(ItemCategory.Container)
+    .WithName("Fiole")
+    .WithSummary("Petite fiole en verre de 120 ml.")
+    .WithContent("Une petite fiole en verre dotée d’un petit bouchon de liège.")
+    .WithPrice(1)
     .Build();
 
   public static Item Grimoire(Faker? faker = null, World? world = null) => new ItemBuilder(faker)

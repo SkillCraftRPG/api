@@ -107,6 +107,19 @@ internal class Mapper
       Weight = source.Weight
     };
 
+    if (source.MaximumCharges.HasValue && source.ChargesDepletionBehavior.HasValue)
+    {
+      destination.Charges = new ItemChargesModel
+      {
+        Maximum = source.MaximumCharges.Value,
+        DepletionBehavior = source.ChargesDepletionBehavior.Value
+      };
+      if (source.Replacement is not null)
+      {
+        destination.Charges.Replacement = ToItem(source.Replacement);
+      }
+    }
+
     MapAggregate(source, destination);
 
     return destination;

@@ -13,5 +13,7 @@ public class ItemModel : Aggregate
   public int? Price { get; set; }
   public int? Weight { get; set; }
 
+  public ItemChargesModel? Charges { get; set; }
+
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

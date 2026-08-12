@@ -33,7 +33,7 @@ public class CharacterModel : Aggregate
   public int Stamina { get; set; }
   public int BloodAlcoholContent { get; set; }
   public int Intoxication { get; set; }
-  public int Hope { get; set; }
+  public int Hope { get; set; } // TODO(fpion): max. Hope?
 
   public List<CustomizationModel> Customizations { get; set; } = [];
   public List<CharacterLanguageModel> Languages { get; set; } = [];

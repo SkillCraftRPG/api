@@ -1,17 +1,12 @@
 ﻿using Logitar.EventSourcing;
-using Microsoft.EntityFrameworkCore;
 using SkillCraft.Api.Core.Items;
-using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Repositories;
 
 internal class ItemRepository : Repository, IItemRepository
 {
-  private readonly GameContext _database;
-
-  public ItemRepository(GameContext database, IEventStore eventStore) : base(eventStore)
+  public ItemRepository(IEventStore eventStore) : base(eventStore)
   {
-    _database = database;
   }
 
   public async Task<Item?> LoadAsync(ItemId id, CancellationToken cancellationToken)
@@ -26,31 +21,9 @@ internal class ItemRepository : Repository, IItemRepository
   public async Task SaveAsync(Item item, CancellationToken cancellationToken)
   {
     await base.SaveAsync(item, cancellationToken);
-
-    await SynchronizeAsync(item, cancellationToken);
   }
   public async Task SaveAsync(IEnumerable<Item> items, CancellationToken cancellationToken)
   {
     await base.SaveAsync(items, cancellationToken);
-
-    foreach (Item item in items)
-    {
-      await SynchronizeAsync(item, cancellationToken);
-    }
-  }
-
-  private async Task SynchronizeAsync(Item item, CancellationToken cancellationToken)
-  {
-    ItemEntity? entity = await _database.Items.SingleOrDefaultAsync(x => x.StreamId == item.Id.Value, cancellationToken);
-    if (entity is null)
-    {
-      entity = new ItemEntity(item);
-      _database.Items.Add(entity);
-    }
-    else
-    {
-      entity.Update(item);
-    }
-    await _database.SaveChangesAsync(cancellationToken);
   }
 }

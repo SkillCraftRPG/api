@@ -1,5 +1,8 @@
-﻿using SkillCraft.Api.Core.Items;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Items.Events;
+using SkillCraft.Api.Core.Items.Models;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 
@@ -20,17 +23,13 @@ internal class ItemEntity : AggregateEntity
   public int? Price { get; private set; }
   public int? Weight { get; private set; }
 
+  public int? MaximumCharges { get; private set; }
+  public DepletionBehavior? ChargesDepletionBehavior { get; private set; }
+  public ItemEntity? Replacement { get; private set; }
+  public int? ReplacementId { get; private set; }
+  public List<ItemEntity> ReplacedItems { get; private set; } = [];
+
   public string? Properties { get; private set; }
-
-  public ItemEntity(Item item) : base(item)
-  {
-    WorldId = item.WorldId.ResourceId;
-    Id = item.ResourceId;
-
-    Category = item.Category;
-
-    Update(item);
-  }
 
   public ItemEntity(ItemCreated @event) : base(@event)
   {
@@ -55,6 +54,16 @@ internal class ItemEntity : AggregateEntity
     Content = @event.Content?.Value;
   }
 
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Replacement is not null)
+    {
+      actorIds.AddRange(Replacement.GetActorIds());
+    }
+    return actorIds.AsReadOnly();
+  }
+
   public void Rename(ItemRenamed @event)
   {
     base.Update(@event);
@@ -62,24 +71,17 @@ internal class ItemEntity : AggregateEntity
     Name = @event.Name.Value;
   }
 
-  public void SetRules(ItemRulesChanged @event)
+  public void SetRules(ItemEntity? replacement, ItemRulesChanged @event)
   {
     base.Update(@event);
 
     Price = @event.Price?.Value;
     Weight = @event.Weight?.Value;
-  }
 
-  public void Update(Item item)
-  {
-    base.Update(item);
-
-    Name = item.Name.Value;
-    Summary = item.Summary?.Value;
-    Content = item.Content?.Value;
-
-    Price = item.Price?.Value;
-    Weight = item.Weight?.Value;
+    MaximumCharges = @event.Charges?.Maximum;
+    ChargesDepletionBehavior = @event.Charges?.DepletionBehavior;
+    Replacement = replacement;
+    ReplacementId = replacement?.ItemId;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

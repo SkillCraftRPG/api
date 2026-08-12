@@ -35,6 +35,7 @@ internal class ItemQuerier : IItemQuerier
   {
     ItemEntity? item = await _items.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
+      .Include(x => x.Replacement)
       .SingleOrDefaultAsync(cancellationToken);
 
     return item is null ? null : await MapAsync(item, cancellationToken);
@@ -43,6 +44,7 @@ internal class ItemQuerier : IItemQuerier
   {
     ItemEntity? item = await _items.AsNoTracking()
       .Where(x => x.Id == id && x.WorldId == _context.WorldId.ResourceId)
+      .Include(x => x.Replacement)
       .SingleOrDefaultAsync(cancellationToken);
 
     return item is null ? null : await MapAsync(item, cancellationToken);
@@ -60,7 +62,8 @@ internal class ItemQuerier : IItemQuerier
       builder.Where(Db.Items.Category, Operators.IsEqualTo(payload.Category.Value.ToString()));
     }
 
-    IQueryable<ItemEntity> query = _items.FromQuery(builder).AsNoTracking();
+    IQueryable<ItemEntity> query = _items.FromQuery(builder).AsNoTracking()
+      .Include(x => x.Replacement);
 
     long total = await query.LongCountAsync(cancellationToken);
 
