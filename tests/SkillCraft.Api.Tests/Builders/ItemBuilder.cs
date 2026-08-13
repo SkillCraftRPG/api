@@ -18,6 +18,7 @@ public interface IItemBuilder
   IItemBuilder WithWeight(int? weight);
   IItemBuilder WithRarity(ItemRarity? rarity);
   IItemBuilder WithCharges(ItemCharges? charges);
+  IItemBuilder WithMagic(MagicItem? magic);
 
   Item Build();
 }
@@ -30,6 +31,7 @@ public class ItemBuilder : IItemBuilder
   private ItemCategory _category = ItemCategory.Miscellaneous;
   private string? _content = null;
   private ItemId? _itemId = null;
+  private MagicItem? _magic = null;
   private string _name = "Item";
   private int? _price = null;
   private ItemRarity? _rarity = null;
@@ -102,6 +104,12 @@ public class ItemBuilder : IItemBuilder
     return this;
   }
 
+  public IItemBuilder WithMagic(MagicItem? magic)
+  {
+    _magic = magic;
+    return this;
+  }
+
   public Item Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
@@ -113,7 +121,7 @@ public class ItemBuilder : IItemBuilder
       : new(world, _category, name, actorId);
 
     item.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
-    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), _rarity, _charges, actorId);
+    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), _rarity, _charges, _magic, actorId);
 
     return item;
   }

@@ -14,6 +14,7 @@ public record UpdateItemPayload
 
   public Optional<ItemRarity?>? Rarity { get; set; }
   public Optional<ItemChargesPayload>? Charges { get; set; }
+  public Optional<MagicItemModel>? Magic { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
@@ -30,6 +31,7 @@ public record UpdateItemPayload
 
       When(x => x.Rarity?.Value is not null, () => RuleFor(x => x.Rarity!.Value!.Value).IsInEnum());
       When(x => x.Charges?.Value is not null, () => RuleFor(x => x.Charges!.Value!).SetValidator(new ItemChargesValidator()));
+      When(x => x.Magic?.Value is not null, () => RuleFor(x => x.Magic!.Value!).SetValidator(new MagicItemValidator()));
     }
   }
 }

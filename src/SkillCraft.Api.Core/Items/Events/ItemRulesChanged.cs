@@ -2,4 +2,4 @@
 
 namespace SkillCraft.Api.Core.Items.Events;
 
-public record ItemRulesChanged(Price? Price, Weight? Weight, ItemRarity? Rarity, ItemCharges? Charges) : DomainEvent;
+public record ItemRulesChanged(Price? Price, Weight? Weight, ItemRarity? Rarity, ItemCharges? Charges, MagicItem? Magic) : DomainEvent;

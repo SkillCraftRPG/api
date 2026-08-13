@@ -14,10 +14,13 @@ public static class Items
   public static readonly ColumnId UpdatedOn = new(nameof(ItemEntity.UpdatedOn), Table);
   public static readonly ColumnId Version = new(nameof(ItemEntity.Version), Table);
 
+  public static readonly ColumnId AttunementRequirements = new(nameof(ItemEntity.AttunementRequirements), Table);
   public static readonly ColumnId Category = new(nameof(ItemEntity.Category), Table);
   public static readonly ColumnId ChargesDepletionBehavior = new(nameof(ItemEntity.ChargesDepletionBehavior), Table);
   public static readonly ColumnId Content = new(nameof(ItemEntity.Content), Table);
   public static readonly ColumnId Id = new(nameof(ItemEntity.Id), Table);
+  public static readonly ColumnId IsAttunementRequired = new(nameof(ItemEntity.IsAttunementRequired), Table);
+  public static readonly ColumnId IsMagic = new(nameof(ItemEntity.IsMagic), Table);
   public static readonly ColumnId ItemId = new(nameof(ItemEntity.ItemId), Table);
   public static readonly ColumnId MaximumCharges = new(nameof(ItemEntity.MaximumCharges), Table);
   public static readonly ColumnId Name = new(nameof(ItemEntity.Name), Table);
