@@ -79,7 +79,7 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     }
 
     item.Edit(Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
-    item.SetRules(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), charges, actorId);
+    item.SetRules(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), payload.Rarity, charges, actorId);
 
     await _itemRepository.SaveAsync(item, cancellationToken);
 

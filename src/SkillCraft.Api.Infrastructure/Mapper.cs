@@ -104,7 +104,8 @@ internal class Mapper
       Summary = source.Summary,
       Content = source.Content,
       Price = source.Price,
-      Weight = source.Weight
+      Weight = source.Weight,
+      Rarity = source.Rarity
     };
 
     if (source.MaximumCharges.HasValue && source.ChargesDepletionBehavior.HasValue)

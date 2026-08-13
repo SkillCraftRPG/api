@@ -61,6 +61,10 @@ internal class ItemQuerier : IItemQuerier
     {
       builder.Where(Db.Items.Category, Operators.IsEqualTo(payload.Category.Value.ToString()));
     }
+    if (payload.Rarity.HasValue)
+    {
+      builder.Where(Db.Items.Rarity, Operators.IsEqualTo(payload.Rarity.Value.ToString()));
+    }
 
     IQueryable<ItemEntity> query = _items.FromQuery(builder).AsNoTracking()
       .Include(x => x.Replacement);

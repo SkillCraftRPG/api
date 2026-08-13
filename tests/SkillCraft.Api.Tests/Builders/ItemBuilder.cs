@@ -16,7 +16,8 @@ public interface IItemBuilder
   IItemBuilder WithContent(string? content);
   IItemBuilder WithPrice(int? price);
   IItemBuilder WithWeight(int? weight);
-  ItemBuilder WithCharges(ItemCharges? charges);
+  IItemBuilder WithRarity(ItemRarity? rarity);
+  IItemBuilder WithCharges(ItemCharges? charges);
 
   Item Build();
 }
@@ -31,6 +32,7 @@ public class ItemBuilder : IItemBuilder
   private ItemId? _itemId = null;
   private string _name = "Item";
   private int? _price = null;
+  private ItemRarity? _rarity = null;
   private string? _summary = null;
   private int? _weight = null;
   private World? _world = null;
@@ -88,7 +90,13 @@ public class ItemBuilder : IItemBuilder
     return this;
   }
 
-  public ItemBuilder WithCharges(ItemCharges? charges)
+  public IItemBuilder WithRarity(ItemRarity? rarity)
+  {
+    _rarity = rarity;
+    return this;
+  }
+
+  public IItemBuilder WithCharges(ItemCharges? charges)
   {
     _charges = charges;
     return this;
@@ -105,7 +113,7 @@ public class ItemBuilder : IItemBuilder
       : new(world, _category, name, actorId);
 
     item.Edit(Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
-    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), _charges, actorId);
+    item.SetRules(Price.TryCreate(_price), Weight.TryCreate(_weight), _rarity, _charges, actorId);
 
     return item;
   }

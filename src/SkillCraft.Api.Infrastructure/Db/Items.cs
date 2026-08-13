@@ -23,6 +23,7 @@ public static class Items
   public static readonly ColumnId Name = new(nameof(ItemEntity.Name), Table);
   public static readonly ColumnId Price = new(nameof(ItemEntity.Price), Table);
   public static readonly ColumnId Properties = new(nameof(ItemEntity.Properties), Table);
+  public static readonly ColumnId Rarity = new(nameof(ItemEntity.Rarity), Table);
   public static readonly ColumnId ReplacementId = new(nameof(ItemEntity.ReplacementId), Table);
   public static readonly ColumnId Summary = new(nameof(ItemEntity.Summary), Table);
   public static readonly ColumnId Weight = new(nameof(ItemEntity.Weight), Table);
