@@ -24,11 +24,13 @@ internal class ItemConfiguration : AggregateConfiguration<ItemEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Price });
     builder.HasIndex(x => new { x.WorldId, x.Weight });
+    builder.HasIndex(x => new { x.WorldId, x.Rarity });
     builder.HasIndex(x => new { x.WorldId, x.ReplacementId });
 
     builder.Property(x => x.Category).HasMaxLength(16).HasConversion(new EnumToStringConverter<ItemCategory>());
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
+    builder.Property(x => x.Rarity).HasMaxLength(16).HasConversion(new EnumToStringConverter<ItemRarity>());
     builder.Property(x => x.ChargesDepletionBehavior).HasMaxLength(8).HasConversion(new EnumToStringConverter<DepletionBehavior>());
 
     builder.HasOne(x => x.World).WithMany(x => x.Items)

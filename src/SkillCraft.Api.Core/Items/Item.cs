@@ -22,6 +22,7 @@ public class Item : AggregateRoot, IResource
   public Price? Price { get; private set; }
   public Weight? Weight { get; private set; }
 
+  public ItemRarity? Rarity { get; private set; }
   public ItemCharges? Charges { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
@@ -85,11 +86,15 @@ public class Item : AggregateRoot, IResource
     _name = @event.Name;
   }
 
-  public void SetRules(Price? price, Weight? weight, ItemCharges? charges, ActorId? actorId = null)
+  public void SetRules(Price? price, Weight? weight, ItemRarity? rarity, ItemCharges? charges, ActorId? actorId = null)
   {
-    if (!Equals(Price, price) || !Equals(Weight, weight) || !Equals(Charges, charges))
+    if (rarity.HasValue && !Enum.IsDefined(rarity.Value))
     {
-      Raise(new ItemRulesChanged(price, weight, charges), actorId);
+      throw new ArgumentOutOfRangeException(nameof(rarity));
+    }
+    if (!Equals(Price, price) || !Equals(Weight, weight) || !Equals(Rarity, rarity) || !Equals(Charges, charges))
+    {
+      Raise(new ItemRulesChanged(price, weight, rarity, charges), actorId);
     }
   }
   protected virtual void Handle(ItemRulesChanged @event)
@@ -97,6 +102,7 @@ public class Item : AggregateRoot, IResource
     Price = @event.Price;
     Weight = @event.Weight;
 
+    Rarity = @event.Rarity;
     Charges = @event.Charges;
   }
 

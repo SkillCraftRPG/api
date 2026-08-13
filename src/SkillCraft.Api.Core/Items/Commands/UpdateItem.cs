@@ -57,7 +57,7 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
         actorId);
     }
 
-    if (payload.Price is not null || payload.Weight is not null || payload.Charges is not null)
+    if (payload.Price is not null || payload.Weight is not null || payload.Rarity is not null || payload.Charges is not null)
     {
       ItemCharges? charges = item.Charges;
       if (payload.Charges is not null)
@@ -82,6 +82,7 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
       item.SetRules(
         payload.Price is null ? item.Price : Price.TryCreate(payload.Price.Value),
         payload.Weight is null ? item.Weight : Weight.TryCreate(payload.Weight.Value),
+        payload.Rarity is null ? item.Rarity : payload.Rarity.Value,
         charges,
         actorId);
     }

@@ -10,11 +10,15 @@ public record SearchItemsParameters : SearchParameters
   [FromQuery(Name = "category")]
   public ItemCategory? Category { get; set; }
 
+  [FromQuery(Name = "rarity")]
+  public ItemRarity? Rarity { get; set; }
+
   public virtual SearchItemsPayload ToPayload()
   {
     SearchItemsPayload payload = new()
     {
-      Category = Category
+      Category = Category,
+      Rarity = Rarity
     };
     Fill(payload);
 

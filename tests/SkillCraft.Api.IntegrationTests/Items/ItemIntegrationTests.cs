@@ -96,6 +96,36 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal("Charges.ReplacementId", exception.PropertyName);
   }
 
+  [Fact(DisplayName = "It should throw ItemNotFoundException when replacing an item.")]
+  public async Task Given_ReplacementNotFound_When_Replace_Then_ItemNotFoundException()
+  {
+    CreateOrReplaceItemPayload payload = CreatePotionDeGuerisonPayload(Guid.Empty);
+
+    var exception = await Assert.ThrowsAsync<ItemNotFoundException>(async () => await _itemService.CreateOrReplaceAsync(payload, _item.ResourceId));
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+    Assert.Equal(payload.Charges?.ReplacementId, exception.ItemId);
+    Assert.Equal("Charges.ReplacementId", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw ItemNotFoundException when updating an item.")]
+  public async Task Given_ReplacementNotFound_When_Update_Then_ItemNotFoundException()
+  {
+    UpdateItemPayload payload = new()
+    {
+      Charges = new Optional<ItemChargesPayload>(new ItemChargesPayload
+      {
+        Maximum = 1,
+        DepletionBehavior = DepletionBehavior.Replace,
+        ReplacementId = Guid.Empty
+      })
+    };
+
+    var exception = await Assert.ThrowsAsync<ItemNotFoundException>(async () => await _itemService.UpdateAsync(_item.ResourceId, payload));
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+    Assert.Equal(payload.Charges.Value?.ReplacementId, exception.ItemId);
+    Assert.Equal("Charges.Value.ReplacementId", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should read an item by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
@@ -168,6 +198,25 @@ public class ItemIntegrationTests : IntegrationTests
 
     ItemModel item = Assert.Single(results.Items);
     Assert.Equal(tool.ResourceId, item.Id);
+  }
+
+  [Fact(DisplayName = "It should filter search results by rarity.")]
+  public async Task Given_Rarity_When_Search_Then_Results()
+  {
+    Item common = new ItemBuilder(Faker).WithWorld(Context.World).WithRarity(ItemRarity.Common).WithName("Corde").Build();
+    Item rare = new ItemBuilder(Faker).WithWorld(Context.World).WithRarity(ItemRarity.Rare).WithName("Anneau rare").Build();
+    await _itemRepository.SaveAsync([common, rare]);
+
+    SearchItemsPayload payload = new()
+    {
+      Rarity = ItemRarity.Rare
+    };
+
+    SearchResults<ItemModel> results = await _itemService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    ItemModel item = Assert.Single(results.Items);
+    Assert.Equal(rare.ResourceId, item.Id);
   }
 
   [Fact(DisplayName = "It should return the correct search results.")]
@@ -262,15 +311,20 @@ public class ItemIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing item.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
+    Item fiole = ItemBuilder.Fiole(Faker, Context.World);
+    await _itemRepository.SaveAsync(fiole);
+
     Guid id = _item.ResourceId;
-    CreateOrReplaceItemPayload create = CreateCordePayload();
+    CreateOrReplaceItemPayload create = CreatePotionDeGuerisonPayload(fiole.ResourceId);
     UpdateItemPayload payload = new()
     {
       Name = create.Name,
       Summary = new Optional<string>(create.Summary),
       Content = new Optional<string>(create.Content),
       Price = new Optional<int?>(create.Price),
-      Weight = new Optional<int?>(create.Weight)
+      Weight = new Optional<int?>(create.Weight),
+      Rarity = new Optional<ItemRarity?>(create.Rarity),
+      Charges = new Optional<ItemChargesPayload>(create.Charges)
     };
 
     ItemModel? item = await _itemService.UpdateAsync(id, payload);
@@ -289,6 +343,12 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content.Value?.CleanTrim(), item.Content);
     Assert.Equal(payload.Price.Value, item.Price);
     Assert.Equal(payload.Weight.Value, item.Weight);
+    Assert.Equal(payload.Rarity.Value, item.Rarity);
+    Assert.NotNull(item.Charges);
+    Assert.Equal(payload.Charges.Value?.Maximum, item.Charges.Maximum);
+    Assert.Equal(payload.Charges.Value?.DepletionBehavior, item.Charges.DepletionBehavior);
+    Assert.NotNull(item.Charges.Replacement);
+    Assert.Equal(fiole.ResourceId, item.Charges.Replacement.Id);
   }
 
   private static CreateOrReplaceItemPayload CreateCordePayload() => new()
@@ -298,7 +358,8 @@ public class ItemIntegrationTests : IntegrationTests
     Summary = "  Corde de chanvre de 15 mètres, 2 points de Vitalité.  ",
     Content = "   Une corde de chanvre dotée de 2 points de Vitalité. On peut la briser en réussissant un test d’Athlétisme de difficulté élevée. La longueur standard est de 15 mètres.   ",
     Price = 1,
-    Weight = 5
+    Weight = 5,
+    Rarity = ItemRarity.Common
   };
 
   private static void AssertCorde(CreateOrReplaceItemPayload payload, ItemModel item)
@@ -309,6 +370,7 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content?.CleanTrim(), item.Content);
     Assert.Equal(payload.Price, item.Price);
     Assert.Equal(payload.Weight, item.Weight);
+    Assert.Equal(payload.Rarity, item.Rarity);
   }
 
   private static CreateOrReplaceItemPayload CreatePotionDeGuerisonPayload(Guid replacementId) => new()
@@ -317,6 +379,7 @@ public class ItemIntegrationTests : IntegrationTests
     Name = " Potion de guérison (3+3d4) ",
     Summary = "  Restaure 3+3d4 points de Vitalité.  ",
     Content = "   Une potion magique qui restaure 3+3d4 points de [Vitalité](/regles/statistiques/vitalite) lorsqu’elle est bue. Une fois vide, elle est remplacée par une [fiole](/regles/equipement/general/contenants).   ",
+    Rarity = ItemRarity.Common,
     Charges = new ItemChargesPayload
     {
       Maximum = 1,
@@ -333,6 +396,7 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content?.CleanTrim(), item.Content);
     Assert.Null(item.Price);
     Assert.Null(item.Weight);
+    Assert.Equal(payload.Rarity, item.Rarity);
 
     Assert.NotNull(item.Charges);
     Assert.Equal(payload.Charges?.Maximum, item.Charges.Maximum);

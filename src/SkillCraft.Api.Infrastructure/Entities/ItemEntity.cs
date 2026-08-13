@@ -23,6 +23,8 @@ internal class ItemEntity : AggregateEntity
   public int? Price { get; private set; }
   public int? Weight { get; private set; }
 
+  public ItemRarity? Rarity { get; private set; }
+
   public int? MaximumCharges { get; private set; }
   public DepletionBehavior? ChargesDepletionBehavior { get; private set; }
   public ItemEntity? Replacement { get; private set; }
@@ -77,6 +79,8 @@ internal class ItemEntity : AggregateEntity
 
     Price = @event.Price?.Value;
     Weight = @event.Weight?.Value;
+
+    Rarity = @event.Rarity;
 
     MaximumCharges = @event.Charges?.Maximum;
     ChargesDepletionBehavior = @event.Charges?.DepletionBehavior;
