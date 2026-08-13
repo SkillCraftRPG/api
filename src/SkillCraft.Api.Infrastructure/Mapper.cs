@@ -121,6 +121,19 @@ internal class Mapper
       }
     }
 
+    if (source.IsMagic)
+    {
+      destination.Magic = new MagicItemModel();
+      if (source.IsAttunementRequired.HasValue)
+      {
+        destination.Magic.Attunement = new AttunementModel
+        {
+          IsRequired = source.IsAttunementRequired.Value,
+          Requirements = source.AttunementRequirements
+        };
+      }
+    }
+
     MapAggregate(source, destination);
 
     return destination;

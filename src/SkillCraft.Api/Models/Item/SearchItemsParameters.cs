@@ -13,12 +13,16 @@ public record SearchItemsParameters : SearchParameters
   [FromQuery(Name = "rarity")]
   public ItemRarity? Rarity { get; set; }
 
+  [FromQuery(Name = "magic")]
+  public bool? IsMagic { get; set; }
+
   public virtual SearchItemsPayload ToPayload()
   {
     SearchItemsPayload payload = new()
     {
       Category = Category,
-      Rarity = Rarity
+      Rarity = Rarity,
+      IsMagic = IsMagic
     };
     Fill(payload);
 

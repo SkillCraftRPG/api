@@ -15,6 +15,7 @@ public class ItemModel : Aggregate
 
   public ItemRarity? Rarity { get; set; }
   public ItemChargesModel? Charges { get; set; }
+  public MagicItemModel? Magic { get; set; }
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

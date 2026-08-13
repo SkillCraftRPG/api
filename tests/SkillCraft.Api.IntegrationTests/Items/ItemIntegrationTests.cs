@@ -219,6 +219,31 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(rare.ResourceId, item.Id);
   }
 
+  [Fact(DisplayName = "It should filter search results by magic.")]
+  public async Task Given_IsMagic_When_Search_Then_Results()
+  {
+    Item mundane = new ItemBuilder(Faker).WithWorld(Context.World).WithName("Corde").Build();
+    Item magic = new ItemBuilder(Faker).WithWorld(Context.World).WithName("Potion de guérison").WithMagic(new MagicItem()).Build();
+    await _itemRepository.SaveAsync([mundane, magic]);
+
+    SearchItemsPayload payload = new()
+    {
+      IsMagic = true
+    };
+
+    SearchResults<ItemModel> results = await _itemService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    ItemModel item = Assert.Single(results.Items);
+    Assert.Equal(magic.ResourceId, item.Id);
+
+    payload.IsMagic = false;
+    results = await _itemService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+    Assert.Contains(results.Items, x => x.Id == mundane.ResourceId);
+    Assert.DoesNotContain(results.Items, x => x.Id == magic.ResourceId);
+  }
+
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
@@ -324,7 +349,8 @@ public class ItemIntegrationTests : IntegrationTests
       Price = new Optional<int?>(create.Price),
       Weight = new Optional<int?>(create.Weight),
       Rarity = new Optional<ItemRarity?>(create.Rarity),
-      Charges = new Optional<ItemChargesPayload>(create.Charges)
+      Charges = new Optional<ItemChargesPayload>(create.Charges),
+      Magic = new Optional<MagicItemModel>(create.Magic)
     };
 
     ItemModel? item = await _itemService.UpdateAsync(id, payload);
@@ -349,6 +375,8 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Charges.Value?.DepletionBehavior, item.Charges.DepletionBehavior);
     Assert.NotNull(item.Charges.Replacement);
     Assert.Equal(fiole.ResourceId, item.Charges.Replacement.Id);
+    Assert.NotNull(item.Magic);
+    Assert.Null(item.Magic.Attunement);
   }
 
   private static CreateOrReplaceItemPayload CreateCordePayload() => new()
@@ -371,6 +399,7 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Price, item.Price);
     Assert.Equal(payload.Weight, item.Weight);
     Assert.Equal(payload.Rarity, item.Rarity);
+    Assert.Null(item.Magic);
   }
 
   private static CreateOrReplaceItemPayload CreatePotionDeGuerisonPayload(Guid replacementId) => new()
@@ -385,7 +414,8 @@ public class ItemIntegrationTests : IntegrationTests
       Maximum = 1,
       DepletionBehavior = DepletionBehavior.Replace,
       ReplacementId = replacementId
-    }
+    },
+    Magic = new MagicItemModel()
   };
 
   private static void AssertPotionDeGuerison(CreateOrReplaceItemPayload payload, ItemModel item, Item fiole)
@@ -405,5 +435,8 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(fiole.ResourceId, item.Charges.Replacement.Id);
     Assert.Equal(fiole.Category, item.Charges.Replacement.Category);
     Assert.Equal(fiole.Name.Value, item.Charges.Replacement.Name);
+
+    Assert.NotNull(item.Magic);
+    Assert.Null(item.Magic.Attunement);
   }
 }

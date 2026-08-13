@@ -24,6 +24,7 @@ public class Item : AggregateRoot, IResource
 
   public ItemRarity? Rarity { get; private set; }
   public ItemCharges? Charges { get; private set; }
+  public MagicItem? Magic { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
@@ -86,15 +87,15 @@ public class Item : AggregateRoot, IResource
     _name = @event.Name;
   }
 
-  public void SetRules(Price? price, Weight? weight, ItemRarity? rarity, ItemCharges? charges, ActorId? actorId = null)
+  public void SetRules(Price? price, Weight? weight, ItemRarity? rarity, ItemCharges? charges, MagicItem? magic, ActorId? actorId = null)
   {
     if (rarity.HasValue && !Enum.IsDefined(rarity.Value))
     {
       throw new ArgumentOutOfRangeException(nameof(rarity));
     }
-    if (!Equals(Price, price) || !Equals(Weight, weight) || !Equals(Rarity, rarity) || !Equals(Charges, charges))
+    if (!Equals(Price, price) || !Equals(Weight, weight) || !Equals(Rarity, rarity) || !Equals(Charges, charges) || !Equals(Magic, magic))
     {
-      Raise(new ItemRulesChanged(price, weight, rarity, charges), actorId);
+      Raise(new ItemRulesChanged(price, weight, rarity, charges, magic), actorId);
     }
   }
   protected virtual void Handle(ItemRulesChanged @event)
@@ -104,6 +105,7 @@ public class Item : AggregateRoot, IResource
 
     Rarity = @event.Rarity;
     Charges = @event.Charges;
+    Magic = @event.Magic;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";

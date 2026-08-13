@@ -31,6 +31,10 @@ internal class ItemEntity : AggregateEntity
   public int? ReplacementId { get; private set; }
   public List<ItemEntity> ReplacedItems { get; private set; } = [];
 
+  public bool IsMagic { get; private set; }
+  public bool? IsAttunementRequired { get; private set; }
+  public string? AttunementRequirements { get; private set; }
+
   public string? Properties { get; private set; }
 
   public ItemEntity(ItemCreated @event) : base(@event)
@@ -86,6 +90,10 @@ internal class ItemEntity : AggregateEntity
     ChargesDepletionBehavior = @event.Charges?.DepletionBehavior;
     Replacement = replacement;
     ReplacementId = replacement?.ItemId;
+
+    IsMagic = @event.Magic is not null;
+    IsAttunementRequired = @event.Magic?.Attunement?.IsRequired;
+    AttunementRequirements = @event.Magic?.Attunement?.Requirements;
   }
 
   public override string ToString() => $"{Name} | {base.ToString()}";
