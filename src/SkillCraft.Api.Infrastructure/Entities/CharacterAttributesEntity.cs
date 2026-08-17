@@ -1,5 +1,5 @@
-﻿using SkillCraft.Api.Core.Characters;
-using SkillCraft.Api.Infrastructure.Compendium.Models;
+﻿using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Characters;
 
 namespace SkillCraft.Api.Infrastructure.Entities;
 

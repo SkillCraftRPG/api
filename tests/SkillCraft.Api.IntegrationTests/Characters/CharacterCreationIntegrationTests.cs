@@ -388,33 +388,33 @@ public class CharacterCreationIntegrationTests : IntegrationTests
     Assert.Equal(payload.Background?.Value?.Trim(), character.Background);
   }
 
-  private static void AssertAttribute(CharacterAttributeModel attribute, int starting, int progression = 0, int bonus = 0, int? total = null)
+  private static void AssertAttribute(CharacterAttributeModel attribute, int starting, int progression = 0, int modifiers = 0, int? total = null)
   {
     Assert.Equal(starting, attribute.Starting);
     Assert.Equal(progression, attribute.Progression);
-    Assert.Equal(bonus, attribute.Bonus);
-    Assert.Equal(total ?? (starting + progression + bonus), attribute.Total);
+    Assert.Equal(modifiers, attribute.Modifiers);
+    Assert.Equal(total ?? (starting + progression + modifiers), attribute.Total);
   }
-  private static void AssertSkill(CharacterSkillModel skill, int rank, int talents = 0, int attribute = 0, int bonus = 0, int? total = null)
+  private static void AssertSkill(CharacterSkillModel skill, int rank, int talents = 0, int attribute = 0, int modifiers = 0, int? total = null)
   {
     Assert.Equal(rank, skill.Rank);
     Assert.Equal(talents, skill.Talents);
     Assert.Equal(attribute, skill.Attribute);
-    Assert.Equal(bonus, skill.Bonus);
-    Assert.Equal(total ?? ((talents < 1 ? (rank / 2) : rank) + talents + attribute + bonus), skill.Total);
+    Assert.Equal(modifiers, skill.Modifiers);
+    Assert.Equal(total ?? ((talents < 1 ? (rank / 2) : rank) + talents + attribute + modifiers), skill.Total);
   }
-  private static void AssertStatistic(CharacterStatisticModel statistic, int @base, int bonus = 0, int? total = null)
+  private static void AssertStatistic(CharacterStatisticModel statistic, int @base, int modifiers = 0, int? total = null)
   {
     Assert.Equal(@base, statistic.Base);
-    Assert.Equal(bonus, statistic.Bonus);
-    Assert.Equal(total ?? (@base + bonus), statistic.Total);
+    Assert.Equal(modifiers, statistic.Modifiers);
+    Assert.Equal(total ?? (@base + modifiers), statistic.Total);
   }
-  private static void AssertSpeed(CharacterSpeedModel speed, int lineage, int bonus = 0, int encumbrance = 0, int? total = null)
+  private static void AssertSpeed(CharacterSpeedModel speed, int lineage, int modifiers = 0, int encumbrance = 0, int? total = null)
   {
     Assert.Equal(lineage, speed.Lineage);
-    Assert.Equal(bonus, speed.Bonus);
+    Assert.Equal(modifiers, speed.Modifiers);
     Assert.Equal(encumbrance, speed.Encumbrance);
-    Assert.Equal(total ?? (lineage + bonus + encumbrance), speed.Total);
+    Assert.Equal(total ?? (lineage + modifiers + encumbrance), speed.Total);
   }
 
   private static bool AssertCharacterTalentDiscount(CharacterTalentDiscountModel discount, CharacterTalentDiscountSource source, string target, int amount)

@@ -1,6 +1,6 @@
-﻿namespace SkillCraft.Api.Infrastructure.Compendium.Models;
+﻿namespace SkillCraft.Api.Core;
 
-internal enum GameStatistic
+public enum Statistic
 {
   Dodge,
   Initiative,

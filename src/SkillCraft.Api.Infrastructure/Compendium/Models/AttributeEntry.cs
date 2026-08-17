@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using SkillCraft.Api.Core;
 
 namespace SkillCraft.Api.Infrastructure.Compendium.Models;
 

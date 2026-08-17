@@ -3,6 +3,6 @@
 public record CharacterStatisticModel
 {
   public int Base { get; set; }
-  public int Bonus { get; set; }
-  public int Total => Base + Bonus;
+  public int Modifiers { get; set; }
+  public int Total => Base + Modifiers;
 }

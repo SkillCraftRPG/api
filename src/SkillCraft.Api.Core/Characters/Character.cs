@@ -49,6 +49,9 @@ public class Character : AggregateRoot, IResource
   private readonly Dictionary<ItemId, int> _inventory = [];
   public IReadOnlyDictionary<ItemId, int> Inventory => _inventory.AsReadOnly();
 
+  private readonly Dictionary<Guid, CharacterModifier> _modifiers = [];
+  public IReadOnlyDictionary<Guid, CharacterModifier> Modifiers => _modifiers.AsReadOnly();
+
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
   public Character() : base()
@@ -215,6 +218,40 @@ public class Character : AggregateRoot, IResource
     Personality = @event.Personality;
     Background = @event.Background;
   }
+
+  #region Modifiers
+  public void AddModifier(CharacterModifier modifier, ActorId? actorId = null) => SetModifier(Guid.NewGuid(), modifier, actorId);
+
+  public CharacterModifier FindModifier(Guid id) => TryGetModifier(id) ?? throw new ArgumentException($"The modifier 'Id={id}' was not found.", nameof(id));
+
+  public bool HasModifier(Guid id) => _modifiers.ContainsKey(id);
+
+  public void RemoveModifier(Guid id, ActorId? actorId = null)
+  {
+    if (HasModifier(id))
+    {
+      Raise(new CharacterModifierRemoved(id), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterModifierRemoved @event)
+  {
+    _modifiers.Remove(@event.ModifierId);
+  }
+
+  public void SetModifier(Guid id, CharacterModifier modifier, ActorId? actorId = null)
+  {
+    if (!_modifiers.TryGetValue(id, out CharacterModifier? existingModifier) || !existingModifier.Equals(modifier))
+    {
+      Raise(new CharacterModifierChanged(id, modifier), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterModifierChanged @event)
+  {
+    _modifiers[@event.ModifierId] = @event.Modifier;
+  }
+
+  public CharacterModifier? TryGetModifier(Guid id) => _modifiers.GetValueOrDefault(id);
+  #endregion
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

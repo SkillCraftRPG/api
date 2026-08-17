@@ -51,6 +51,7 @@ internal class CharacterEntity : AggregateEntity
 
   public List<CharacterCustomizationEntity> Customizations { get; private set; } = [];
   public List<CharacterLanguageEntity> Languages { get; private set; } = [];
+  public List<CharacterModifierEntity> Modifiers { get; private set; } = [];
   public List<CharacterTalentEntity> Talents { get; private set; } = [];
 
   public CharacterEntity(
@@ -138,6 +139,10 @@ internal class CharacterEntity : AggregateEntity
     {
       actorIds.AddRange(language.GetActorIds());
     }
+    foreach (CharacterModifierEntity modifier in Modifiers)
+    {
+      actorIds.AddRange(modifier.GetActorIds());
+    }
     foreach (CharacterTalentEntity talent in Talents)
     {
       actorIds.AddRange(talent.GetActorIds());
@@ -145,11 +150,39 @@ internal class CharacterEntity : AggregateEntity
     return actorIds.AsReadOnly();
   }
 
+  public CharacterModifierEntity? RemoveModifier(CharacterModifierRemoved @event)
+  {
+    base.Update(@event);
+
+    CharacterModifierEntity? modifier = TryGetModifier(@event.ModifierId);
+    if (modifier is not null)
+    {
+      Modifiers.Remove(modifier);
+    }
+    return modifier;
+  }
+
   public void Rename(CharacterRenamed @event)
   {
     base.Update(@event);
 
     Name = @event.Name.Value;
+  }
+
+  public void SetModifier(CharacterModifierChanged @event)
+  {
+    base.Update(@event);
+
+    CharacterModifierEntity? modifier = TryGetModifier(@event.ModifierId);
+    if (modifier is null)
+    {
+      modifier = new CharacterModifierEntity(this, @event);
+      Modifiers.Add(modifier);
+    }
+    else
+    {
+      modifier.Update(@event);
+    }
   }
 
   public void SetProfile(CharacterProfileChanged @event)
@@ -204,6 +237,8 @@ internal class CharacterEntity : AggregateEntity
     string encoded = string.Join(Separator, skills.Where(x => x.Value != 0).Select(pair => string.Join(PairSeparator, pair.Key, pair.Value)));
     Skills = string.IsNullOrEmpty(encoded) ? null : encoded;
   }
+
+  private CharacterModifierEntity? TryGetModifier(Guid id) => Modifiers.SingleOrDefault(modifier => modifier.Id == id);
 
   public override string ToString() => $"{Name} | {base.ToString()}";
 }
