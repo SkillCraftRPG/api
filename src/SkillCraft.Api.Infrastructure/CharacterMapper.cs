@@ -2,6 +2,7 @@
 using Logitar;
 using Logitar.EventSourcing;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Models;
 using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Infrastructure.Entities;
@@ -57,15 +58,20 @@ internal class CharacterMapper : Mapper
       destination.Languages.Add(ToCharacterLanguage(entity));
     }
 
+    foreach (CharacterModifierEntity entity in source.Modifiers)
+    {
+      destination.Modifiers.Add(ToCharacterModifier(entity));
+    }
+
     foreach (CharacterTalentEntity entity in source.Talents)
     {
       destination.Talents.Add(ToCharacterTalent(entity));
     }
 
     CalculateAttributes(source, destination);
-    CalculateStatistics(destination);
+    CalculateStatistics(source, destination);
     CalculateSkills(source, destination);
-    CalculateSpeeds(destination);
+    CalculateSpeeds(source, destination);
     CalculatePoints(destination);
 
     MapAggregate(source, destination);
@@ -88,6 +94,20 @@ internal class CharacterMapper : Mapper
       UpdatedOn = source.UpdatedOn.AsUniversalTime()
     };
   }
+
+  private CharacterModifierModel ToCharacterModifier(CharacterModifierEntity source) => new()
+  {
+    Id = source.Id,
+    Kind = source.Kind,
+    Target = source.Target,
+    Value = source.Value,
+    Name = source.Name,
+    Notes = source.Notes,
+    CreatedBy = FindActor(source.CreatedBy),
+    CreatedOn = source.CreatedOn.AsUniversalTime(),
+    UpdatedBy = FindActor(source.UpdatedBy),
+    UpdatedOn = source.UpdatedOn.AsUniversalTime()
+  };
 
   private CharacterTalentModel ToCharacterTalent(CharacterTalentEntity source)
   {
@@ -123,26 +143,87 @@ internal class CharacterMapper : Mapper
     destination.Attributes.Senses.Progression = attributes.Senses.Progression;
     destination.Attributes.Vigor.Progression = attributes.Vigor.Progression;
 
-    // TODO(fpion): Bonuses
+    foreach (CharacterModifierEntity modifier in source.Modifiers)
+    {
+      if (modifier.Kind == CharacterModifierKind.Attribute)
+      {
+        switch (modifier.Target)
+        {
+          case "Dexterity":
+            destination.Attributes.Dexterity.Modifiers += modifier.Value;
+            break;
+          case "Health":
+            destination.Attributes.Health.Modifiers += modifier.Value;
+            break;
+          case "Intellect":
+            destination.Attributes.Intellect.Modifiers += modifier.Value;
+            break;
+          case "Senses":
+            destination.Attributes.Senses.Modifiers += modifier.Value;
+            break;
+          case "Vigor":
+            destination.Attributes.Vigor.Modifiers += modifier.Value;
+            break;
+        }
+      }
+    }
   }
-  private static void CalculateStatistics(CharacterModel character)
+  private static void CalculateStatistics(CharacterEntity source, CharacterModel destination)
   {
-    character.Statistics.Dodge.Base = 10 + character.Attributes.Dexterity.Total;
-    character.Statistics.Initiative.Base = 2 * character.Attributes.Senses.Total;
-    character.Statistics.Learning.Base = Math.Max(
-      5 + character.Attributes.Intellect.Total + (character.Level / 5 * (2 + character.Attributes.Intellect.Total)),
-      5 + (character.Level / 5));
-    character.Statistics.Load.Base = 10 * (5 + character.Attributes.Vigor.Total);
-    character.Statistics.Power.Base = 5 + (character.Attributes.Senses.Total * 2);
-    character.Statistics.Precision.Base = 5 + (character.Attributes.Dexterity.Total * 2);
-    character.Statistics.Stratagem.Base = 5 + (character.Attributes.Intellect.Total * 2);
-    character.Statistics.Strength.Base = 5 + (character.Attributes.Vigor.Total * 2);
+    destination.Statistics.Dodge.Base = 10 + destination.Attributes.Dexterity.Total;
+    destination.Statistics.Initiative.Base = 2 * destination.Attributes.Senses.Total;
+    destination.Statistics.Learning.Base = Math.Max(
+      5 + destination.Attributes.Intellect.Total + (destination.Level / 5 * (2 + destination.Attributes.Intellect.Total)),
+      5 + (destination.Level / 5));
+    destination.Statistics.Load.Base = 10 * (5 + destination.Attributes.Vigor.Total);
+    destination.Statistics.Power.Base = 5 + (destination.Attributes.Senses.Total * 2);
+    destination.Statistics.Precision.Base = 5 + (destination.Attributes.Dexterity.Total * 2);
+    destination.Statistics.Stratagem.Base = 5 + (destination.Attributes.Intellect.Total * 2);
+    destination.Statistics.Strength.Base = 5 + (destination.Attributes.Vigor.Total * 2);
 
-    int constitution = (25 + character.Level) * (5 + character.Attributes.Health.Total) / 5;
-    character.Statistics.Stamina.Base = constitution;
-    character.Statistics.Vitality.Base = constitution;
+    int constitution = (25 + destination.Level) * (5 + destination.Attributes.Health.Total) / 5;
+    destination.Statistics.Stamina.Base = constitution;
+    destination.Statistics.Vitality.Base = constitution;
 
-    // TODO(fpion): Bonuses
+    foreach (CharacterModifierEntity modifier in source.Modifiers)
+    {
+      if (modifier.Kind == CharacterModifierKind.Statistic)
+      {
+        switch (modifier.Target)
+        {
+          case nameof(Statistic.Dodge):
+            destination.Statistics.Dodge.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Initiative):
+            destination.Statistics.Initiative.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Learning):
+            destination.Statistics.Learning.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Load):
+            destination.Statistics.Load.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Power):
+            destination.Statistics.Power.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Precision):
+            destination.Statistics.Precision.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Stamina):
+            destination.Statistics.Stamina.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Stratagem):
+            destination.Statistics.Stratagem.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Strength):
+            destination.Statistics.Strength.Modifiers += modifier.Value;
+            break;
+          case nameof(Statistic.Vitality):
+            destination.Statistics.Vitality.Modifiers += modifier.Value;
+            break;
+        }
+      }
+    }
   }
   private static void CalculateSkills(CharacterEntity source, CharacterModel destination)
   {
@@ -234,9 +315,77 @@ internal class CharacterMapper : Mapper
     destination.Skills.Survival.Talents = talents.GetValueOrDefault(Skill.Survival);
     destination.Skills.Survival.Attribute = destination.Attributes.Senses.Total;
 
-    // TODO(fpion): Bonuses
+    foreach (CharacterModifierEntity modifier in source.Modifiers)
+    {
+      if (modifier.Kind == CharacterModifierKind.Skill)
+      {
+        switch (modifier.Target)
+        {
+          case nameof(Skill.Acrobatics):
+            destination.Skills.Acrobatics.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Athletics):
+            destination.Skills.Athletics.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Crafting):
+            destination.Skills.Crafting.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Deception):
+            destination.Skills.Deception.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Diplomacy):
+            destination.Skills.Diplomacy.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Discipline):
+            destination.Skills.Discipline.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Insight):
+            destination.Skills.Insight.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Investigation):
+            destination.Skills.Investigation.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Knowledge):
+            destination.Skills.Knowledge.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Linguistics):
+            destination.Skills.Linguistics.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Medicine):
+            destination.Skills.Medicine.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Melee):
+            destination.Skills.Melee.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Occultism):
+            destination.Skills.Occultism.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Orientation):
+            destination.Skills.Orientation.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Perception):
+            destination.Skills.Perception.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Performance):
+            destination.Skills.Performance.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Resistance):
+            destination.Skills.Resistance.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Stealth):
+            destination.Skills.Stealth.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Survival):
+            destination.Skills.Survival.Modifiers += modifier.Value;
+            break;
+          case nameof(Skill.Thievery):
+            destination.Skills.Thievery.Modifiers += modifier.Value;
+            break;
+        }
+      }
+    }
   }
-  private static void CalculateSpeeds(CharacterModel character)
+  private static void CalculateSpeeds(CharacterEntity source, CharacterModel character)
   {
     LineageModel lineage = character.Lineage;
     LineageSpeedsModel speeds = lineage.Speeds;
@@ -274,7 +423,30 @@ internal class CharacterMapper : Mapper
     character.Speeds.Hover = speeds.Hover;
     character.Speeds.Burrow.Lineage = speeds.Burrow ?? 0;
 
-    // TODO(fpion): Bonuses
+    foreach (CharacterModifierEntity modifier in source.Modifiers)
+    {
+      if (modifier.Kind == CharacterModifierKind.Speed)
+      {
+        switch (modifier.Target)
+        {
+          case nameof(Speed.Walk):
+            character.Speeds.Walk.Modifiers += modifier.Value;
+            break;
+          case nameof(Speed.Climb):
+            character.Speeds.Climb.Modifiers += modifier.Value;
+            break;
+          case nameof(Speed.Swim):
+            character.Speeds.Swim.Modifiers += modifier.Value;
+            break;
+          case nameof(Speed.Fly):
+            character.Speeds.Fly.Modifiers += modifier.Value;
+            break;
+          case nameof(Speed.Burrow):
+            character.Speeds.Burrow.Modifiers += modifier.Value;
+            break;
+        }
+      }
+    }
 
     // TODO(fpion): Encumbrance
   }

@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using SkillCraft.Api.Core;
 
 namespace SkillCraft.Api.Infrastructure.Compendium.Models;
 
@@ -7,7 +8,7 @@ internal class StatisticEntry : Aggregate
   public string Slug { get; set; } = string.Empty;
   public string Name { get; set; } = string.Empty;
 
-  public GameStatistic Value { get; set; }
+  public Statistic Value { get; set; }
   public AttributeEntry Attribute { get; set; } = new();
 
   public string? MetaDescription { get; set; }

@@ -41,6 +41,7 @@ internal class CharacterQuerier : ICharacterQuerier
       .Include(x => x.Languages).ThenInclude(x => x.Language).ThenInclude(x => x!.Script)
       .Include(x => x.Lineage).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
       .Include(x => x.Lineage).ThenInclude(x => x!.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
+      .Include(x => x.Modifiers)
       .Include(x => x.Talents).ThenInclude(x => x.Talent)
       .SingleOrDefaultAsync(cancellationToken);
 
@@ -56,6 +57,7 @@ internal class CharacterQuerier : ICharacterQuerier
       .Include(x => x.Languages).ThenInclude(x => x.Language).ThenInclude(x => x!.Script)
       .Include(x => x.Lineage).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
       .Include(x => x.Lineage).ThenInclude(x => x!.Parent).ThenInclude(x => x!.Languages).ThenInclude(x => x.Script)
+      .Include(x => x.Modifiers)
       .Include(x => x.Talents).ThenInclude(x => x.Talent)
       .SingleOrDefaultAsync(cancellationToken);
 
