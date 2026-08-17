@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Logitar;
+using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
+using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Models;
@@ -9,6 +11,7 @@ using SkillCraft.Api.Core.Educations;
 using SkillCraft.Api.Core.Items;
 using SkillCraft.Api.Core.Languages;
 using SkillCraft.Api.Core.Lineages;
+using SkillCraft.Api.Core.Permissions;
 using SkillCraft.Api.Core.Scripts;
 using SkillCraft.Api.Core.Talents;
 
@@ -317,6 +320,72 @@ public class CharacterCreationIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldUid, exception.WorldId);
     Assert.Equal(Guid.Empty, Assert.Single(exception.TalentIds));
     Assert.Equal("Talents", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should return null when the character was not found.")]
+  public async Task Given_NotFound_When_Update_Then_NullReturned()
+  {
+    Assert.Null(await _characterService.UpdateAsync(Guid.Empty, new UpdateCharacterPayload()));
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when updating a character.")]
+  public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
+  {
+    CharacterModel created = await _characterService.CreateAsync(CreatePayload());
+
+    Context.User = new UserBuilder(Faker).Build();
+
+    UpdateCharacterPayload payload = new();
+
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _characterService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal(Actions.Update, exception.Action);
+    Assert.Equal(new ResourceIdentifier(Character.ResourceKind, created.Id, Context.WorldId).ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should update an existing character.")]
+  public async Task Given_Exists_When_Update_Then_Updated()
+  {
+    CharacterModel created = await _characterService.CreateAsync(CreatePayload());
+
+    UpdateCharacterPayload payload = new()
+    {
+      Name = "  Aelar Moonwhisper  ",
+      DominantHand = new Optional<DominantHand?>(DominantHand.Left),
+      Appearance = new CharacterAppearance(170, 510, 62, " Pale ", " Blue ", " Blond "),
+      Alignment = new Optional<Alignment?>(Alignment.ChaoticGood),
+      Personality = new CharacterPersonality(
+        "Je préfère l’ombre aux regards.",
+        "La liberté n’a de sens que partagée.",
+        "Je fuis les engagements durables."),
+      Background = new Optional<string>("  Nouveau passé pour le personnage.  ")
+    };
+
+    CharacterModel? character = await _characterService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(character);
+
+    Assert.Equal(created.Id, character.Id);
+    Assert.Equal(4, character.Version);
+    Assert.Equal(created.CreatedBy, character.CreatedBy);
+    Assert.Equal(created.CreatedOn, character.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(Actor, character.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, character.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.True(created.UpdatedOn < character.UpdatedOn);
+
+    Assert.Equal(payload.Name.CleanTrim(), character.Name);
+    Assert.Equal(payload.DominantHand?.Value, character.DominantHand);
+    Assert.Equal(payload.Appearance.Height, character.Appearance.Height);
+    Assert.Equal(payload.Appearance.Weight, character.Appearance.Weight);
+    Assert.Equal(payload.Appearance.Age, character.Appearance.Age);
+    Assert.Equal(payload.Appearance.Skin, character.Appearance.Skin);
+    Assert.Equal(payload.Appearance.Eyes, character.Appearance.Eyes);
+    Assert.Equal(payload.Appearance.Hair, character.Appearance.Hair);
+    Assert.Equal(payload.Alignment?.Value, character.Alignment);
+    Assert.Equal(payload.Personality.Traits, character.Personality.Traits);
+    Assert.Equal(payload.Personality.Ideals, character.Personality.Ideals);
+    Assert.Equal(payload.Personality.Flaws, character.Personality.Flaws);
+    Assert.Equal(payload.Background?.Value?.Trim(), character.Background);
   }
 
   private static void AssertAttribute(CharacterAttributeModel attribute, int starting, int progression = 0, int bonus = 0, int? total = null)

@@ -58,6 +58,8 @@ internal class UpdateCharacterCommandHandler : ICommandHandler<UpdateCharacterCo
         actorId);
     }
 
+    await _characterRepository.SaveAsync(character, cancellationToken);
+
     return await _characterQuerier.ReadAsync(character, cancellationToken);
   }
 }
