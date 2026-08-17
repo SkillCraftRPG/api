@@ -12,6 +12,7 @@ public interface ICharacterService
   Task<CharacterModel> CreateAsync(CreateCharacterPayload payload, CancellationToken cancellationToken = default);
   Task<CharacterModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<SearchResults<CharacterModel>> SearchAsync(SearchCharactersPayload payload, CancellationToken cancellationToken = default);
+  Task<CharacterModel?> UpdateAsync(Guid id, UpdateCharacterPayload payload, CancellationToken cancellationToken = default);
 }
 
 internal class CharacterService : ICharacterService
@@ -20,6 +21,7 @@ internal class CharacterService : ICharacterService
   {
     services.AddTransient<ICharacterService, CharacterService>();
     services.AddTransient<ICommandHandler<CreateCharacterCommand, CharacterModel>, CreateCharacterCommandHandler>();
+    services.AddTransient<ICommandHandler<UpdateCharacterCommand, CharacterModel?>, UpdateCharacterCommandHandler>();
     services.AddTransient<IQueryHandler<ReadCharacterQuery, CharacterModel?>, ReadCharacterQueryHandler>();
     services.AddTransient<IQueryHandler<SearchCharactersQuery, SearchResults<CharacterModel>>, SearchCharactersQueryHandler>();
   }
@@ -49,5 +51,11 @@ internal class CharacterService : ICharacterService
   {
     SearchCharactersQuery query = new(payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<CharacterModel?> UpdateAsync(Guid id, UpdateCharacterPayload payload, CancellationToken cancellationToken)
+  {
+    UpdateCharacterCommand command = new(id, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }

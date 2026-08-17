@@ -44,4 +44,11 @@ public class CharacterController : ControllerBase
     SearchResults<CharacterModel> characters = await _characterService.SearchAsync(payload, cancellationToken);
     return Ok(characters);
   }
+
+  [HttpPatch("{id}")]
+  public async Task<ActionResult<CharacterModel>> UpdateAsync(Guid id, [FromBody] UpdateCharacterPayload payload, CancellationToken cancellationToken)
+  {
+    CharacterModel? character = await _characterService.UpdateAsync(id, payload, cancellationToken);
+    return character is null ? NotFound() : Ok(character);
+  }
 }

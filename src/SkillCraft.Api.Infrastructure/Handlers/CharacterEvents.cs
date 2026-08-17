@@ -6,11 +6,17 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Handlers;
 
-internal class CharacterEvents : IEventHandler<CharacterCreated>
+internal class CharacterEvents : IEventHandler<CharacterCreated>,
+  IEventHandler<CharacterDeleted>,
+  IEventHandler<CharacterProfileChanged>,
+  IEventHandler<CharacterRenamed>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<CharacterCreated>, CharacterEvents>();
+    services.AddTransient<IEventHandler<CharacterDeleted>, CharacterEvents>();
+    services.AddTransient<IEventHandler<CharacterProfileChanged>, CharacterEvents>();
+    services.AddTransient<IEventHandler<CharacterRenamed>, CharacterEvents>();
   }
 
   private readonly GameContext _database;
@@ -62,6 +68,39 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>
       character = new CharacterEntity(lineageId, casteId, educationId, customizations, languages, talents, @event);
 
       _database.Characters.Add(character);
+
+      await _database.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(CharacterDeleted @event, CancellationToken cancellationToken)
+  {
+    CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (character is not null)
+    {
+      _database.Characters.Remove(character);
+
+      await _database.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(CharacterProfileChanged @event, CancellationToken cancellationToken)
+  {
+    CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (character is not null)
+    {
+      character.SetProfile(@event);
+
+      await _database.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(CharacterRenamed @event, CancellationToken cancellationToken)
+  {
+    CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (character is not null)
+    {
+      character.Rename(@event);
 
       await _database.SaveChangesAsync(cancellationToken);
     }
