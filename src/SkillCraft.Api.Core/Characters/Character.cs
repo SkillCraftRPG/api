@@ -181,5 +181,40 @@ public class Character : AggregateRoot, IResource
     }
   }
 
+  public void Rename(Name name, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name))
+    {
+      Raise(new CharacterRenamed(name), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterRenamed @event)
+  {
+    _name = @event.Name;
+  }
+
+  public void SetProfile(
+    DominantHand? dominantHand,
+    CharacterAppearance appearance,
+    Alignment? alignment,
+    CharacterPersonality personality,
+    Background? background,
+    ActorId? actorId = null)
+  {
+    if (!Equals(DominantHand, dominantHand) || !Equals(Appearance, appearance) || !Equals(Alignment, alignment) || !Equals(Personality, personality) || !Equals(Background, background))
+    {
+      Raise(new CharacterProfileChanged(dominantHand, appearance, alignment, personality, background), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterProfileChanged @event)
+  {
+    DominantHand = @event.DominantHand;
+
+    Appearance = @event.Appearance;
+    Alignment = @event.Alignment;
+    Personality = @event.Personality;
+    Background = @event.Background;
+  }
+
   public override string ToString() => $"{Name} | {base.ToString()}";
 }

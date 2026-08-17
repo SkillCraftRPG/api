@@ -145,6 +145,25 @@ internal class CharacterEntity : AggregateEntity
     return actorIds.AsReadOnly();
   }
 
+  public void Rename(CharacterRenamed @event)
+  {
+    base.Update(@event);
+
+    Name = @event.Name.Value;
+  }
+
+  public void SetProfile(CharacterProfileChanged @event)
+  {
+    base.Update(@event);
+
+    DominantHand = @event.DominantHand;
+
+    SetAppearance(@event.Appearance);
+    Alignment = @event.Alignment;
+    SetPersonality(@event.Personality);
+    Background = @event.Background?.Value;
+  }
+
   private void SetAppearance(ICharacterAppearance appearance)
   {
     Height = appearance.Height;

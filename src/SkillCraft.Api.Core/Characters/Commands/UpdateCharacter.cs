@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Characters.Models;
 using SkillCraft.Api.Core.Permissions;
 
@@ -38,7 +39,24 @@ internal class UpdateCharacterCommandHandler : ICommandHandler<UpdateCharacterCo
     }
     await _permissionService.CheckAsync(Actions.Update, character, cancellationToken);
 
-    // TODO(fpion): implement
+    ActorId? actorId = _context.ActorId;
+
+    Name? name = Name.TryCreate(payload.Name);
+    if (name is not null)
+    {
+      character.Rename(name, actorId);
+    }
+
+    if (payload.DominantHand is not null || payload.Appearance is not null || payload.Alignment is not null || payload.Personality is not null || payload.Background is not null)
+    {
+      character.SetProfile(
+        payload.DominantHand is null ? character.DominantHand : payload.DominantHand.Value,
+        payload.Appearance is null ? character.Appearance : new CharacterAppearance(payload.Appearance),
+        payload.Alignment is null ? character.Alignment : payload.Alignment.Value,
+        payload.Personality is null ? character.Personality : new CharacterPersonality(payload.Personality),
+        payload.Background is null ? character.Background : Background.TryCreate(payload.Background.Value),
+        actorId);
+    }
 
     return await _characterQuerier.ReadAsync(character, cancellationToken);
   }
