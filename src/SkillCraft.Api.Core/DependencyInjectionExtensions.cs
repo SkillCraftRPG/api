@@ -23,6 +23,7 @@ public static class DependencyInjectionExtensions
   public static IServiceCollection AddSkillCraftApiCore(this IServiceCollection services)
   {
     CasteService.Register(services);
+    CharacterModifierService.Register(services);
     CharacterService.Register(services);
     CustomizationService.Register(services);
     EducationService.Register(services);

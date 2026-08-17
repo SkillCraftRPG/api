@@ -37,6 +37,7 @@ public class CharacterModel : Aggregate
 
   public List<CustomizationModel> Customizations { get; set; } = [];
   public List<CharacterLanguageModel> Languages { get; set; } = [];
+  public List<CharacterModifierModel> Modifiers { get; set; } = [];
   public List<CharacterTalentModel> Talents { get; set; } = [];
 
   public CharacterPointsModel Points { get; set; } = new();
@@ -44,7 +45,6 @@ public class CharacterModel : Aggregate
   /* TODO(fpion): complete this
    * Player
    * Picture
-   * Bonuses
    * Inventory & Load
    * Attacks & Defense
    * Notes

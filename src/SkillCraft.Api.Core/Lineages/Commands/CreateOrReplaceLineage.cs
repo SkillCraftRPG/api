@@ -70,6 +70,11 @@ internal class CreateOrReplaceLineageCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.Update, lineage, cancellationToken);
 
+      if (lineage.ParentId != parent?.Id)
+      {
+        throw new ImmutablePropertyException<Guid?>(lineage, lineage.ParentId?.ResourceId, payload.ParentId, nameof(payload.ParentId));
+      }
+
       lineage.Rename(name, actorId);
     }
 
