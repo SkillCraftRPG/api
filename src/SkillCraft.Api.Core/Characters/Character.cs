@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing;
+﻿using Logitar;
+using Logitar.EventSourcing;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters.Events;
 using SkillCraft.Api.Core.Customizations;
@@ -26,7 +27,7 @@ public class Character : AggregateRoot, IResource
   public CasteId CasteId { get; private set; }
   public EducationId EducationId { get; private set; }
 
-  private readonly List<CustomizationId> _customizationIds = [];
+  private readonly HashSet<CustomizationId> _customizationIds = [];
   public IReadOnlyCollection<CustomizationId> CustomizationIds => _customizationIds.AsReadOnly();
 
   private readonly List<LanguageId> _languageIds = [];
@@ -218,6 +219,26 @@ public class Character : AggregateRoot, IResource
     Personality = @event.Personality;
     Background = @event.Background;
   }
+
+  #region Customizations
+  public void AddCustomization(Customization customization, ActorId? actorId = null) => AddCustomization(customization.Id, actorId);
+  public void AddCustomization(CustomizationId customizationId, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(WorldId, customizationId.WorldId, nameof(customizationId));
+
+    if (!HasCustomization(customizationId))
+    {
+      Raise(new CharacterCustomizationAdded(customizationId), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterCustomizationAdded @event)
+  {
+    _customizationIds.Add(@event.CustomizationId);
+  }
+
+  public bool HasCustomization(Customization customization) => HasCustomization(customization.Id);
+  public bool HasCustomization(CustomizationId customizationId) => _customizationIds.Contains(customizationId);
+  #endregion
 
   #region Modifiers
   public void AddModifier(CharacterModifier modifier, ActorId? actorId = null) => SetModifier(Guid.NewGuid(), modifier, actorId);

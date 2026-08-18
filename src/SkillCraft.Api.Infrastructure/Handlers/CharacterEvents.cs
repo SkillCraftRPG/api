@@ -87,7 +87,7 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>,
   public async Task HandleAsync(CharacterProfileChanged @event, CancellationToken cancellationToken)
   {
     CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (character is not null)
+    if (character is not null && character.Version == (@event.Version - 1))
     {
       character.SetProfile(@event);
 
@@ -98,7 +98,7 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>,
   public async Task HandleAsync(CharacterRenamed @event, CancellationToken cancellationToken)
   {
     CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (character is not null)
+    if (character is not null && character.Version == (@event.Version - 1))
     {
       character.Rename(@event);
 

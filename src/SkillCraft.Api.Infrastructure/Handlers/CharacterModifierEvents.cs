@@ -26,7 +26,7 @@ internal class CharacterModifierEvents : IEventHandler<CharacterModifierChanged>
     CharacterEntity? character = await _database.Characters
       .Include(x => x.Modifiers)
       .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (character is not null)
+    if (character is not null && character.Version == (@event.Version - 1))
     {
       character.SetModifier(@event);
 
@@ -39,14 +39,9 @@ internal class CharacterModifierEvents : IEventHandler<CharacterModifierChanged>
     CharacterEntity? character = await _database.Characters
       .Include(x => x.Modifiers)
       .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (character is not null)
+    if (character is not null && character.Version == (@event.Version - 1))
     {
       character.RemoveModifier(@event);
-      //CharacterModifierEntity? modifier = character.RemoveModifier(@event);
-      //if (modifier is not null)
-      //{
-      //  _database.CharacterModifiers.Remove(modifier);
-      //}
 
       await _database.SaveChangesAsync(cancellationToken);
     }
