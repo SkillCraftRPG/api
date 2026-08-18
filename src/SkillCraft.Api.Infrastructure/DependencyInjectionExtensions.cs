@@ -48,7 +48,9 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)
   {
+    CharacterCustomizationEvents.Register(services);
     CharacterEvents.Register(services);
+    CharacterInventoryEvents.Register(services);
     CharacterModifierEvents.Register(services);
     ItemEvents.Register(services);
     return services;

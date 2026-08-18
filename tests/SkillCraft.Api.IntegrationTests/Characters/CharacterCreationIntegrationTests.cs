@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
-using SkillCraft.Api.Core.Actors;
 using SkillCraft.Api.Core.Castes;
 using SkillCraft.Api.Core.Characters;
 using SkillCraft.Api.Core.Characters.Models;
@@ -111,11 +110,11 @@ public class CharacterCreationIntegrationTests : IntegrationTests
     CharacterModel character = await _characterService.CreateAsync(payload);
 
     Assert.NotEqual(Guid.Empty, character.Id);
-    Assert.Equal(1, character.Version);
+    Assert.Equal(2, character.Version);
     Assert.Equal(Actor, character.CreatedBy);
-    Assert.Equal(DateTime.UtcNow, character.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.True(character.CreatedOn < character.UpdatedOn);
     Assert.Equal(character.CreatedBy, character.UpdatedBy);
-    Assert.Equal(character.CreatedOn, character.UpdatedOn);
+    Assert.Equal(DateTime.UtcNow, character.UpdatedOn, TimeSpan.FromSeconds(10));
 
     Assert.Equal(payload.Name.Trim(), character.Name);
     Assert.Equal(payload.DominantHand, character.DominantHand);

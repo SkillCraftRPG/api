@@ -150,7 +150,26 @@ internal class CharacterEntity : AggregateEntity
     return actorIds.AsReadOnly();
   }
 
-  public CharacterModifierEntity? RemoveModifier(CharacterModifierRemoved @event)
+  public void AddCustomization(CustomizationEntity customization, CharacterCustomizationAdded @event)
+  {
+    base.Update(@event);
+
+    Customizations.Add(new CharacterCustomizationEntity(this, customization));
+  }
+
+  public void RemoveCustomization(CharacterCustomizationRemoved @event)
+  {
+    base.Update(@event);
+
+    CharacterCustomizationEntity? customization = Customizations
+      .SingleOrDefault(x => x.Customization?.StreamId == @event.CustomizationId.Value);
+    if (customization is not null)
+    {
+      Customizations.Remove(customization);
+    }
+  }
+
+  public void RemoveModifier(CharacterModifierRemoved @event)
   {
     base.Update(@event);
 
@@ -159,7 +178,6 @@ internal class CharacterEntity : AggregateEntity
     {
       Modifiers.Remove(modifier);
     }
-    return modifier;
   }
 
   public void Rename(CharacterRenamed @event)
