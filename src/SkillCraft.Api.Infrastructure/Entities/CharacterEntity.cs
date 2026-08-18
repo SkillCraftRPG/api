@@ -157,6 +157,18 @@ internal class CharacterEntity : AggregateEntity
     Customizations.Add(new CharacterCustomizationEntity(this, customization));
   }
 
+  public void RemoveCustomization(CharacterCustomizationRemoved @event)
+  {
+    base.Update(@event);
+
+    CharacterCustomizationEntity? customization = Customizations
+      .SingleOrDefault(x => x.Customization?.StreamId == @event.CustomizationId.Value);
+    if (customization is not null)
+    {
+      Customizations.Remove(customization);
+    }
+  }
+
   public void RemoveModifier(CharacterModifierRemoved @event)
   {
     base.Update(@event);

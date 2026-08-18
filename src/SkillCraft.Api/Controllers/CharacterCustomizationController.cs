@@ -25,4 +25,11 @@ public class CharacterCustomizationController : ControllerBase
     CharacterModel? character = await _characterCustomizationService.AddAsync(characterId, customizationId, cancellationToken);
     return character is null ? NotFound() : Ok(character);
   }
+
+  [HttpDelete]
+  public async Task<ActionResult<CharacterModel>> RemoveAsync(Guid characterId, Guid customizationId, CancellationToken cancellationToken)
+  {
+    CharacterModel? character = await _characterCustomizationService.RemoveAsync(characterId, customizationId, cancellationToken);
+    return character is null ? NotFound() : Ok(character);
+  }
 }

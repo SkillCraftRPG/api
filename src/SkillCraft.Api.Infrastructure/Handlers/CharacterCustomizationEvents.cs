@@ -6,11 +6,12 @@ using SkillCraft.Api.Infrastructure.Entities;
 
 namespace SkillCraft.Api.Infrastructure.Handlers;
 
-internal class CharacterCustomizationEvents : IEventHandler<CharacterCustomizationAdded>
+internal class CharacterCustomizationEvents : IEventHandler<CharacterCustomizationAdded>, IEventHandler<CharacterCustomizationRemoved>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<CharacterCustomizationAdded>, CharacterCustomizationEvents>();
+    services.AddTransient<IEventHandler<CharacterCustomizationRemoved>, CharacterCustomizationEvents>();
   }
 
   private readonly GameContext _database;
@@ -32,6 +33,19 @@ internal class CharacterCustomizationEvents : IEventHandler<CharacterCustomizati
         ?? throw new InvalidOperationException($"The customization entity 'StreamId={@event.CustomizationId}' was not found.");
 
       character.AddCustomization(customization, @event);
+
+      await _database.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(CharacterCustomizationRemoved @event, CancellationToken cancellationToken)
+  {
+    CharacterEntity? character = await _database.Characters
+      .Include(x => x.Customizations).ThenInclude(x => x.Customization)
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (character is not null && character.Version == (@event.Version - 1))
+    {
+      character.RemoveCustomization(@event);
 
       await _database.SaveChangesAsync(cancellationToken);
     }

@@ -175,6 +175,48 @@ public class CharacterCustomizationIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
+  [Fact(DisplayName = "It should return null when removing a customization and the character was not found.")]
+  public async Task Given_CharacterNotFound_When_Remove_Then_NullReturned()
+  {
+    Assert.Null(await _characterCustomizationService.RemoveAsync(Guid.Empty, _fignolage.ResourceId));
+  }
+
+  [Fact(DisplayName = "It should return null when the customization was not found.")]
+  public async Task Given_CustomizationNotFound_When_Remove_Then_NullReturned()
+  {
+    Assert.Null(await _characterCustomizationService.RemoveAsync(_character.Id, Guid.Empty));
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when removing a customization.")]
+  public async Task Given_NotAllowed_When_Remove_Then_PermissionDeniedException()
+  {
+    Context.User = new UserBuilder(Faker).Build();
+
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _characterCustomizationService.RemoveAsync(_character.Id, _fignolage.ResourceId));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal(Actions.Update, exception.Action);
+    Assert.Equal(new ResourceIdentifier(Character.ResourceKind, _character.Id, Context.WorldId).ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should remove an existing customization.")]
+  public async Task Given_Exists_When_Remove_Then_Removed()
+  {
+    CharacterModel? character = await _characterCustomizationService.RemoveAsync(_character.Id, _fignolage.ResourceId);
+    Assert.NotNull(character);
+
+    Assert.Equal(_character.Id, character.Id);
+    Assert.Equal(3, character.Version);
+    Assert.Equal(Actor, character.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, character.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.True(_character.UpdatedOn < character.UpdatedOn);
+
+    Assert.Single(character.Customizations);
+    Assert.Contains(character.Customizations, customization => customization.Id == _hemophobe.ResourceId);
+    Assert.DoesNotContain(character.Customizations, customization => customization.Id == _fignolage.ResourceId);
+  }
+
   private CreateCharacterPayload CreateCharacterPayload() => new()
   {
     LineageId = _hautElfe.ResourceId,

@@ -238,6 +238,21 @@ public class Character : AggregateRoot, IResource
 
   public bool HasCustomization(Customization customization) => HasCustomization(customization.Id);
   public bool HasCustomization(CustomizationId customizationId) => _customizationIds.Contains(customizationId);
+
+  public void RemoveCustomization(Customization customization, ActorId? actorId = null) => RemoveCustomization(customization.Id, actorId);
+  public void RemoveCustomization(CustomizationId customizationId, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(WorldId, customizationId.WorldId, nameof(customizationId));
+
+    if (HasCustomization(customizationId))
+    {
+      Raise(new CharacterCustomizationRemoved(customizationId), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterCustomizationRemoved @event)
+  {
+    _customizationIds.Remove(@event.CustomizationId);
+  }
   #endregion
 
   #region Modifiers
