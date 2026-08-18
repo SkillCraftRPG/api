@@ -169,6 +169,17 @@ internal class CharacterEntity : AggregateEntity
     }
   }
 
+  public void RemoveLanguage(CharacterLanguageRemoved @event)
+  {
+    base.Update(@event);
+
+    CharacterLanguageEntity? language = TryGetLanguage(@event.LanguageId);
+    if (language is not null)
+    {
+      Languages.Remove(language);
+    }
+  }
+
   public void RemoveModifier(CharacterModifierRemoved @event)
   {
     base.Update(@event);
@@ -255,6 +266,9 @@ internal class CharacterEntity : AggregateEntity
     string encoded = string.Join(Separator, skills.Where(x => x.Value != 0).Select(pair => string.Join(PairSeparator, pair.Key, pair.Value)));
     Skills = string.IsNullOrEmpty(encoded) ? null : encoded;
   }
+
+  private CharacterLanguageEntity? TryGetLanguage(LanguageId languageId) =>
+    Languages.SingleOrDefault(language => language.Language?.StreamId == languageId.Value);
 
   private CharacterModifierEntity? TryGetModifier(Guid id) => Modifiers.SingleOrDefault(modifier => modifier.Id == id);
 

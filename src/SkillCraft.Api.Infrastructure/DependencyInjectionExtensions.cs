@@ -51,6 +51,7 @@ public static class DependencyInjectionExtensions
     CharacterCustomizationEvents.Register(services);
     CharacterEvents.Register(services);
     CharacterInventoryEvents.Register(services);
+    CharacterLanguageEvents.Register(services);
     CharacterModifierEvents.Register(services);
     ItemEvents.Register(services);
     return services;

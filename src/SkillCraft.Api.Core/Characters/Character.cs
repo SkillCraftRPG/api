@@ -255,6 +255,26 @@ public class Character : AggregateRoot, IResource
   }
   #endregion
 
+  #region Languages
+  public bool HasLanguage(Language language) => HasLanguage(language.Id);
+  public bool HasLanguage(LanguageId languageId) => _languageIds.Contains(languageId);
+
+  public void RemoveLanguage(Language language, ActorId? actorId = null) => RemoveLanguage(language.Id, actorId);
+  public void RemoveLanguage(LanguageId languageId, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(WorldId, languageId.WorldId, nameof(languageId));
+
+    if (HasLanguage(languageId))
+    {
+      Raise(new CharacterLanguageRemoved(languageId), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterLanguageRemoved @event)
+  {
+    _languageIds.Remove(@event.LanguageId);
+  }
+  #endregion
+
   #region Modifiers
   public void AddModifier(CharacterModifier modifier, ActorId? actorId = null) => SetModifier(Guid.NewGuid(), modifier, actorId);
 
