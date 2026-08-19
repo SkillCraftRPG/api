@@ -24,7 +24,6 @@ public record Ascendancy // TODO(fpion): use in character constructor
     {
       throw new ArgumentException("The species cannot have a parent.", nameof(species));
     }
-
     if (ethnicity is not null && ethnicity.ParentId != species.Id)
     {
       throw new ArgumentException("The ethnicity must belong to the species.", nameof(ethnicity));
