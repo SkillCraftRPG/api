@@ -24,6 +24,7 @@ public static class DependencyInjectionExtensions
   {
     CasteService.Register(services);
     CharacterCustomizationService.Register(services);
+    CharacterLanguageService.Register(services);
     CharacterModifierService.Register(services);
     CharacterService.Register(services);
     CustomizationService.Register(services);

@@ -23,6 +23,21 @@ internal class LineageRepository : Repository, ILineageRepository
     return await base.LoadAsync<Lineage>(ids.Select(id => id.StreamId), isDeleted: false, cancellationToken);
   }
 
+  public async Task<Ascendancy> LoadAscendancyAsync(LineageId id, CancellationToken cancellationToken)
+  {
+    Lineage lineage = await base.LoadAsync<Lineage>(id.StreamId, cancellationToken)
+      ?? throw new InvalidOperationException($"The lineage 'Id={id}' was not found.");
+
+    Lineage? parent = null;
+    if (lineage.ParentId.HasValue)
+    {
+      parent = await base.LoadAsync<Lineage>(lineage.ParentId.Value.StreamId, cancellationToken)
+        ?? throw new InvalidOperationException($"The lineage 'Id={lineage.ParentId}' was not found.");
+    }
+
+    return new Ascendancy(parent ?? lineage, parent is null ? null : lineage);
+  }
+
   public async Task SaveAsync(Lineage lineage, CancellationToken cancellationToken)
   {
     await base.SaveAsync(lineage, cancellationToken);

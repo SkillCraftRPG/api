@@ -154,6 +154,14 @@ public class TalentBuilder : ITalentBuilder
     .WithRequiredTalent(requiredTalent ?? Melee(faker, world))
     .Build();
 
+  public static Talent LangueSupplementaire(Faker? faker = null, World? world = null) => new TalentBuilder(faker)
+    .WithWorld(world)
+    .WithName("Langue supplémentaire")
+    .WithSummary("Le personnage apprend une langue supplémentaire de son choix.")
+    .WithContent("Il doit avoir accès à un interlocuteur pouvant lui apprendre cette langue, ou suffisamment de sources écrites.\n\nLa langue doit également figurer parmi les catégories de langues auxquelles il a accès.")
+    .AllowMultiplePurchases()
+    .Build();
+
   public static Talent Furtivite(Faker? faker = null, World? world = null) => new TalentBuilder(faker)
     .WithWorld(world)
     .WithName("Furtivité")

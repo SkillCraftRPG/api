@@ -36,9 +36,7 @@ internal class CharacterTalentDiscountValidator : AbstractValidator<ICharacterTa
   {
     RuleFor(x => x.Source).IsInEnum();
     When(x => x.Source == CharacterTalentDiscountSource.Custom, () => RuleFor(x => x.Target).Name())
-      .Otherwise(() => RuleFor(x => x.Target).Must(x => Guid.TryParse(x, out _))
-        .WithErrorCode("UuidValidator")
-        .WithMessage("'{PropertyName}' must be a valid universally unique identifier (UUID)."));
+      .Otherwise(() => RuleFor(x => x.Target).SetValidator(new UuidValidator<ICharacterTalentDiscount>()));
     RuleFor(x => x.Amount).InclusiveBetween(1, 5);
   }
 }

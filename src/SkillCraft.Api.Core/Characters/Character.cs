@@ -30,8 +30,8 @@ public class Character : AggregateRoot, IResource
   private readonly HashSet<CustomizationId> _customizationIds = [];
   public IReadOnlyCollection<CustomizationId> CustomizationIds => _customizationIds.AsReadOnly();
 
-  private readonly List<LanguageId> _languageIds = [];
-  public IReadOnlyCollection<LanguageId> LanguageIds => _languageIds.AsReadOnly();
+  private readonly Dictionary<LanguageId, CharacterLanguageAcquisition> _languages = [];
+  public IReadOnlyDictionary<LanguageId, CharacterLanguageAcquisition> Languages => _languages.AsReadOnly();
 
   private readonly Dictionary<Guid, CharacterTalent> _talents = [];
   public IReadOnlyDictionary<Guid, CharacterTalent> Talents => _talents.AsReadOnly();
@@ -140,8 +140,11 @@ public class Character : AggregateRoot, IResource
     _customizationIds.Clear();
     _customizationIds.AddRange(@event.CustomizationIds);
 
-    _languageIds.Clear();
-    _languageIds.AddRange(@event.LanguageIds);
+    _languages.Clear();
+    foreach (LanguageId languageId in @event.LanguageIds)
+    {
+      _languages[languageId] = new CharacterLanguageAcquisition(CharacterLanguageSource.Extra);
+    }
 
     _talents.Clear();
     foreach (KeyValuePair<Guid, CharacterTalent> talent in @event.Talents)
@@ -252,7 +255,53 @@ public class Character : AggregateRoot, IResource
   protected virtual void Handle(CharacterCustomizationRemoved @event)
   {
     _customizationIds.Remove(@event.CustomizationId);
+
+    // TODO(fpion): remove languages
+    // TODO(fpion): remove talent discounts
   }
+  #endregion
+
+  #region Languages
+  public CharacterLanguageAcquisition FindLanguage(Language language) => FindLanguage(language.Id);
+  public CharacterLanguageAcquisition FindLanguage(LanguageId languageId)
+    => TryGetLanguage(languageId) ?? throw new ArgumentException($"The language 'Id={languageId}' was not found.", nameof(languageId));
+
+  public bool HasLanguage(Language language) => HasLanguage(language.Id);
+  public bool HasLanguage(LanguageId languageId) => _languages.ContainsKey(languageId);
+
+  public void RemoveLanguage(Language language, ActorId? actorId = null) => RemoveLanguage(language.Id, actorId);
+  public void RemoveLanguage(LanguageId languageId, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(WorldId, languageId.WorldId, nameof(languageId));
+
+    if (HasLanguage(languageId))
+    {
+      Raise(new CharacterLanguageRemoved(languageId), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterLanguageRemoved @event)
+  {
+    _languages.Remove(@event.LanguageId);
+  }
+
+  public void SetLanguage(Language language, CharacterLanguageAcquisition acquisition, Ascendancy? ascendancy = null, ActorId? actorId = null)
+    => SetLanguage(language.Id, acquisition, ascendancy, actorId);
+  public void SetLanguage(LanguageId languageId, CharacterLanguageAcquisition acquisition, Ascendancy? ascendancy = null, ActorId? actorId = null)
+  {
+    CharacterHelper.ValidateLanguage(this, languageId, acquisition, ascendancy);
+
+    if (!_languages.TryGetValue(languageId, out CharacterLanguageAcquisition? existingAcquisition) || existingAcquisition != acquisition)
+    {
+      Raise(new CharacterLanguageChanged(languageId, acquisition), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterLanguageChanged @event)
+  {
+    _languages[@event.LanguageId] = @event.Acquisition;
+  }
+
+  public CharacterLanguageAcquisition? TryGetLanguage(Language language) => TryGetLanguage(language.Id);
+  public CharacterLanguageAcquisition? TryGetLanguage(LanguageId languageId) => _languages.GetValueOrDefault(languageId);
   #endregion
 
   #region Modifiers
