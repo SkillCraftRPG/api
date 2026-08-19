@@ -46,28 +46,31 @@ internal static class CharacterHelper
   {
     WorldMismatchException.ThrowIfMismatch(character.WorldId, languageId.WorldId, nameof(languageId));
 
-    switch (acquisition.Source)
+    if (!character.HasLanguage(languageId))
     {
-      case CharacterLanguageSource.Customization:
-        if (acquisition.Target is null || !character.HasCustomization(new CustomizationId(character.WorldId, Guid.Parse(acquisition.Target))))
-        {
-          throw new NotImplementedException(); // TODO(fpion): DomainException
-        }
-        break;
-      case CharacterLanguageSource.Extra:
-        ArgumentNullException.ThrowIfNull(ascendancy, nameof(ascendancy));
-        int extra = character.Languages.Where(language => language.Key != languageId).Count(language => language.Value.Source == CharacterLanguageSource.Extra);
-        if (extra >= ascendancy.ExtraLanguages)
-        {
-          throw new NotImplementedException(); // TODO(fpion): DomainException
-        }
-        break;
-      case CharacterLanguageSource.Talent:
-        if (acquisition.Target is null || !character.Talents.ContainsKey(Guid.Parse(acquisition.Target)))
-        {
-          throw new NotImplementedException(); // TODO(fpion): DomainException
-        }
-        break;
+      switch (acquisition.Source)
+      {
+        case CharacterLanguageSource.Customization:
+          if (acquisition.Target is null || !character.HasCustomization(new CustomizationId(character.WorldId, Guid.Parse(acquisition.Target))))
+          {
+            throw new NotImplementedException(); // TODO(fpion): DomainException
+          }
+          break;
+        case CharacterLanguageSource.Extra:
+          ArgumentNullException.ThrowIfNull(ascendancy, nameof(ascendancy));
+          int extra = character.Languages.Count(language => language.Value.Source == CharacterLanguageSource.Extra);
+          if (extra >= ascendancy.ExtraLanguages)
+          {
+            throw new NotImplementedException(); // TODO(fpion): DomainException
+          }
+          break;
+        case CharacterLanguageSource.Talent:
+          if (acquisition.Target is null || !character.Talents.ContainsKey(Guid.Parse(acquisition.Target)))
+          {
+            throw new NotImplementedException(); // TODO(fpion): DomainException
+          }
+          break;
+      }
     }
   }
 
