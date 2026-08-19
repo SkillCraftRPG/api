@@ -198,6 +198,22 @@ internal class CharacterEntity : AggregateEntity
     Name = @event.Name.Value;
   }
 
+  public void SetLanguage(LanguageEntity language, CharacterLanguageChanged @event)
+  {
+    base.Update(@event);
+
+    CharacterLanguageEntity? characterLanguage = TryGetLanguage(@event.LanguageId);
+    if (characterLanguage is null)
+    {
+      characterLanguage = new CharacterLanguageEntity(this, language, @event);
+      Languages.Add(characterLanguage);
+    }
+    else
+    {
+      characterLanguage.Update(@event);
+    }
+  }
+
   public void SetModifier(CharacterModifierChanged @event)
   {
     base.Update(@event);

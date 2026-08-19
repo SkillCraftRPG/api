@@ -1,3 +1,4 @@
+using Logitar;
 using Microsoft.Extensions.DependencyInjection;
 using SkillCraft.Api.Builders;
 using SkillCraft.Api.Core;
@@ -38,10 +39,12 @@ public class CharacterLanguageIntegrationTests : IntegrationTests
   private Talent _artisanat = null!;
   private Talent _connaissance = null!;
   private Talent _furtivite = null!;
+  private Talent _langueSupplementaire = null!;
   private Talent _orientation = null!;
   private Talent _perception = null!;
   private Talent _roublardise = null!;
   private Talent _trousses = null!;
+  private Language _celfique = null!;
   private Language _commun = null!;
   private Language _sylvestre = null!;
   private Item _denier = null!;
@@ -69,13 +72,13 @@ public class CharacterLanguageIntegrationTests : IntegrationTests
     Script renon = ScriptBuilder.Renon(Faker, Context.World);
     await _scriptRepository.SaveAsync([elfique, renon]);
 
-    Language celfique = LanguageBuilder.Celfique(Faker, Context.World, elfique);
+    _celfique = LanguageBuilder.Celfique(Faker, Context.World, elfique);
     _commun = LanguageBuilder.Common(Faker, Context.World, renon);
     _sylvestre = LanguageBuilder.Sylvestre(Faker, Context.World, elfique);
-    await _languageRepository.SaveAsync([celfique, _commun, _sylvestre]);
+    await _languageRepository.SaveAsync([_celfique, _commun, _sylvestre]);
 
     _elfe = LineageBuilder.Elfe(Faker, Context.World);
-    _hautElfe = LineageBuilder.HautElfe(Faker, Context.World, _elfe, celfique);
+    _hautElfe = LineageBuilder.HautElfe(Faker, Context.World, _elfe, _celfique);
     await _lineageRepository.SaveAsync([_elfe, _hautElfe]);
 
     _artisan = CasteBuilder.Artisan(Faker, Context.World);
@@ -91,16 +94,152 @@ public class CharacterLanguageIntegrationTests : IntegrationTests
     _artisanat = TalentBuilder.Artisanat(Faker, Context.World);
     _connaissance = TalentBuilder.Connaissance(Faker, Context.World);
     _furtivite = TalentBuilder.Furtivite(Faker, Context.World);
+    _langueSupplementaire = TalentBuilder.LangueSupplementaire(Faker, Context.World);
     _orientation = TalentBuilder.Orientation(Faker, Context.World);
     _perception = TalentBuilder.Perception(Faker, Context.World);
     _roublardise = TalentBuilder.Roublardise(Faker, Context.World);
     _trousses = TalentBuilder.Trousses(Faker, Context.World, _roublardise);
-    await _talentRepository.SaveAsync([_artisanat, _connaissance, _furtivite, _orientation, _perception, _roublardise, _trousses]);
+    await _talentRepository.SaveAsync([_artisanat, _connaissance, _furtivite, _langueSupplementaire, _orientation, _perception, _roublardise, _trousses]);
 
     _denier = ItemBuilder.Denier(Faker, Context.World);
     await _itemRepository.SaveAsync(_denier);
 
     _character = await _characterService.CreateAsync(CreateCharacterPayload());
+  }
+
+  [Fact(DisplayName = "It should return null when creating or replacing a language and the character was not found.")]
+  public async Task Given_CharacterNotFound_When_CreateOrReplace_Then_NullReturned()
+  {
+    Assert.Null(await _characterLanguageService.CreateOrReplaceAsync(Guid.Empty, _celfique.ResourceId, CreateExtraPayload()));
+  }
+
+  [Fact(DisplayName = "It should throw LanguageNotFoundException when the language was not found.")]
+  public async Task Given_LanguageNotFound_When_CreateOrReplace_Then_LanguageNotFoundException()
+  {
+    var exception = await Assert.ThrowsAsync<LanguageNotFoundException>(
+      async () => await _characterLanguageService.CreateOrReplaceAsync(_character.Id, Guid.Empty, CreateExtraPayload()));
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+    Assert.Equal(Guid.Empty, exception.LanguageId);
+    Assert.Equal("LanguageId", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should add a language to a character.")]
+  public async Task Given_NotExists_When_CreateOrReplace_Then_Created()
+  {
+    Assert.NotNull(await _characterLanguageService.RemoveAsync(_character.Id, _commun.ResourceId));
+
+    CreateOrReplaceCharacterLanguagePayload payload = CreateExtraPayload();
+
+    CreateOrReplaceCharacterLanguageResult? result = await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _celfique.ResourceId, payload);
+    Assert.NotNull(result);
+    Assert.True(result.Created);
+
+    CharacterModel character = result.Character;
+    Assert.Equal(_character.Id, character.Id);
+    Assert.Equal(4, character.Version);
+    Assert.Equal(_character.CreatedBy, character.CreatedBy);
+    Assert.Equal(_character.CreatedOn, character.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(Actor, character.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, character.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.True(_character.UpdatedOn < character.UpdatedOn);
+
+    Assert.Equal(2, character.Languages.Count);
+    Assert.Contains(character.Languages, language => language.Language.Id == _sylvestre.ResourceId);
+
+    CharacterLanguageModel language = Assert.Single(character.Languages, item => item.Language.Id == _celfique.ResourceId);
+    AssertLanguage(payload, language);
+    Assert.Equal(Actor, language.CreatedBy);
+    Assert.Equal(DateTime.UtcNow, language.CreatedOn, TimeSpan.FromSeconds(10));
+    Assert.Equal(language.CreatedBy, language.UpdatedBy);
+    Assert.Equal(language.CreatedOn, language.UpdatedOn);
+  }
+
+  [Fact(DisplayName = "It should replace an existing language.")]
+  public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
+  {
+    CreateOrReplaceCharacterLanguagePayload create = CreateTalentPayload();
+    CreateOrReplaceCharacterLanguageResult? created = await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _celfique.ResourceId, create);
+    Assert.NotNull(created);
+    Assert.True(created.Created);
+    CharacterLanguageModel existing = Assert.Single(created.Character.Languages, language => language.Language.Id == _celfique.ResourceId);
+
+    CreateOrReplaceCharacterLanguagePayload payload = new()
+    {
+      Source = create.Source,
+      Target = create.Target,
+      Notes = "  Appris auprès d’un érudit elfe.  "
+    };
+
+    CreateOrReplaceCharacterLanguageResult? result = await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _celfique.ResourceId, payload);
+    Assert.NotNull(result);
+    Assert.False(result.Created);
+
+    CharacterModel character = result.Character;
+    Assert.Equal(_character.Id, character.Id);
+    Assert.Equal(4, character.Version);
+    Assert.Equal(Actor, character.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, character.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    CharacterLanguageModel language = Assert.Single(character.Languages, item => item.Language.Id == _celfique.ResourceId);
+    Assert.Equal(existing.Language.Id, language.Language.Id);
+    AssertLanguage(payload, language);
+    Assert.Equal(existing.CreatedBy, language.CreatedBy);
+    Assert.Equal(existing.CreatedOn, language.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(Actor, language.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, language.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.True(existing.UpdatedOn < language.UpdatedOn);
+  }
+
+  [Fact(DisplayName = "It should throw ImmutablePropertyException when the source is changing.")]
+  public async Task Given_DifferentSource_When_Replace_Then_ImmutablePropertyException()
+  {
+    CreateOrReplaceCharacterLanguagePayload payload = CreateTalentPayload();
+
+    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<CharacterLanguageSource>>(
+      async () => await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _commun.ResourceId, payload));
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+    Assert.Equal(Character.ResourceKind, exception.ResourceKind);
+    Assert.Equal(_character.Id, exception.ResourceId);
+    Assert.Equal(CharacterLanguageSource.Extra, exception.ExpectedValue);
+    Assert.Equal(payload.Source, exception.AttemptedValue);
+    Assert.Equal("Source", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw ImmutablePropertyException when the target is changing.")]
+  public async Task Given_DifferentTarget_When_Replace_Then_ImmutablePropertyException()
+  {
+    CreateOrReplaceCharacterLanguagePayload create = CreateTalentPayload();
+    CreateOrReplaceCharacterLanguageResult? created = await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _celfique.ResourceId, create);
+    Assert.NotNull(created);
+
+    CreateOrReplaceCharacterLanguagePayload payload = new()
+    {
+      Source = create.Source,
+      Target = Guid.NewGuid().ToString(),
+      Notes = create.Notes
+    };
+
+    var exception = await Assert.ThrowsAsync<ImmutablePropertyException<string>>(
+      async () => await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _celfique.ResourceId, payload));
+    Assert.Equal(Context.WorldUid, exception.WorldId);
+    Assert.Equal(Character.ResourceKind, exception.ResourceKind);
+    Assert.Equal(_character.Id, exception.ResourceId);
+    Assert.Equal(create.Target, exception.ExpectedValue);
+    Assert.Equal(payload.Target, exception.AttemptedValue);
+    Assert.Equal("Target", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when creating or replacing a language.")]
+  public async Task Given_NotAllowed_When_CreateOrReplace_Then_PermissionDeniedException()
+  {
+    Context.User = new UserBuilder(Faker).Build();
+
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _characterLanguageService.CreateOrReplaceAsync(_character.Id, _celfique.ResourceId, CreateExtraPayload()));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal(Actions.Update, exception.Action);
+    Assert.Equal(new ResourceIdentifier(Character.ResourceKind, _character.Id, Context.WorldId).ToString(), exception.Resource);
+    Assert.Equal(Context.WorldUid, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should return null when removing a language and the character was not found.")]
@@ -145,6 +284,30 @@ public class CharacterLanguageIntegrationTests : IntegrationTests
     Assert.DoesNotContain(character.Languages, language => language.Language.Id == _commun.ResourceId);
   }
 
+  private static void AssertLanguage(CreateOrReplaceCharacterLanguagePayload payload, CharacterLanguageModel language)
+  {
+    Assert.Equal(payload.Source, language.Source);
+    Assert.Equal(payload.Target?.CleanTrim(), language.Target);
+    Assert.Equal(payload.Notes?.Trim(), language.Notes);
+  }
+
+  private static CreateOrReplaceCharacterLanguagePayload CreateExtraPayload() => new()
+  {
+    Source = CharacterLanguageSource.Extra,
+    Notes = "  Appris auprès d’un marchand.  "
+  };
+
+  private CreateOrReplaceCharacterLanguagePayload CreateTalentPayload()
+  {
+    CharacterTalentModel talent = Assert.Single(_character.Talents, item => item.Talent.Id == _langueSupplementaire.ResourceId);
+    return new CreateOrReplaceCharacterLanguagePayload
+    {
+      Source = CharacterLanguageSource.Talent,
+      Target = talent.Id.ToString(),
+      Notes = "  Langue supplémentaire : Celfique.  "
+    };
+  }
+
   private CreateCharacterPayload CreateCharacterPayload() => new()
   {
     LineageId = _hautElfe.ResourceId,
@@ -159,6 +322,12 @@ public class CharacterLanguageIntegrationTests : IntegrationTests
       new AddCharacterTalentPayload { TalentId = _artisanat.ResourceId },
       new AddCharacterTalentPayload { TalentId = _connaissance.ResourceId },
       new AddCharacterTalentPayload { TalentId = _furtivite.ResourceId },
+      new AddCharacterTalentPayload
+      {
+        TalentId = _langueSupplementaire.ResourceId,
+        Qualifier = "Celfique",
+        Discounts = [new CharacterTalentDiscountModel(CharacterTalentDiscountSource.Lineage, _elfe.ResourceId.ToString(), 2)]
+      },
       new AddCharacterTalentPayload
       {
         TalentId = _orientation.ResourceId,
