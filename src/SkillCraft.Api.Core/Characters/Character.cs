@@ -255,6 +255,9 @@ public class Character : AggregateRoot, IResource
   protected virtual void Handle(CharacterCustomizationRemoved @event)
   {
     _customizationIds.Remove(@event.CustomizationId);
+
+    // TODO(fpion): remove languages
+    // TODO(fpion): remove talent discounts
   }
   #endregion
 
