@@ -177,16 +177,16 @@ internal class CharacterMapper : Mapper
   {
     destination.Statistics.Dodge.Base = 10 + destination.Attributes.Dexterity.Total;
     destination.Statistics.Initiative.Base = 2 * destination.Attributes.Senses.Total;
-    destination.Statistics.Learning.Base = Math.Max(
-      5 + destination.Attributes.Intellect.Total + (destination.Level / 5 * (2 + destination.Attributes.Intellect.Total)),
-      5 + (destination.Level / 5));
+    destination.Statistics.Learning.Base = (int)Math.Max(
+      5 + destination.Attributes.Intellect.Total + (destination.Level / 5.0 * (2 + destination.Attributes.Intellect.Total)),
+      5 + (destination.Level / 5.0));
     destination.Statistics.Load.Base = 10 * (5 + destination.Attributes.Vigor.Total);
     destination.Statistics.Power.Base = 5 + (destination.Attributes.Senses.Total * 2);
     destination.Statistics.Precision.Base = 5 + (destination.Attributes.Dexterity.Total * 2);
     destination.Statistics.Stratagem.Base = 5 + (destination.Attributes.Intellect.Total * 2);
     destination.Statistics.Strength.Base = 5 + (destination.Attributes.Vigor.Total * 2);
 
-    int constitution = (25 + destination.Level) * (5 + destination.Attributes.Health.Total) / 5;
+    int constitution = (int)((25 + destination.Level) * (5 + destination.Attributes.Health.Total) / 5.0);
     destination.Statistics.Stamina.Base = constitution;
     destination.Statistics.Vitality.Base = constitution;
 
