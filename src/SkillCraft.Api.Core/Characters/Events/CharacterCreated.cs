@@ -21,4 +21,7 @@ public record CharacterCreated(
   CharacterAppearance Appearance,
   Alignment? Alignment,
   CharacterPersonality Personality,
-  Background? Background) : DomainEvent;
+  Background? Background,
+  int Vitality,
+  int Stamina,
+  int MaximumHope) : DomainEvent;
