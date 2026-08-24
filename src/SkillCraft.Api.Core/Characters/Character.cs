@@ -19,6 +19,10 @@ public class Character : AggregateRoot, IResource
   public WorldId WorldId => Id.WorldId;
   public Guid ResourceId => Id.ResourceId;
 
+  public int Tier { get; private set; } // TODO(fpion): Specializations
+  public int Level => ExperienceTable.Instance.GetLevel(Experience);
+  public int Experience { get; private set; }
+
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
   public DominantHand? DominantHand { get; private set; }
@@ -52,6 +56,51 @@ public class Character : AggregateRoot, IResource
 
   private readonly Dictionary<Guid, CharacterModifier> _modifiers = [];
   public IReadOnlyDictionary<Guid, CharacterModifier> Modifiers => _modifiers.AsReadOnly();
+
+  public int Constitution
+  {
+    get
+    {
+      int health = StartingAttributes.Health + 0; // TODO(fpion): Progression
+      return (25 + Level) * (5 + health) / 5;
+    }
+  }
+  public int MaximumVitality
+  {
+    get
+    {
+      int vitality = Constitution;
+      foreach (CharacterModifier modifier in Modifiers.Values)
+      {
+        if (modifier.Kind == CharacterModifierKind.Attribute && modifier.Target == Statistic.Vitality.ToString())
+        {
+          vitality += modifier.Value;
+        }
+      }
+      return Math.Max(vitality, 1);
+    }
+  }
+  public int MaximumStamina
+  {
+    get
+    {
+      int stamina = Constitution;
+      foreach (CharacterModifier modifier in Modifiers.Values)
+      {
+        if (modifier.Kind == CharacterModifierKind.Attribute && modifier.Target == Statistic.Stamina.ToString())
+        {
+          stamina += modifier.Value;
+        }
+      }
+      return Math.Max(stamina, 1);
+    }
+  }
+
+  public CharacterVitality Vitality { get; private set; } = new();
+  public int Stamina { get; private set; }
+  public CharacterHope Hope { get; private set; } = new();
+  public int BloodAlcoholContent { get; private set; }
+  public int Intoxication { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
@@ -165,6 +214,10 @@ public class Character : AggregateRoot, IResource
     Personality = @event.Personality;
 
     Background = @event.Background;
+
+    Vitality = new CharacterVitality(Constitution);
+    Stamina = Constitution;
+    Hope = new CharacterHope(current: 0, maximum: 3);
   }
 
   public void Add(Item item, int quantity, ActorId? actorId = null)
@@ -198,6 +251,35 @@ public class Character : AggregateRoot, IResource
   protected virtual void Handle(CharacterRenamed @event)
   {
     _name = @event.Name;
+  }
+
+  public void SetStatus(CharacterVitality vitality, int stamina, CharacterHope hope, int bloodAlcoholContent, int intoxication, ActorId? actorId = null)
+  {
+    ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    ArgumentOutOfRangeException.ThrowIfNegative(bloodAlcoholContent, nameof(bloodAlcoholContent));
+    ArgumentOutOfRangeException.ThrowIfNegative(intoxication, nameof(intoxication));
+
+    if (vitality.Current > MaximumVitality)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+    if (stamina > MaximumStamina)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+
+    if (!Equals(Vitality, vitality) || !Equals(Stamina, stamina) || !Equals(Hope, hope) || !Equals(BloodAlcoholContent, bloodAlcoholContent) || !Equals(Intoxication, intoxication))
+    {
+      Raise(new CharacterStatusChanged(vitality, stamina, hope, bloodAlcoholContent, intoxication), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterStatusChanged @event)
+  {
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    Hope = @event.Hope;
+    BloodAlcoholContent = @event.BloodAlcoholContent;
+    Intoxication = @event.Intoxication;
   }
 
   public void SetProfile(

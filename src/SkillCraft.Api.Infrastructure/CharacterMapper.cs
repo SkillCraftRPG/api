@@ -28,11 +28,11 @@ internal class CharacterMapper : Mapper
     CharacterModel destination = new()
     {
       Id = source.Id,
+      Tier = source.Tier,
+      Level = source.Level,
+      Experience = source.Experience,
       Name = source.Name,
       DominantHand = source.DominantHand,
-      Tier = 0, // TODO(fpion): implement
-      Level = 0, // TODO(fpion): implement
-      Experience = 0, // TODO(fpion): implement
       Lineage = lineage,
       Caste = ToCaste(caste),
       Education = ToEducation(education),
@@ -40,11 +40,9 @@ internal class CharacterMapper : Mapper
       Alignment = source.Alignment,
       Personality = GetPersonality(source),
       Background = source.Background,
-      Vitality = 0, // TODO(fpion): implement
-      Stamina = 0, // TODO(fpion): implement
-      BloodAlcoholContent = 0, // TODO(fpion): implement
-      Intoxication = 0, // TODO(fpion): implement
-      Hope = 0 // TODO(fpion): implement
+      Stamina = source.Stamina,
+      BloodAlcoholContent = source.BloodAlcoholContent,
+      Intoxication = source.Intoxication
     };
 
     foreach (CharacterCustomizationEntity entity in source.Customizations)
@@ -73,6 +71,13 @@ internal class CharacterMapper : Mapper
     CalculateSkills(source, destination);
     CalculateSpeeds(source, destination);
     CalculatePoints(destination);
+
+    destination.Vitality.Current = source.CurrentVitality;
+    destination.Vitality.Temporary = source.TemporaryVitality;
+    destination.Vitality.Stun = source.StunDamage;
+
+    destination.Hope.Current = source.CurrentHope;
+    destination.Hope.Maximum = source.MaximumHope;
 
     MapAggregate(source, destination);
 

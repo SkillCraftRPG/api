@@ -178,11 +178,14 @@ public class CharacterCreationIntegrationTests : IntegrationTests
     Assert.False(character.Speeds.Hover);
     AssertSpeed(character.Speeds.Burrow, 0);
 
-    Assert.Equal(0, character.Vitality);
-    Assert.Equal(0, character.Stamina);
+    Assert.Equal(25, character.Vitality.Current);
+    Assert.Equal(0, character.Vitality.Temporary);
+    Assert.Equal(0, character.Vitality.Stun);
+    Assert.Equal(25, character.Stamina);
+    Assert.Equal(0, character.Hope.Current);
+    Assert.Equal(3, character.Hope.Maximum);
     Assert.Equal(0, character.BloodAlcoholContent);
     Assert.Equal(0, character.Intoxication);
-    Assert.Equal(0, character.Hope);
 
     Assert.Equal(2, character.Customizations.Count);
     Assert.Contains(character.Customizations, customization => customization.Id == _fignolage.ResourceId);

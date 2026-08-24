@@ -58,6 +58,17 @@ internal class UpdateCharacterCommandHandler : ICommandHandler<UpdateCharacterCo
         actorId);
     }
 
+    if (payload.Vitality is not null || payload.Stamina.HasValue || payload.Hope is not null || payload.BloodAlcoholContent.HasValue || payload.Intoxication.HasValue)
+    {
+      character.SetStatus(
+        payload.Vitality is null ? character.Vitality : new CharacterVitality(payload.Vitality),
+        payload.Stamina ?? character.Stamina,
+        payload.Hope is null ? character.Hope : new CharacterHope(payload.Hope),
+        payload.BloodAlcoholContent ?? character.BloodAlcoholContent,
+        payload.Intoxication ?? character.Intoxication,
+        actorId);
+    }
+
     await _characterRepository.SaveAsync(character, cancellationToken);
 
     return await _characterQuerier.ReadAsync(character, cancellationToken);

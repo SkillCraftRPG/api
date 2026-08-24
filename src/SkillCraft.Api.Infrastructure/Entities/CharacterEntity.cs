@@ -20,6 +20,10 @@ internal class CharacterEntity : AggregateEntity
   public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
+  public int Tier { get; private set; }
+  public int Level { get; private set; }
+  public int Experience { get; private set; }
+
   public string Name { get; private set; } = string.Empty;
   public DominantHand? DominantHand { get; private set; }
 
@@ -48,6 +52,15 @@ internal class CharacterEntity : AggregateEntity
 
   public string? Attributes { get; private set; }
   public string? Skills { get; private set; }
+
+  public int CurrentVitality { get; private set; }
+  public int TemporaryVitality { get; private set; }
+  public int StunDamage { get; private set; }
+  public int Stamina { get; private set; }
+  public int CurrentHope { get; private set; }
+  public int MaximumHope { get; private set; }
+  public int BloodAlcoholContent { get; private set; }
+  public int Intoxication { get; private set; }
 
   public List<CharacterCustomizationEntity> Customizations { get; private set; } = [];
   public List<CharacterLanguageEntity> Languages { get; private set; } = [];
@@ -79,9 +92,8 @@ internal class CharacterEntity : AggregateEntity
     SetPersonality(@event.Personality);
     Background = @event.Background?.Value;
 
-    Attributes = new CharacterAttributesEntity(@event.Attributes).ToString();
-    // TODO(fpion): should set current Vitality = max. Vitality
-    // TODO(fpion): should set current Stamina = max. Stamina
+    CharacterAttributesEntity attributes = new(@event.Attributes);
+    Attributes = attributes.ToString();
     SetSkillRanks(@event.Skills);
 
     Dictionary<CustomizationId, CustomizationEntity> customizationsById = customizations.ToDictionary(x => new CustomizationId(x.StreamId), x => x);
@@ -107,6 +119,11 @@ internal class CharacterEntity : AggregateEntity
         ?? throw new ArgumentException($"The talent entity 'StreamId={acquisition.Value.TalentId}' was not found.", nameof(talents));
       Talents.Add(new CharacterTalentEntity(this, talent, acquisition.Value, @event, acquisition.Key));
     }
+
+    int constitution = (5 + attributes.Health.Starting) * 5;
+    CurrentVitality = constitution;
+    Stamina = constitution;
+    MaximumHope = 3;
   }
 
   private CharacterEntity() : base()
@@ -240,6 +257,20 @@ internal class CharacterEntity : AggregateEntity
     Alignment = @event.Alignment;
     SetPersonality(@event.Personality);
     Background = @event.Background?.Value;
+  }
+
+  public void SetStatus(CharacterStatusChanged @event)
+  {
+    base.Update(@event);
+
+    CurrentVitality = @event.Vitality.Current;
+    TemporaryVitality = @event.Vitality.Temporary;
+    StunDamage = @event.Vitality.Stun;
+    Stamina = @event.Stamina;
+    CurrentHope = @event.Hope.Current;
+    MaximumHope = @event.Hope.Maximum;
+    BloodAlcoholContent = @event.BloodAlcoholContent;
+    Intoxication = @event.Intoxication;
   }
 
   private void SetAppearance(ICharacterAppearance appearance)

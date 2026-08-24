@@ -9,7 +9,8 @@ namespace SkillCraft.Api.Infrastructure.Handlers;
 internal class CharacterEvents : IEventHandler<CharacterCreated>,
   IEventHandler<CharacterDeleted>,
   IEventHandler<CharacterProfileChanged>,
-  IEventHandler<CharacterRenamed>
+  IEventHandler<CharacterRenamed>,
+  IEventHandler<CharacterStatusChanged>
 {
   public static void Register(IServiceCollection services)
   {
@@ -17,6 +18,7 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>,
     services.AddTransient<IEventHandler<CharacterDeleted>, CharacterEvents>();
     services.AddTransient<IEventHandler<CharacterProfileChanged>, CharacterEvents>();
     services.AddTransient<IEventHandler<CharacterRenamed>, CharacterEvents>();
+    services.AddTransient<IEventHandler<CharacterStatusChanged>, CharacterEvents>();
   }
 
   private readonly GameContext _database;
@@ -101,6 +103,17 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>,
     if (character is not null && character.Version == (@event.Version - 1))
     {
       character.Rename(@event);
+
+      await _database.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(CharacterStatusChanged @event, CancellationToken cancellationToken)
+  {
+    CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (character is not null && character.Version == (@event.Version - 1))
+    {
+      character.SetStatus(@event);
 
       await _database.SaveChangesAsync(cancellationToken);
     }
