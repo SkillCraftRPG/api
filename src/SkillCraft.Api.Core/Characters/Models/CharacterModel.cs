@@ -8,12 +8,12 @@ namespace SkillCraft.Api.Core.Characters.Models;
 
 public class CharacterModel : Aggregate
 {
-  public string Name { get; set; } = string.Empty;
-  public DominantHand? DominantHand { get; set; }
-
   public int Tier { get; set; }
   public int Level { get; set; }
   public int Experience { get; set; }
+
+  public string Name { get; set; } = string.Empty;
+  public DominantHand? DominantHand { get; set; }
 
   public LineageModel Lineage { get; set; } = new();
   public CasteModel Caste { get; set; } = new();
@@ -29,18 +29,18 @@ public class CharacterModel : Aggregate
   public CharacterSkillsModel Skills { get; set; } = new();
   public CharacterSpeedsModel Speeds { get; set; } = new();
 
-  public int Vitality { get; set; }
-  public int Stamina { get; set; }
-  public int BloodAlcoholContent { get; set; }
-  public int Intoxication { get; set; }
-  public int Hope { get; set; } // TODO(fpion): max. Hope?
-
   public List<CustomizationModel> Customizations { get; set; } = [];
   public List<CharacterLanguageModel> Languages { get; set; } = [];
   public List<CharacterModifierModel> Modifiers { get; set; } = [];
   public List<CharacterTalentModel> Talents { get; set; } = [];
 
   public CharacterPointsModel Points { get; set; } = new();
+
+  public CharacterVitalityModel Vitality { get; set; } = new();
+  public int Stamina { get; set; }
+  public CharacterHopeModel Hope { get; set; } = new();
+  public int BloodAlcoholContent { get; set; }
+  public int Intoxication { get; set; }
 
   /* TODO(fpion): complete this
    * Player

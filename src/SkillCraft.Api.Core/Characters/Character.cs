@@ -19,6 +19,10 @@ public class Character : AggregateRoot, IResource
   public WorldId WorldId => Id.WorldId;
   public Guid ResourceId => Id.ResourceId;
 
+  public int Tier { get; private set; } // TODO(fpion): Specializations
+  public int Level => ExperienceTable.Instance.GetLevel(Experience);
+  public int Experience { get; private set; }
+
   private Name? _name = null;
   public Name Name => _name ?? throw new InvalidOperationException("The name has not been initialized.");
   public DominantHand? DominantHand { get; private set; }
@@ -52,6 +56,12 @@ public class Character : AggregateRoot, IResource
 
   private readonly Dictionary<Guid, CharacterModifier> _modifiers = [];
   public IReadOnlyDictionary<Guid, CharacterModifier> Modifiers => _modifiers.AsReadOnly();
+
+  public CharacterVitality Vitality { get; private set; } = new();
+  public int Stamina { get; private set; }
+  public CharacterHope Hope { get; private set; } = new();
+  public int BloodAlcoholContent { get; private set; }
+  public int Intoxication { get; private set; }
 
   public ResourceIdentifier Identifier => new(ResourceKind, ResourceId, WorldId);
 
@@ -165,6 +175,11 @@ public class Character : AggregateRoot, IResource
     Personality = @event.Personality;
 
     Background = @event.Background;
+
+    int constitution = (5 + StartingAttributes.Health) * 5;
+    Vitality = new CharacterVitality(constitution);
+    Stamina = constitution;
+    Hope = new CharacterHope(current: 0, maximum: 3);
   }
 
   public void Add(Item item, int quantity, ActorId? actorId = null)
@@ -198,6 +213,28 @@ public class Character : AggregateRoot, IResource
   protected virtual void Handle(CharacterRenamed @event)
   {
     _name = @event.Name;
+  }
+
+  public void SetStatus(CharacterVitality vitality, int stamina, CharacterHope hope, int bloodAlcoholContent, int intoxication, ActorId? actorId = null)
+  {
+    // TODO(fpion): validate vitality
+    // TODO(fpion): validate stamina
+    // TODO(fpion): validate hope
+    // TODO(fpion): validate bloodAlcoholContent
+    // TODO(fpion): validate intoxication
+
+    if (!Equals(Vitality, vitality) || !Equals(Stamina, stamina) || !Equals(Hope, hope) || !Equals(BloodAlcoholContent, bloodAlcoholContent) || !Equals(Intoxication, intoxication))
+    {
+      Raise(new CharacterStatusChanged(vitality, stamina, hope, bloodAlcoholContent, intoxication), actorId);
+    }
+  }
+  protected virtual void Handle(CharacterStatusChanged @event)
+  {
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    Hope = @event.Hope;
+    BloodAlcoholContent = @event.BloodAlcoholContent;
+    Intoxication = @event.Intoxication;
   }
 
   public void SetProfile(
