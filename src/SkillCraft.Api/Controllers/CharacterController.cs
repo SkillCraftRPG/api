@@ -30,6 +30,13 @@ public class CharacterController : ControllerBase
     return Created(location, character);
   }
 
+  [HttpPost("{id}/experience")]
+  public async Task<ActionResult<CharacterModel>> GainExperienceAsync(Guid id, [FromBody] GainCharacterExperiencePayload payload, CancellationToken cancellationToken)
+  {
+    CharacterModel? character = await _characterService.GainExperienceAsync(id, payload, cancellationToken);
+    return character is null ? NotFound() : Ok(character);
+  }
+
   [HttpGet("{id}")]
   public async Task<ActionResult<CharacterModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

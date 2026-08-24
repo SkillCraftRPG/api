@@ -241,6 +241,17 @@ public class Character : AggregateRoot, IResource
     }
   }
 
+  public void GainExperience(int experience, ActorId? actorId = null)
+  {
+    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(experience, nameof(experience));
+
+    Raise(new CharacterExperienceGained(experience), actorId);
+  }
+  protected virtual void Handle(CharacterExperienceGained @event)
+  {
+    Experience += @event.Experience;
+  }
+
   public void Rename(Name name, ActorId? actorId = null)
   {
     if (!Equals(Name, name))
