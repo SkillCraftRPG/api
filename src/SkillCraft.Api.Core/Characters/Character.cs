@@ -57,6 +57,45 @@ public class Character : AggregateRoot, IResource
   private readonly Dictionary<Guid, CharacterModifier> _modifiers = [];
   public IReadOnlyDictionary<Guid, CharacterModifier> Modifiers => _modifiers.AsReadOnly();
 
+  public int Constitution
+  {
+    get
+    {
+      int health = StartingAttributes.Health + 0; // TODO(fpion): Progression
+      return (25 + Level) * (5 + health) / 5;
+    }
+  }
+  public int MaximumVitality
+  {
+    get
+    {
+      int vitality = Constitution;
+      foreach (CharacterModifier modifier in Modifiers.Values)
+      {
+        if (modifier.Kind == CharacterModifierKind.Attribute && modifier.Target == Statistic.Vitality.ToString())
+        {
+          vitality += modifier.Value;
+        }
+      }
+      return Math.Max(vitality, 1);
+    }
+  }
+  public int MaximumStamina
+  {
+    get
+    {
+      int stamina = Constitution;
+      foreach (CharacterModifier modifier in Modifiers.Values)
+      {
+        if (modifier.Kind == CharacterModifierKind.Attribute && modifier.Target == Statistic.Stamina.ToString())
+        {
+          stamina += modifier.Value;
+        }
+      }
+      return Math.Max(stamina, 1);
+    }
+  }
+
   public CharacterVitality Vitality { get; private set; } = new();
   public int Stamina { get; private set; }
   public CharacterHope Hope { get; private set; } = new();
@@ -176,9 +215,8 @@ public class Character : AggregateRoot, IResource
 
     Background = @event.Background;
 
-    int constitution = (5 + StartingAttributes.Health) * 5;
-    Vitality = new CharacterVitality(constitution);
-    Stamina = constitution;
+    Vitality = new CharacterVitality(Constitution);
+    Stamina = Constitution;
     Hope = new CharacterHope(current: 0, maximum: 3);
   }
 
@@ -217,11 +255,18 @@ public class Character : AggregateRoot, IResource
 
   public void SetStatus(CharacterVitality vitality, int stamina, CharacterHope hope, int bloodAlcoholContent, int intoxication, ActorId? actorId = null)
   {
-    // TODO(fpion): validate vitality
-    // TODO(fpion): validate stamina
-    // TODO(fpion): validate hope
-    // TODO(fpion): validate bloodAlcoholContent
-    // TODO(fpion): validate intoxication
+    ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    ArgumentOutOfRangeException.ThrowIfNegative(bloodAlcoholContent, nameof(bloodAlcoholContent));
+    ArgumentOutOfRangeException.ThrowIfNegative(intoxication, nameof(intoxication));
+
+    if (vitality.Current > MaximumVitality)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+    if (stamina > MaximumStamina)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
 
     if (!Equals(Vitality, vitality) || !Equals(Stamina, stamina) || !Equals(Hope, hope) || !Equals(BloodAlcoholContent, bloodAlcoholContent) || !Equals(Intoxication, intoxication))
     {
