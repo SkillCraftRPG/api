@@ -8,6 +8,7 @@ namespace SkillCraft.Api.Infrastructure.Handlers;
 
 internal class CharacterEvents : IEventHandler<CharacterCreated>,
   IEventHandler<CharacterDeleted>,
+  IEventHandler<CharacterExperienceGained>,
   IEventHandler<CharacterProfileChanged>,
   IEventHandler<CharacterRenamed>,
   IEventHandler<CharacterStatusChanged>
@@ -16,6 +17,7 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>,
   {
     services.AddTransient<IEventHandler<CharacterCreated>, CharacterEvents>();
     services.AddTransient<IEventHandler<CharacterDeleted>, CharacterEvents>();
+    services.AddTransient<IEventHandler<CharacterExperienceGained>, CharacterEvents>();
     services.AddTransient<IEventHandler<CharacterProfileChanged>, CharacterEvents>();
     services.AddTransient<IEventHandler<CharacterRenamed>, CharacterEvents>();
     services.AddTransient<IEventHandler<CharacterStatusChanged>, CharacterEvents>();
@@ -81,6 +83,17 @@ internal class CharacterEvents : IEventHandler<CharacterCreated>,
     if (character is not null)
     {
       _database.Characters.Remove(character);
+
+      await _database.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(CharacterExperienceGained @event, CancellationToken cancellationToken)
+  {
+    CharacterEntity? character = await _database.Characters.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (character is not null && character.Version == (@event.Version - 1))
+    {
+      character.GainExperience(@event);
 
       await _database.SaveChangesAsync(cancellationToken);
     }

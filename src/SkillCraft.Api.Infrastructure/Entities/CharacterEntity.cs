@@ -174,6 +174,14 @@ internal class CharacterEntity : AggregateEntity
     Customizations.Add(new CharacterCustomizationEntity(this, customization));
   }
 
+  public void GainExperience(CharacterExperienceGained @event)
+  {
+    base.Update(@event);
+
+    Experience += @event.Experience;
+    Level = ExperienceTable.Instance.GetLevel(Experience);
+  }
+
   public void RemoveCustomization(CharacterCustomizationRemoved @event)
   {
     base.Update(@event);

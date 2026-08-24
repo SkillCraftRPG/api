@@ -10,6 +10,7 @@ namespace SkillCraft.Api.Core.Characters;
 public interface ICharacterService
 {
   Task<CharacterModel> CreateAsync(CreateCharacterPayload payload, CancellationToken cancellationToken = default);
+  Task<CharacterModel?> GainExperienceAsync(Guid id, GainCharacterExperiencePayload payload, CancellationToken cancellationToken = default);
   Task<CharacterModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<SearchResults<CharacterModel>> SearchAsync(SearchCharactersPayload payload, CancellationToken cancellationToken = default);
   Task<CharacterModel?> UpdateAsync(Guid id, UpdateCharacterPayload payload, CancellationToken cancellationToken = default);
@@ -21,6 +22,7 @@ internal class CharacterService : ICharacterService
   {
     services.AddTransient<ICharacterService, CharacterService>();
     services.AddTransient<ICommandHandler<CreateCharacterCommand, CharacterModel>, CreateCharacterCommandHandler>();
+    services.AddTransient<ICommandHandler<GainCharacterExperienceCommand, CharacterModel?>, GainCharacterExperienceCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateCharacterCommand, CharacterModel?>, UpdateCharacterCommandHandler>();
     services.AddTransient<IQueryHandler<ReadCharacterQuery, CharacterModel?>, ReadCharacterQueryHandler>();
     services.AddTransient<IQueryHandler<SearchCharactersQuery, SearchResults<CharacterModel>>, SearchCharactersQueryHandler>();
@@ -38,6 +40,12 @@ internal class CharacterService : ICharacterService
   public async Task<CharacterModel> CreateAsync(CreateCharacterPayload payload, CancellationToken cancellationToken)
   {
     CreateCharacterCommand command = new(payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<CharacterModel?> GainExperienceAsync(Guid id, GainCharacterExperiencePayload payload, CancellationToken cancellationToken)
+  {
+    GainCharacterExperienceCommand command = new(id, payload);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
