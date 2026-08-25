@@ -8,8 +8,6 @@ public interface IExperienceTable
 
 public class ExperienceTable : IExperienceTable
 {
-  private const int MaximumLevel = 100;
-
   private static ExperienceTable? _instance = null;
   public static IExperienceTable Instance
   {
@@ -20,11 +18,11 @@ public class ExperienceTable : IExperienceTable
     }
   }
 
-  private readonly int[] _thresholds = new int[MaximumLevel];
+  private readonly int[] _thresholds = new int[Character.MaximumLevel];
 
   private ExperienceTable()
   {
-    for (int level = 1; level <= MaximumLevel; level++)
+    for (int level = 1; level <= Character.MaximumLevel; level++)
     {
       _thresholds[level - 1] = (int)Math.Pow(level, 2) * 100;
     }
@@ -34,7 +32,7 @@ public class ExperienceTable : IExperienceTable
   {
     ArgumentOutOfRangeException.ThrowIfNegative(experience);
 
-    for (int level = 0; level < MaximumLevel; level++)
+    for (int level = 0; level < Character.MaximumLevel; level++)
     {
       if (experience < _thresholds[level])
       {
@@ -42,12 +40,12 @@ public class ExperienceTable : IExperienceTable
       }
     }
 
-    return MaximumLevel;
+    return Character.MaximumLevel;
   }
 
   public int GetThreshold(int level)
   {
-    if (level < 0 || level > MaximumLevel)
+    if (level < 0 || level > Character.MaximumLevel)
     {
       throw new ArgumentOutOfRangeException(nameof(level));
     }

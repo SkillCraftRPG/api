@@ -13,6 +13,7 @@ namespace SkillCraft.Api.Core.Characters;
 
 public class Character : AggregateRoot, IResource
 {
+  public const int MaximumLevel = 100;
   public const string ResourceKind = "Character";
 
   public new CharacterId Id => new(base.Id);
@@ -215,8 +216,8 @@ public class Character : AggregateRoot, IResource
     ArgumentOutOfRangeException.ThrowIfNegativeOrZero(experience, nameof(experience));
 
     int level = ExperienceTable.Instance.GetLevel(Experience + experience);
-    int vitality = Vitality.Current + CalculateMaximumVitality(Math.Max(level, 100), StartingAttributes.Health, _modifiers.Values) - MaximumVitality;
-    int stamina = Stamina + CalculateMaximumStamina(Math.Max(level, 100), StartingAttributes.Health, _modifiers.Values) - MaximumStamina;
+    int vitality = Vitality.Current + CalculateMaximumVitality(Math.Min(level, MaximumLevel), StartingAttributes.Health, _modifiers.Values) - MaximumVitality;
+    int stamina = Stamina + CalculateMaximumStamina(Math.Min(level, MaximumLevel), StartingAttributes.Health, _modifiers.Values) - MaximumStamina;
     Raise(new CharacterExperienceGained(experience, level, vitality, stamina), actorId);
   }
   protected virtual void Handle(CharacterExperienceGained @event)

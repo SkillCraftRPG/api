@@ -126,6 +126,10 @@ public class CharacterExperienceIntegrationTests : IntegrationTests
 
     Assert.Equal(50, character.Experience);
     Assert.Equal(0, character.Level);
+    Assert.Equal(_character.Vitality.Current, character.Vitality.Current);
+    Assert.Equal(_character.Stamina, character.Stamina);
+    Assert.Equal(_character.Hope.Current, character.Hope.Current);
+    Assert.Equal(_character.Hope.Maximum, character.Hope.Maximum);
   }
 
   [Fact(DisplayName = "It should increase a character's level when experience reaches the next threshold.")]
@@ -148,6 +152,17 @@ public class CharacterExperienceIntegrationTests : IntegrationTests
 
     Assert.Equal(100, character.Experience);
     Assert.Equal(1, character.Level);
+
+    Assert.Equal(_character.Vitality.Current + 1, character.Vitality.Current);
+    Assert.Equal(_character.Vitality.Temporary, character.Vitality.Temporary);
+    Assert.Equal(_character.Vitality.Stun, character.Vitality.Stun);
+    Assert.Equal(_character.Stamina + 1, character.Stamina);
+    Assert.Equal(26, character.Statistics.Vitality.Total);
+    Assert.Equal(26, character.Statistics.Stamina.Total);
+
+    Assert.Equal(_character.Hope.Current, character.Hope.Current);
+    Assert.Equal(_character.Hope.Maximum, character.Hope.Maximum);
+    Assert.Equal(3, character.Hope.Maximum);
   }
 
   private CreateCharacterPayload CreateCharacterPayload() => new()
