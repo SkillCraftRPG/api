@@ -257,4 +257,40 @@ internal static class CharacterHelper
       }
     }
   }
+
+  public static void ValidateAttributeIncreases(CharacterAttributes attributes, int dexterity, int health, int intellect, int senses, int vigor)
+  {
+    ArgumentOutOfRangeException.ThrowIfNegative(dexterity, nameof(dexterity));
+    ArgumentOutOfRangeException.ThrowIfNegative(health, nameof(health));
+    ArgumentOutOfRangeException.ThrowIfNegative(intellect, nameof(intellect));
+    ArgumentOutOfRangeException.ThrowIfNegative(senses, nameof(senses));
+    ArgumentOutOfRangeException.ThrowIfNegative(vigor, nameof(vigor));
+
+    int spent = dexterity + health + intellect + senses + vigor;
+    if (spent > attributes.RemainingPoints)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+
+    if (dexterity > 0 && (attributes.Dexterity.Starting + attributes.Dexterity.Progression + dexterity) > Character.MaximumAttributeScore)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+    if (health > 0 && (attributes.Health.Starting + attributes.Health.Progression + health) > Character.MaximumAttributeScore)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+    if (intellect > 0 && (attributes.Intellect.Starting + attributes.Intellect.Progression + intellect) > Character.MaximumAttributeScore)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+    if (senses > 0 && (attributes.Senses.Starting + attributes.Senses.Progression + senses) > Character.MaximumAttributeScore)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+    if (vigor > 0 && (attributes.Vigor.Starting + attributes.Vigor.Progression + vigor) > Character.MaximumAttributeScore)
+    {
+      throw new NotImplementedException(); // TODO(fpion): DomainException
+    }
+  }
 }

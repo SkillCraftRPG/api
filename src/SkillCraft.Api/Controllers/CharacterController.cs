@@ -37,6 +37,13 @@ public class CharacterController : ControllerBase
     return character is null ? NotFound() : Ok(character);
   }
 
+  [HttpPost("{id}/attributes")]
+  public async Task<ActionResult<CharacterModel>> IncreaseAttributesAsync(Guid id, [FromBody] IncreaseCharacterAttributesPayload payload, CancellationToken cancellationToken)
+  {
+    CharacterModel? character = await _characterService.IncreaseAttributesAsync(id, payload, cancellationToken);
+    return character is null ? NotFound() : Ok(character);
+  }
+
   [HttpGet("{id}")]
   public async Task<ActionResult<CharacterModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

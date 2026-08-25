@@ -184,6 +184,22 @@ internal class CharacterEntity : AggregateEntity
     Stamina = @event.Stamina;
   }
 
+  public void IncreaseAttributes(CharacterAttributesIncreased @event)
+  {
+    base.Update(@event);
+
+    CharacterAttributesEntity attributes = CharacterAttributesEntity.Parse(Attributes);
+    attributes.Dexterity.Progression += @event.Dexterity;
+    attributes.Health.Progression += @event.Health;
+    attributes.Intellect.Progression += @event.Intellect;
+    attributes.Senses.Progression += @event.Senses;
+    attributes.Vigor.Progression += @event.Vigor;
+    Attributes = attributes.ToString();
+
+    CurrentVitality = @event.Vitality;
+    Stamina = @event.Stamina;
+  }
+
   public void RemoveCustomization(CharacterCustomizationRemoved @event)
   {
     base.Update(@event);

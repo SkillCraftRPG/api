@@ -13,8 +13,9 @@ namespace SkillCraft.Api.Core.Characters;
 
 public class Character : AggregateRoot, IResource
 {
-  public const int MaximumLevel = 100;
   public const string ResourceKind = "Character";
+  public const int MaximumLevel = 100;
+  public const int MaximumAttributeScore = 5;
 
   public new CharacterId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -41,7 +42,10 @@ public class Character : AggregateRoot, IResource
   private readonly Dictionary<Guid, CharacterTalent> _talents = [];
   public IReadOnlyDictionary<Guid, CharacterTalent> Talents => _talents.AsReadOnly();
 
-  public StartingAttributes StartingAttributes { get; private set; } = new();
+  private StartingAttributes _startingAttributes = new();
+  private readonly Dictionary<GameAttribute, int> _attributeIncreases = new(capacity: 5);
+  public CharacterAttributes Attributes => new(_startingAttributes, _attributeIncreases, Level, _modifiers.Values);
+  public CharacterStatistics Statistics => new(Attributes, Level, _modifiers.Values);
 
   private readonly Dictionary<Skill, int> _skills = [];
   public IReadOnlyDictionary<Skill, int> Skills => _skills.AsReadOnly();
@@ -58,9 +62,6 @@ public class Character : AggregateRoot, IResource
 
   private readonly Dictionary<Guid, CharacterModifier> _modifiers = [];
   public IReadOnlyDictionary<Guid, CharacterModifier> Modifiers => _modifiers.AsReadOnly();
-
-  public int MaximumVitality => CalculateMaximumVitality(Level, StartingAttributes.Health, _modifiers.Values);
-  public int MaximumStamina => CalculateMaximumStamina(Level, StartingAttributes.Health, _modifiers.Values);
 
   public CharacterVitality Vitality { get; private set; } = new();
   public int Stamina { get; private set; }
@@ -127,7 +128,9 @@ public class Character : AggregateRoot, IResource
     }
     personality ??= new();
 
-    int constitution = 25 + (5 * attributes.Health);
+    CharacterAttributes computedAttributes = new(attributes);
+    CharacterStatistics statistics = new(computedAttributes);
+
     Raise(new CharacterCreated(
       lineage.Id,
       languageIds,
@@ -143,8 +146,8 @@ public class Character : AggregateRoot, IResource
       alignment,
       personality,
       background,
-      constitution,
-      constitution,
+      statistics.Vitality.Total,
+      statistics.Stamina.Total,
       MaximumHope: 3), actorId);
   }
   protected virtual void Handle(CharacterCreated @event)
@@ -171,7 +174,8 @@ public class Character : AggregateRoot, IResource
       _talents[talent.Key] = talent.Value;
     }
 
-    StartingAttributes = @event.Attributes;
+    _startingAttributes = @event.Attributes;
+
     _skills.Clear();
     foreach (KeyValuePair<Skill, int> skill in @event.Skills)
     {
@@ -216,14 +220,61 @@ public class Character : AggregateRoot, IResource
     ArgumentOutOfRangeException.ThrowIfNegativeOrZero(experience, nameof(experience));
 
     int level = ExperienceTable.Instance.GetLevel(Experience + experience);
-    int vitality = Vitality.Current + CalculateMaximumVitality(Math.Min(level, MaximumLevel), StartingAttributes.Health, _modifiers.Values) - MaximumVitality;
-    int stamina = Stamina + CalculateMaximumStamina(Math.Min(level, MaximumLevel), StartingAttributes.Health, _modifiers.Values) - MaximumStamina;
+    CharacterStatistics statistics = new(Attributes, level, _modifiers.Values);
+    int vitality = Vitality.Current + statistics.Vitality.Total - Statistics.Vitality.Total;
+    int stamina = Stamina + statistics.Stamina.Total - Statistics.Stamina.Total;
+
     Raise(new CharacterExperienceGained(experience, level, vitality, stamina), actorId);
   }
   protected virtual void Handle(CharacterExperienceGained @event)
   {
     Level = @event.Level;
     Experience += @event.Experience;
+
+    Vitality = new CharacterVitality(@event.Vitality, Vitality.Temporary, Vitality.Stun);
+    Stamina = @event.Stamina;
+  }
+
+  public void IncreaseAttributes(int dexterity, int health, int intellect, int senses, int vigor, ActorId? actorId = null)
+  {
+    CharacterHelper.ValidateAttributeIncreases(Attributes, dexterity, health, intellect, senses, vigor);
+
+    Dictionary<GameAttribute, int> increases = new(_attributeIncreases);
+    increases[GameAttribute.Dexterity] = increases.GetValueOrDefault(GameAttribute.Dexterity) + dexterity;
+    increases[GameAttribute.Health] = increases.GetValueOrDefault(GameAttribute.Health) + health;
+    increases[GameAttribute.Intellect] = increases.GetValueOrDefault(GameAttribute.Intellect) + intellect;
+    increases[GameAttribute.Senses] = increases.GetValueOrDefault(GameAttribute.Senses) + senses;
+    increases[GameAttribute.Vigor] = increases.GetValueOrDefault(GameAttribute.Vigor) + vigor;
+    CharacterAttributes attributes = new(_startingAttributes, increases, Level, _modifiers.Values);
+
+    CharacterStatistics statistics = new(attributes, Level, _modifiers.Values);
+    int vitality = Vitality.Current + statistics.Vitality.Total - Statistics.Vitality.Total;
+    int stamina = Stamina + statistics.Stamina.Total - Statistics.Stamina.Total;
+
+    Raise(new CharacterAttributesIncreased(dexterity, health, intellect, senses, vigor, vitality, stamina), actorId);
+  }
+  protected virtual void Handle(CharacterAttributesIncreased @event)
+  {
+    if (@event.Dexterity > 0)
+    {
+      _attributeIncreases[GameAttribute.Dexterity] = _attributeIncreases.GetValueOrDefault(GameAttribute.Dexterity) + @event.Dexterity;
+    }
+    if (@event.Health > 0)
+    {
+      _attributeIncreases[GameAttribute.Health] = _attributeIncreases.GetValueOrDefault(GameAttribute.Health) + @event.Health;
+    }
+    if (@event.Intellect > 0)
+    {
+      _attributeIncreases[GameAttribute.Intellect] = _attributeIncreases.GetValueOrDefault(GameAttribute.Intellect) + @event.Intellect;
+    }
+    if (@event.Senses > 0)
+    {
+      _attributeIncreases[GameAttribute.Senses] = _attributeIncreases.GetValueOrDefault(GameAttribute.Senses) + @event.Senses;
+    }
+    if (@event.Vigor > 0)
+    {
+      _attributeIncreases[GameAttribute.Vigor] = _attributeIncreases.GetValueOrDefault(GameAttribute.Vigor) + @event.Vigor;
+    }
 
     Vitality = new CharacterVitality(@event.Vitality, Vitality.Temporary, Vitality.Stun);
     Stamina = @event.Stamina;
@@ -247,11 +298,11 @@ public class Character : AggregateRoot, IResource
     ArgumentOutOfRangeException.ThrowIfNegative(bloodAlcoholContent, nameof(bloodAlcoholContent));
     ArgumentOutOfRangeException.ThrowIfNegative(intoxication, nameof(intoxication));
 
-    if (vitality.Current > MaximumVitality)
+    if (vitality.Current > Statistics.Vitality.Total)
     {
       throw new NotImplementedException(); // TODO(fpion): DomainException
     }
-    if (stamina > MaximumStamina)
+    if (stamina > Statistics.Stamina.Total)
     {
       throw new NotImplementedException(); // TODO(fpion): DomainException
     }
@@ -406,49 +457,6 @@ public class Character : AggregateRoot, IResource
   }
 
   public CharacterModifier? TryGetModifier(Guid id) => _modifiers.GetValueOrDefault(id);
-  #endregion
-
-  #region Status
-  private static int CalculateTotalHealth(int starting, IEnumerable<CharacterModifier> modifiers)
-  {
-    int health = starting;
-    // TODO(fpion): progression
-    foreach (CharacterModifier modifier in modifiers)
-    {
-      if (modifier.HasTarget(GameAttribute.Health))
-      {
-        health += modifier.Value;
-      }
-    }
-    return health;
-  }
-  private static int CalculateConstitution(int level, int health) => (int)((25 + level) * Math.Max(5 + health, 0) / 5.0);
-  private static int CalculateMaximumVitality(int level, int startingHealth, IEnumerable<CharacterModifier> modifiers)
-  {
-    int health = CalculateTotalHealth(startingHealth, modifiers);
-    int vitality = CalculateConstitution(level, health);
-    foreach (CharacterModifier modifier in modifiers)
-    {
-      if (modifier.HasTarget(Statistic.Vitality))
-      {
-        vitality += modifier.Value;
-      }
-    }
-    return Math.Max(vitality, 1);
-  }
-  private static int CalculateMaximumStamina(int level, int startingHealth, IEnumerable<CharacterModifier> modifiers)
-  {
-    int health = CalculateTotalHealth(startingHealth, modifiers);
-    int stamina = CalculateConstitution(level, health);
-    foreach (CharacterModifier modifier in modifiers)
-    {
-      if (modifier.HasTarget(Statistic.Stamina))
-      {
-        stamina += modifier.Value;
-      }
-    }
-    return Math.Max(stamina, 1);
-  }
   #endregion
 
   public override string ToString() => $"{Name} | {base.ToString()}";
