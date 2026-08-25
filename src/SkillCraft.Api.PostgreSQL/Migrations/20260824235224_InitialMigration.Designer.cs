@@ -11,15 +11,15 @@ using SkillCraft.Api.Infrastructure;
 namespace SkillCraft.Api.PostgreSQL.Migrations
 {
     [DbContext(typeof(GameContext))]
-    [Migration("20260810031200_ItemCategoryPriceWeightProperties")]
-    partial class ItemCategoryPriceWeightProperties
+    [Migration("20260824235224_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -114,6 +114,334 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.HasIndex("WorldId", "Summary");
 
                     b.ToTable("Castes", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterCustomizationEntity", b =>
+                {
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CustomizationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterId", "CustomizationId");
+
+                    b.HasIndex("CustomizationId");
+
+                    b.ToTable("CharacterCustomizations", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", b =>
+                {
+                    b.Property<int>("CharacterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CharacterId"));
+
+                    b.Property<int?>("Age")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Alignment")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Attributes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Background")
+                        .HasColumnType("text");
+
+                    b.Property<int>("BloodAlcoholContent")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CasteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CurrentHope")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CurrentVitality")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DominantHand")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<int>("EducationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Experience")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Eyes")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Flaws")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hair")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Ideals")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Intoxication")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LineageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaximumHope")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Skills")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Skin")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("Stamina")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("StunDamage")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TemporaryVitality")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tier")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Traits")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Weight")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorldId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CharacterId");
+
+                    b.HasIndex("CasteId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("EducationId");
+
+                    b.HasIndex("LineageId");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "CasteId");
+
+                    b.HasIndex("WorldId", "EducationId");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "LineageId");
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.ToTable("Characters", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterLanguageEntity", b =>
+                {
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Target")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "LanguageId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("CharacterLanguages", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterModifierEntity", b =>
+                {
+                    b.Property<int>("CharacterModifierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CharacterModifierId"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterModifierId");
+
+                    b.HasIndex("CharacterId", "Id")
+                        .IsUnique();
+
+                    b.ToTable("CharacterModifiers", "Game");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterTalentEntity", b =>
+                {
+                    b.Property<int>("CharacterTalentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CharacterTalentId"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Discounts")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Qualifier")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("TalentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterTalentId");
+
+                    b.HasIndex("TalentId");
+
+                    b.HasIndex("CharacterId", "Id")
+                        .IsUnique();
+
+                    b.ToTable("CharacterTalents", "Game");
                 });
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CustomizationEntity", b =>
@@ -295,10 +623,18 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ItemId"));
 
+                    b.Property<string>("AttunementRequirements")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
+
+                    b.Property<string>("ChargesDepletionBehavior")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
@@ -313,6 +649,15 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<bool?>("IsAttunementRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsMagic")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MaximumCharges")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -323,6 +668,13 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     b.Property<string>("Properties")
                         .HasColumnType("text");
+
+                    b.Property<string>("Rarity")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int?>("ReplacementId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StreamId")
                         .IsRequired()
@@ -355,6 +707,8 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
                     b.HasIndex("CreatedOn");
 
+                    b.HasIndex("ReplacementId");
+
                     b.HasIndex("StreamId")
                         .IsUnique();
 
@@ -369,9 +723,17 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.HasIndex("WorldId", "Id")
                         .IsUnique();
 
+                    b.HasIndex("WorldId", "IsAttunementRequired");
+
+                    b.HasIndex("WorldId", "IsMagic");
+
                     b.HasIndex("WorldId", "Name");
 
                     b.HasIndex("WorldId", "Price");
+
+                    b.HasIndex("WorldId", "Rarity");
+
+                    b.HasIndex("WorldId", "ReplacementId");
 
                     b.HasIndex("WorldId", "Summary");
 
@@ -982,6 +1344,110 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterCustomizationEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", "Character")
+                        .WithMany("Customizations")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.CustomizationEntity", "Customization")
+                        .WithMany("Characters")
+                        .HasForeignKey("CustomizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Customization");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.CasteEntity", "Caste")
+                        .WithMany("Characters")
+                        .HasForeignKey("CasteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.EducationEntity", "Education")
+                        .WithMany("Characters")
+                        .HasForeignKey("EducationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LineageEntity", "Lineage")
+                        .WithMany("Characters")
+                        .HasForeignKey("LineageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Characters")
+                        .HasForeignKey("WorldId")
+                        .HasPrincipalKey("Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Caste");
+
+                    b.Navigation("Education");
+
+                    b.Navigation("Lineage");
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterLanguageEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", "Character")
+                        .WithMany("Languages")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", "Language")
+                        .WithMany("Characters")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterModifierEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", "Character")
+                        .WithMany("Modifiers")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterTalentEntity", b =>
+                {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", "Character")
+                        .WithMany("Talents")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.TalentEntity", "Talent")
+                        .WithMany("Characters")
+                        .HasForeignKey("TalentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Talent");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CustomizationEntity", b =>
                 {
                     b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
@@ -1008,12 +1474,19 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ItemEntity", b =>
                 {
+                    b.HasOne("SkillCraft.Api.Infrastructure.Entities.ItemEntity", "Replacement")
+                        .WithMany("ReplacedItems")
+                        .HasForeignKey("ReplacementId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SkillCraft.Api.Infrastructure.Entities.WorldEntity", "World")
                         .WithMany("Items")
                         .HasForeignKey("WorldId")
                         .HasPrincipalKey("Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Replacement");
 
                     b.Navigation("World");
                 });
@@ -1114,8 +1587,46 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CasteEntity", b =>
+                {
+                    b.Navigation("Characters");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CharacterEntity", b =>
+                {
+                    b.Navigation("Customizations");
+
+                    b.Navigation("Languages");
+
+                    b.Navigation("Modifiers");
+
+                    b.Navigation("Talents");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.CustomizationEntity", b =>
+                {
+                    b.Navigation("Characters");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.EducationEntity", b =>
+                {
+                    b.Navigation("Characters");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.ItemEntity", b =>
+                {
+                    b.Navigation("ReplacedItems");
+                });
+
+            modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LanguageEntity", b =>
+                {
+                    b.Navigation("Characters");
+                });
+
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.LineageEntity", b =>
                 {
+                    b.Navigation("Characters");
+
                     b.Navigation("Children");
                 });
 
@@ -1126,12 +1637,16 @@ namespace SkillCraft.Api.PostgreSQL.Migrations
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.TalentEntity", b =>
                 {
+                    b.Navigation("Characters");
+
                     b.Navigation("RequiringTalents");
                 });
 
             modelBuilder.Entity("SkillCraft.Api.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Navigation("Castes");
+
+                    b.Navigation("Characters");
 
                     b.Navigation("Customizations");
 

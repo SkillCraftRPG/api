@@ -120,10 +120,9 @@ internal class CharacterEntity : AggregateEntity
       Talents.Add(new CharacterTalentEntity(this, talent, acquisition.Value, @event, acquisition.Key));
     }
 
-    int constitution = (5 + attributes.Health.Starting) * 5;
-    CurrentVitality = constitution;
-    Stamina = constitution;
-    MaximumHope = 3;
+    CurrentVitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    MaximumHope = @event.MaximumHope;
   }
 
   private CharacterEntity() : base()
@@ -178,8 +177,11 @@ internal class CharacterEntity : AggregateEntity
   {
     base.Update(@event);
 
+    Level = @event.Level;
     Experience += @event.Experience;
-    Level = ExperienceTable.Instance.GetLevel(Experience);
+
+    CurrentVitality = @event.Vitality;
+    Stamina = @event.Stamina;
   }
 
   public void RemoveCustomization(CharacterCustomizationRemoved @event)
