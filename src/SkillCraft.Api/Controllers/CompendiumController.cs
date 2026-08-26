@@ -4,6 +4,7 @@ using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Infrastructure.Compendium;
@@ -54,6 +55,13 @@ public class CompendiumController : Controller
   {
     SearchResults<ScriptModel> scripts = await _compendium.GetScriptsAsync(cancellationToken);
     return Ok(scripts);
+  }
+
+  [HttpGet("species")]
+  public async Task<ActionResult<SearchResults<LineageModel>>> GetSpeciesAsync(CancellationToken cancellationToken)
+  {
+    SearchResults<LineageModel> species = await _compendium.GetSpeciesAsync(cancellationToken);
+    return Ok(species);
   }
 
   [HttpGet("talents")]

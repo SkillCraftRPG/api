@@ -5,6 +5,7 @@ using SkillCraft.Api.Core.Castes.Models;
 using SkillCraft.Api.Core.Customizations.Models;
 using SkillCraft.Api.Core.Educations.Models;
 using SkillCraft.Api.Core.Languages.Models;
+using SkillCraft.Api.Core.Lineages.Models;
 using SkillCraft.Api.Core.Scripts.Models;
 using SkillCraft.Api.Core.Talents.Models;
 using SkillCraft.Api.Infrastructure.Compendium.Models;
@@ -18,6 +19,7 @@ public interface ICompendiumService
   Task<SearchResults<EducationModel>> GetEducationsAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<LanguageModel>> GetLanguagesAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<ScriptModel>> GetScriptsAsync(CancellationToken cancellationToken = default);
+  Task<SearchResults<LineageModel>> GetSpeciesAsync(CancellationToken cancellationToken = default);
   Task<SearchResults<TalentModel>> GetTalentsAsync(CancellationToken cancellationToken = default);
 }
 
@@ -89,6 +91,16 @@ internal class CompendiumService : ICompendiumService
 
     SearchResults<ScriptEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<ScriptEntry>>(_serializerOptions, cancellationToken) ?? new();
     return new SearchResults<ScriptModel>(entries.Items.Select(CompendiumMapper.ToScript), entries.Total);
+  }
+
+  public async Task<SearchResults<LineageModel>> GetSpeciesAsync(CancellationToken cancellationToken)
+  {
+    using HttpRequestMessage request = new(HttpMethod.Get, new Uri("/api/species", UriKind.Relative));
+    using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+    response.EnsureSuccessStatusCode();
+
+    SearchResults<SpeciesEntry> entries = await response.Content.ReadFromJsonAsync<SearchResults<SpeciesEntry>>(_serializerOptions, cancellationToken) ?? new();
+    return new SearchResults<LineageModel>(entries.Items.Select(CompendiumMapper.ToSpecies), entries.Total);
   }
 
   public async Task<SearchResults<TalentModel>> GetTalentsAsync(CancellationToken cancellationToken)
